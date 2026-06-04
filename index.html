@@ -365,7 +365,7 @@
       const loader = document.getElementById('initial-loader');
       if (loader) {
         loader.style.opacity = '0';
-        setTimeout(() => loader.remove(), 350);
+        setTimeout(() => loader.remove(), 200);
       }
     }
 
@@ -394,7 +394,7 @@
         setTimeout(() => {
           isConfigsLoaded = true;
           dismissPreloader();
-        }, 800); // ดีเลย์เล็กน้อยเพื่อให้พื้นหลังและโลโก้เปลี่ยนตามการตั้งค่าสำเร็จก่อนปิด Preloader
+        }, 100); 
       }
     }
 
@@ -553,21 +553,27 @@
       if (activeListeners.userSpecialAssigns) { activeListeners.userSpecialAssigns(); activeListeners.userSpecialAssigns = null; }
     }
 
-    async function checkCustomLoginState() {
-      try {
-        await signInAnonymously(auth); 
-        const cachedUserId = localStorage.getItem('tos_logged_user_id');
-        if (cachedUserId) {
-          startUserSubscriptions(cachedUserId);
-          currentTab = sessionStorage.getItem('tos_current_tab') || 'home'; 
-          renderDashboard();
-        } else {
-          renderLogin();
-        }
-      } catch (err) {
-        console.warn("Auth initial error: ", err);
+    // ========================================================
+    // REFACTORED INSTANT RELOAD & SYNC BLOCK
+    // ========================================================
+    function checkCustomLoginState() {
+      // 1. ตรวจสอบจาก LocalStorage ทันทีโดยไม่ต้องรอกลไก Auth แอนดรอยด์/เว็บที่ช้า
+      const cachedUserId = localStorage.getItem('tos_logged_user_id');
+      if (cachedUserId) {
+        currentUser = { id: cachedUserId }; 
+        currentTab = sessionStorage.getItem('tos_current_tab') || 'home'; 
+        startUserSubscriptions(cachedUserId);
+        renderDashboard(); // เรนเดอร์หน้าจอปัจจุบันทันทีเพื่อไม่ให้ระบบหลุด
+        dismissPreloader(); // เคลียร์ Preloader ออกไปอย่างรวดเร็ว
+      } else {
         renderLogin();
+        dismissPreloader();
       }
+
+      // 2. ทำงานร่วมกับระบบ Auth หลังบ้านเป็นคู่ขนาน
+      signInAnonymously(auth).catch(err => {
+        console.warn("Auth background error: ", err);
+      });
     }
 
     checkCustomLoginState();
@@ -662,7 +668,7 @@
             startUserSubscriptions(userId);
             showToast('เข้าสู่ระบบสำเร็จ!');
             currentTab = 'home';
-            renderDashboard(); // ย้ายหน้าเข้าหน้าแดชบอร์ดทันที ป้องกันอาการค้าง
+            renderDashboard(); 
           } else {
             btn.disabled = false; 
             btn.textContent = 'ลงชื่อเข้าใช้';
