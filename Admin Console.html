@@ -69,7 +69,7 @@
       getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged 
     } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 
-    // แก้ไข Base64 คีย์เรียบร้อย ไร้อักษรภาษาไทยปะปน
+    // แก้ไข Base64 คีย์ถูกต้องสมบูรณ์ ไม่มีอักษรไทยปะปน
     const _0xdbKey = [
       "QUl6YVN5QnhWazBMQlg5UkNzOXYzRXNNUDF5SnNpR3ItYmpwb3Jz", 
       "a2std2ViLTdkMDJiLmZpcmViYXNlYXBwLmNvbQ==",             
@@ -255,6 +255,11 @@
       }
     }
 
+    // Failsafe หน่วงเวลาสำรอง ป้องกันหน้าจอค้างถาวร
+    setTimeout(() => {
+      dismissAdminPreloader();
+    }, 2500);
+
     function updateHeaderStats() {
       const elMembers = $('stat-total-members');
       const elOrders = $('stat-total-orders');
@@ -280,15 +285,12 @@
       return html;
     }
 
-    // ==========================================
-    // DUAL WRITE CONFIG METHOD
-    // ==========================================
     async function saveConfigToFirebase(payload) {
       const docId = payload.__backendId || payload.id || "system_config";
       payload.id = docId;
       payload.__backendId = docId;
       const cleanData = { ...payload };
-      delete cleanData.__collection; // ล้างคีย์จำลองก่อนบันทึกจริง
+      delete cleanData.__collection; 
 
       await setDoc(doc(db, "configs", docId), cleanData);
       await setDoc(doc(db, "การกำหนดค่า", docId), cleanData);
@@ -1253,7 +1255,7 @@
                     <td class="p-4 text-xs text-slate-400">${new Date(w.createdAt).toLocaleString('th-TH')}</td>
                     <td class="p-4 font-bold text-slate-800">${w.username}</td>
                     <td class="p-4 text-xs font-semibold text-slate-500">${w.status === 'deposit' ? 'ฝากเงิน' : 'ถอนเงิน'}</td>
-                    <td class="p-4 font-black ${w.status === 'deposit' ? 'text-emerald-600' : 'text-slate-800'}">฿${w.amount.toLocaleString()}</td>
+                    <td class="p-4 font-black ${w.status === 'deposit' ? 'text-emerald-400' : 'text-slate-800'}">฿${w.amount.toLocaleString()}</td>
                     <td class="p-4 text-xs">
                       <p class="font-bold text-slate-700">${w.bankName || '-'}</p>
                       <p class="font-mono text-[11px] text-slate-400 mt-0.5">${w.bankNumber || '-'}</p>
@@ -1599,9 +1601,6 @@
         </div>`;
     }
 
-    // ==========================================
-    // BULLETPROOF SYSTEM SAVE WITH REALTIME SYNC
-    // ==========================================
     async function saveAdminTheme() {
       const p = $('cfg-theme-p-text').value.trim(); const s = $('cfg-theme-s-text').value.trim();
       let config = getConfig(); 
@@ -1696,6 +1695,20 @@
     function deleteMenuIcon(bid) { if(confirm('ต้องการลบข้อมูลนี้หรือไม่?')) { windowDataSdk.delete(publicData.menuIcons.find(d => d.__backendId === bid)); renderAdminTab(); } }
 
     function handleAdminUserSearch(value) { adminUserSearch = value; renderAdminTab(); }
+
+    onAuthStateChanged(auth, (user) => {
+      if (user && user.email.endsWith('@admin.com')) {
+        isAdmin = true;
+        adminTab = sessionStorage.getItem('tos_admin_tab') || 'users'; 
+        startAdminSubscriptions();
+        renderAdmin();
+      } else {
+        isAdmin = false;
+        renderAdminLogin();
+      }
+    });
+
+    startPublicSubscriptions();
 
     // ==========================================
     // WINDOW GLOBAL EXPORTS
