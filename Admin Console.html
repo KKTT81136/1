@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="th" class="h-full">
+<html lang="en" class="h-full">
  <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -54,7 +54,7 @@
   <div id="initial-loader" class="fixed inset-0 z-[9999] bg-white flex flex-col items-center justify-center transition-opacity duration-300">
     <div class="text-center">
       <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-      <p class="text-slate-500 mt-4 text-sm font-semibold">กำลังเชื่อมต่อแดชบอร์ดแอดมิน...</p>
+      <p class="text-slate-500 mt-4 text-sm font-semibold">Connecting Admin Console...</p>
     </div>
   </div>
   
@@ -69,7 +69,6 @@
       getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged 
     } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 
-    // แก้ไข Base64 คีย์ถูกต้องสมบูรณ์ ไม่มีอักษรไทยปะปน
     const _0xdbKey = [
       "QUl6YVN5QnhWazBMQlg5UkNzOXYzRXNNUDF5SnNpR3ItYmpwb3Jz", 
       "a2std2ViLTdkMDJiLmZpcmViYXNlYXBwLmNvbQ==",             
@@ -114,20 +113,14 @@
 
     let adminUsersData = [];
     let rawUsersEng = [];
-    let rawUsersThai = [];
-
     let adminWithdrawalsData = [];
-    let rawWdsEng = [];
-    let rawWdsThai = [];
-
     let adminSpecialAssignData = [];
     let adminSpecialTemplatesData = [];
     let allUserOrdersData = [];
 
     let activeListeners = {
-      configs: null, configsThai: null, banners: null, galleries: null, menuIcons: null, products: null,
-      adminUsers: null, adminUsersThai: null, adminWithdrawals: null, adminWithdrawalsThai: null, 
-      adminSpecialAssigns: null, adminSpecialTemplates: null, allOrders: null
+      configs: null, banners: null, galleries: null, menuIcons: null, products: null,
+      adminUsers: null, adminWithdrawals: null, adminSpecialAssigns: null, adminSpecialTemplates: null, allOrders: null
     };
 
     const $ = id => document.getElementById(id);
@@ -142,24 +135,36 @@
     
     function getField(obj, engKey, thaiKey) {
       if (!obj) return undefined;
-      if (obj[engKey] !== undefined) return obj[engKey];
-      if (obj[thaiKey] !== undefined) return obj[thaiKey];
-      return undefined;
+      return obj[engKey];
     }
 
     const getConfig = () => {
-      return publicData.configs.find(d => d.themePrimary !== undefined || d.themeSecondary !== undefined || d["ธีมหลัก"] !== undefined) || publicData.configs[0] || null;
+      if (publicData.configs && publicData.configs.length > 0) {
+        return publicData.configs[0];
+      }
+      return {
+        themePrimary: '#1e40af',
+        themeSecondary: '#3b82f6',
+        inviteCode: '12345',
+        logoUrl: '',
+        loginBgUrl: '',
+        userBgUrl: '',
+        marqueeText: 'Welcome to TOS Shopping',
+        tabTitle: 'TOS Shopping',
+        tabFaviconUrl: '',
+        supportedBanks: 'KBank,SCB,BBL,KTB,Krungsri,GSB,TrueMoney'
+      };
     };
 
-    const getInviteCode = () => { const c = getConfig(); return String(getField(c, 'inviteCode', 'รหัสเชิญ') || '12345').trim(); };
-    const getLogoUrl = () => { const c = getConfig(); return getField(c, 'logoUrl', 'logoUrl') || ''; };
-    const getMarqueeText = () => { const c = getConfig(); return getField(c, 'marqueeText', 'ข้อความวิ่ง') || 'ยินดีต้อนรับสู่ระบบ TOS Shopping'; };
-    const getLineQrUrl = () => { const c = getConfig(); return getField(c, 'lineQrUrl', 'lineQrUrl') || ''; };
-    const getLineId = () => { const c = getConfig(); return getField(c, 'lineId', 'lineId') || ''; };
-    const getTopupQrUrl = () => { const c = getConfig(); return getField(c, 'topupQrUrl', 'topupQrUrl') || ''; };
-    const getTopupAccount = () => { const c = getConfig(); return getField(c, 'topupAccount', 'topupAccount') || ''; };
-    const getTabTitle = () => { const c = getConfig(); return getField(c, 'tabTitle', 'แท็บชื่อเรื่อง') || 'TOS Shopping'; };
-    const getTabFavicon = () => { const c = getConfig(); return getField(c, 'tabFaviconUrl', 'tabFaviconUrl') || ''; };
+    const getInviteCode = () => { const c = getConfig(); return String(c.inviteCode || '12345').trim(); };
+    const getLogoUrl = () => { const c = getConfig(); return c.logoUrl || ''; };
+    const getMarqueeText = () => { const c = getConfig(); return c.marqueeText || 'Welcome to TOS Shopping'; };
+    const getLineQrUrl = () => { const c = getConfig(); return c.lineQrUrl || ''; };
+    const getLineId = () => { const c = getConfig(); return c.lineId || ''; };
+    const getTopupQrUrl = () => { const c = getConfig(); return c.topupQrUrl || ''; };
+    const getTopupAccount = () => { const c = getConfig(); return c.topupAccount || ''; };
+    const getTabTitle = () => { const c = getConfig(); return c.tabTitle || 'TOS Shopping'; };
+    const getTabFavicon = () => { const c = getConfig(); return c.tabFaviconUrl || ''; };
 
     function genId() {
       if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
@@ -212,11 +217,11 @@
 
     const getCol = (type) => {
       const map = { 
-        user: 'ผู้ใช้', 
+        user: 'users', 
         order: 'orders', 
         product: 'products', 
-        withdrawal: 'การถอนเงิน', 
-        config: 'การกำหนดค่า', 
+        withdrawal: 'withdrawals', 
+        config: 'configs', 
         banner: 'banners', 
         gallery: 'galleries', 
         menuIcon: 'menu_icons', 
@@ -255,7 +260,6 @@
       }
     }
 
-    // Failsafe หน่วงเวลาสำรอง ป้องกันหน้าจอค้างถาวร
     setTimeout(() => {
       dismissAdminPreloader();
     }, 2500);
@@ -264,12 +268,10 @@
       const elMembers = $('stat-total-members');
       const elOrders = $('stat-total-orders');
       const elProducts = $('stat-total-products');
-      const elCustomers = $('stat-total-customers');
       
-      if (elMembers) elMembers.innerText = `${adminUsersData.length} คน`;
-      if (elOrders) elOrders.innerText = `${allUserOrdersData.length} รายการ`;
-      if (elProducts) elProducts.innerText = `${publicData.products.length} ชิ้น`;
-      if (elCustomers) elCustomers.innerText = `${adminUsersData.length} คน`;
+      if (elMembers) elMembers.innerText = `${adminUsersData.length} Users`;
+      if (elOrders) elOrders.innerText = `${allUserOrdersData.length} Orders`;
+      if (elProducts) elProducts.innerText = `${publicData.products.length} Items`;
     }
 
     function renderPagination(totalItems, currentPage, callbackName) {
@@ -286,43 +288,27 @@
     }
 
     async function saveConfigToFirebase(payload) {
-      const docId = payload.__backendId || payload.id || "system_config";
+      const docId = "system_config";
       payload.id = docId;
       payload.__backendId = docId;
       const cleanData = { ...payload };
       delete cleanData.__collection; 
-
       await setDoc(doc(db, "configs", docId), cleanData);
-      await setDoc(doc(db, "การกำหนดค่า", docId), cleanData);
     }
 
     function startPublicSubscriptions() {
-      const configHandler = (snapshot, sourceCol) => {
-        snapshot.forEach(d => {
-          const item = { ...d.data(), __backendId: d.id, __collection: sourceCol };
-          const idx = publicData.configs.findIndex(c => c.__backendId === d.id);
-          if (idx !== -1) {
-            publicData.configs[idx] = item;
-          } else {
-            publicData.configs.push(item);
-          }
-        });
-        
-        const cfg = getConfig();
-        if (cfg) {
-          applyTheme(getField(cfg, 'themePrimary', 'ธีมหลัก'), getField(cfg, 'themeSecondary', 'ธีมรอง'));
+      activeListeners.configs = onSnapshot(doc(db, "configs", "system_config"), (docSnap) => {
+        if (docSnap.exists()) {
+          const cfgData = { ...docSnap.data(), __backendId: docSnap.id };
+          publicData.configs = [cfgData];
+          applyTheme(cfgData.themePrimary, cfgData.themeSecondary);
         }
         dismissAdminPreloader();
         updateHeaderStats();
-      };
-
-      const configErrorHandler = (err) => {
+      }, (err) => {
         console.warn("Admin config load error: ", err);
         dismissAdminPreloader();
-      };
-
-      activeListeners.configs = onSnapshot(collection(db, "configs"), (snap) => configHandler(snap, 'configs'), configErrorHandler);
-      activeListeners.configsThai = onSnapshot(collection(db, "การกำหนดค่า"), (snap) => configHandler(snap, 'การกำหนดค่า'), configErrorHandler);
+      });
 
       activeListeners.banners = onSnapshot(collection(db, "banners"), (snapshot) => {
         let banners = [];
@@ -354,48 +340,21 @@
       }, (err) => console.warn(err));
     }
 
-    const mergeAndRenderUsers = () => {
-      const mergedMap = new Map();
-      rawUsersEng.forEach(u => mergedMap.set(u.id, u));
-      rawUsersThai.forEach(u => mergedMap.set(u.id, u));
-      adminUsersData = Array.from(mergedMap.values());
-      updateHeaderStats();
-      if($('admin-content')) renderAdminTab();
-    };
-
-    const mergeAndRenderWds = () => {
-      const mergedMap = new Map();
-      rawWdsEng.forEach(w => mergedMap.set(w.id, w));
-      rawWdsThai.forEach(w => mergedMap.set(w.id, w));
-      adminWithdrawalsData = Array.from(mergedMap.values());
-      if($('admin-content')) renderAdminTab();
-    };
-
     function startAdminSubscriptions() {
       stopAdminSubscriptions();
       
       activeListeners.adminUsers = onSnapshot(collection(db, "users"), (snapshot) => {
         rawUsersEng = [];
         snapshot.forEach(d => rawUsersEng.push({ ...d.data(), id: d.id, __backendId: d.id }));
-        mergeAndRenderUsers();
-      }, (err) => console.warn(err));
-
-      activeListeners.adminUsersThai = onSnapshot(collection(db, "ผู้ใช้"), (snapshot) => {
-        rawUsersThai = [];
-        snapshot.forEach(d => rawUsersThai.push({ ...d.data(), id: d.id, __backendId: d.id }));
-        mergeAndRenderUsers();
+        adminUsersData = rawUsersEng;
+        updateHeaderStats();
+        if($('admin-content')) renderAdminTab();
       }, (err) => console.warn(err));
 
       activeListeners.adminWithdrawals = onSnapshot(collection(db, "withdrawals"), (snapshot) => {
-        rawWdsEng = [];
-        snapshot.forEach(d => rawWdsEng.push({ ...d.data(), __backendId: d.id }));
-        mergeAndRenderWds();
-      }, (err) => console.warn(err));
-
-      activeListeners.adminWithdrawalsThai = onSnapshot(collection(db, "การถอนเงิน"), (snapshot) => {
-        rawWdsThai = [];
-        snapshot.forEach(d => rawWdsThai.push({ ...d.data(), __backendId: d.id }));
-        mergeAndRenderWds();
+        adminWithdrawalsData = [];
+        snapshot.forEach(d => adminWithdrawalsData.push({ ...d.data(), __backendId: d.id }));
+        if($('admin-content')) renderAdminTab();
       }, (err) => console.warn(err));
 
       activeListeners.adminSpecialAssigns = onSnapshot(collection(db, "special_assignments"), (snapshot) => {
@@ -420,9 +379,7 @@
 
     function stopAdminSubscriptions() {
       if (activeListeners.adminUsers) { activeListeners.adminUsers(); activeListeners.adminUsers = null; }
-      if (activeListeners.adminUsersThai) { activeListeners.adminUsersThai(); activeListeners.adminUsersThai = null; }
       if (activeListeners.adminWithdrawals) { activeListeners.adminWithdrawals(); activeListeners.adminWithdrawals = null; }
-      if (activeListeners.adminWithdrawalsThai) { activeListeners.adminWithdrawalsThai(); activeListeners.adminWithdrawalsThai = null; }
       if (activeListeners.adminSpecialAssigns) { activeListeners.adminSpecialAssigns(); activeListeners.adminSpecialAssigns = null; }
       if (activeListeners.adminSpecialTemplates) { activeListeners.adminSpecialTemplates(); activeListeners.adminSpecialTemplates = null; }
       if (activeListeners.allOrders) { activeListeners.allOrders(); activeListeners.allOrders = null; }
@@ -433,18 +390,20 @@
     // ==========================================
     function renderAdminLogin() {
       const app = $('app');
+      const logoUrl = getLogoUrl();
+      const logoHtml = logoUrl ? `<img src="${logoUrl}" class="w-20 h-20 mx-auto object-cover rounded-xl border border-slate-200 shadow-sm mb-3">` : `<span class="text-5xl">🏢</span>`;
       app.innerHTML = `
       <div class="min-h-full w-full flex items-center justify-center p-4 bg-slate-100">
         <div class="w-full max-w-sm bg-white border border-slate-200 p-8 rounded-3xl shadow-xl">
           <div class="text-center mb-6">
-            <span class="text-5xl">🏢</span>
+            ${logoHtml}
             <h2 class="text-slate-800 font-black text-xl mt-4">TOS Admin Console</h2>
-            <p class="text-slate-400 text-xs mt-1">ระบบคอนโซลควบคุมของแอดมินออฟฟิศ</p>
+            <p class="text-slate-400 text-xs mt-1">Administrative Office Control Console</p>
           </div>
           <div class="space-y-4">
-            <input id="inp-admin-email" type="email" class="w-full px-4 py-3 rounded-xl bg-slate-50 text-slate-800 placeholder-slate-400 outline-none border border-slate-200 focus:border-blue-500" placeholder="อีเมลแอดมิน (@admin.com)">
-            <input id="inp-admin-pass" type="password" onkeydown="if(event.key === 'Enter') doAdminLogin()" class="w-full px-4 py-3 rounded-xl bg-slate-50 text-slate-800 placeholder-slate-400 outline-none border border-slate-200 focus:border-blue-500" placeholder="รหัสผ่าน">
-            <button onclick="doAdminLogin()" id="btn-admin-login" class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow transition text-base">ลงชื่อเข้าใช้งาน</button>
+            <input id="inp-admin-email" type="email" class="w-full px-4 py-3 rounded-xl bg-slate-50 text-slate-800 placeholder-slate-400 outline-none border border-slate-200 focus:border-blue-500" placeholder="Admin Email">
+            <input id="inp-admin-pass" type="password" onkeydown="if(event.key === 'Enter') doAdminLogin()" class="w-full px-4 py-3 rounded-xl bg-slate-50 text-slate-800 placeholder-slate-400 outline-none border border-slate-200 focus:border-blue-500" placeholder="Password">
+            <button onclick="doAdminLogin()" id="btn-admin-login" class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow transition text-base">Sign In</button>
           </div>
         </div>
       </div>`;
@@ -453,18 +412,18 @@
     async function doAdminLogin() {
       const email = $('inp-admin-email').value.trim();
       const password = $('inp-admin-pass').value.trim();
-      if (!email || !password) return showToast('กรุณากรอกข้อมูลให้ครบถ้วน','error');
-      if (!email.endsWith('@admin.com')) return showToast('อีเมลแอดมินต้องลงท้ายด้วย @admin.com เท่านั้น','error');
+      if (!email || !password) return showToast('Please fill in all fields','error');
+      if (!email.endsWith('@admin.com')) return showToast('Admin emails must end with @admin.com','error');
 
       const btn = $('btn-admin-login');
-      btn.disabled = true; btn.textContent = 'กำลังตรวจสอบสิทธิ์...';
+      btn.disabled = true; btn.textContent = 'Verifying...';
 
       try {
         await signInWithEmailAndPassword(auth, email, password);
-        showToast('ยินดีต้อนรับเข้าสู่ระบบ Admin');
+        showToast('Welcome to the admin console');
       } catch (err) {
-        btn.disabled = false; btn.textContent = 'เข้าสู่ระบบ';
-        showToast(`ล้มเหลว: ${err.code || err.message}`,'error');
+        btn.disabled = false; btn.textContent = 'Sign In';
+        showToast(`Verification failed: ${err.message}`,'error');
       }
     }
 
@@ -479,28 +438,31 @@
     // ==========================================
     function renderAdmin() {
       const sidebarMenu = [
-        {id:'users', icon:'users', label:'โพรไฟล์ผู้ใช้', type:'main'},
-        {id:'orders', icon:'list', label:'ประวัติสั่งซื้อ', type:'main'},
-        {id:'special', icon:'star', label:'สินค้าประเภทพิเศษ', type:'main'},
+        {id:'users', icon:'users', label:'User Profiles', type:'main'},
+        {id:'orders', icon:'list', label:'Order History', type:'main'},
+        {id:'special', icon:'star', label:'Special Products', type:'main'},
         {id:'products_1', icon:'chevron-right', label:'VIP 1', type:'sub'},
         {id:'products_2', icon:'chevron-right', label:'VIP 2', type:'sub'},
         {id:'products_3', icon:'chevron-right', label:'VIP 3', type:'sub'},
         {id:'products_4', icon:'chevron-right', label:'VIP 4', type:'sub'},
         {id:'products_5', icon:'chevron-right', label:'VIP 5', type:'sub'},
         {id:'products_6', icon:'chevron-right', label:'VIP 6', type:'sub'},
-        {id:'products_fixturn', icon:'chevron-right', label:'ซ่อมเทิร์น', type:'sub'},
-        {id:'products_allowwd', icon:'chevron-right', label:'ปล่อยถอน', type:'sub'},
-        {id:'withdrawals', icon:'banknote', label:`รายการถอนเงิน`, type:'main'},
-        {id:'media', icon:'image', label:'สื่อ / แบนเนอร์', type:'main'},
-        {id:'settings', icon:'settings', label:'การตั้งค่าระบบ', type:'main'}
+        {id:'products_fixturn', icon:'chevron-right', label:'Turnover Repair', type:'sub'},
+        {id:'products_allowwd', icon:'chevron-right', label:'Unblocked', type:'sub'},
+        {id:'withdrawals', icon:'banknote', label:`Withdrawals`, type:'main'},
+        {id:'media', icon:'image', label:'Media / Banners', type:'main'},
+        {id:'settings', icon:'settings', label:'System Settings', type:'main'}
       ];
+
+      const logoUrl = getLogoUrl();
+      const logoHtml = logoUrl ? `<img src="${logoUrl}" class="w-full h-full object-cover">` : `<span class="text-3xl">🛒</span>`;
 
       $('app').innerHTML = `
         <!-- Left Sidebar Navigation -->
         <div class="w-64 bg-slate-900 flex flex-col h-full overflow-hidden flex-shrink-0 shadow-lg">
           <div class="p-6 border-b border-slate-800 flex flex-col items-center flex-shrink-0">
             <div class="w-16 h-16 rounded-xl bg-white flex items-center justify-center overflow-hidden mb-3 border border-slate-700 shadow-sm">
-              ${getLogoUrl() ? `<img src="${getLogoUrl()}" class="w-full h-full object-cover">` : `<span class="text-3xl">🛒</span>`}
+              ${logoHtml}
             </div>
             <p class="text-sm font-black text-white">TOS Control Panel</p>
             <div class="mt-2 px-3 py-1 bg-blue-500/10 border border-blue-500/30 text-blue-400 rounded-full text-[9px] font-bold tracking-wider">
@@ -526,7 +488,7 @@
           </div>
           <div class="p-4 border-t border-slate-800 flex-shrink-0">
             <button onclick="exitAdmin()" class="w-full py-2.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-bold transition shadow flex items-center justify-center gap-2">
-              <i data-lucide="log-out" class="w-4 h-4"></i> ออกจากระบบ
+              <i data-lucide="log-out" class="w-4 h-4"></i> Sign Out
             </button>
           </div>
         </div>
@@ -539,28 +501,28 @@
               <div class="bg-slate-50 px-5 py-3 rounded-xl border border-slate-200 flex items-center gap-4 min-w-[170px] custom-shadow">
                 <div class="p-2.5 bg-blue-100 text-blue-700 rounded-lg"><i data-lucide="users" class="w-4 h-4"></i></div>
                 <div>
-                  <p class="text-[9px] text-slate-400 font-bold uppercase tracking-wider">จำนวนสมาชิก</p>
-                  <p id="stat-total-members" class="text-sm font-black text-slate-700">0 คน</p>
+                  <p class="text-[9px] text-slate-400 font-bold uppercase tracking-wider">Total Members</p>
+                  <p id="stat-total-members" class="text-sm font-black text-slate-700">0 Users</p>
                 </div>
               </div>
               <div class="bg-slate-50 px-5 py-3 rounded-xl border border-slate-200 flex items-center gap-4 min-w-[170px] custom-shadow">
                 <div class="p-2.5 bg-indigo-100 text-indigo-700 rounded-lg"><i data-lucide="shopping-cart" class="w-4 h-4"></i></div>
                 <div>
-                  <p class="text-[9px] text-slate-400 font-bold uppercase tracking-wider">ยอดออเดอร์ทั้งหมด</p>
-                  <p id="stat-total-orders" class="text-sm font-black text-slate-700">0 รายการ</p>
+                  <p class="text-[9px] text-slate-400 font-bold uppercase tracking-wider">Total Orders</p>
+                  <p id="stat-total-orders" class="text-sm font-black text-slate-700">0 Orders</p>
                 </div>
               </div>
               <div class="bg-slate-50 px-5 py-3 rounded-xl border border-slate-200 flex items-center gap-4 min-w-[170px] custom-shadow">
                 <div class="p-2.5 bg-emerald-100 text-emerald-700 rounded-lg"><i data-lucide="package" class="w-4 h-4"></i></div>
                 <div>
-                  <p class="text-[9px] text-slate-400 font-bold uppercase tracking-wider">สินค้าในระบบ</p>
-                  <p id="stat-total-products" class="text-sm font-black text-slate-700">0 รายการ</p>
+                  <p class="text-[9px] text-slate-400 font-bold uppercase tracking-wider">Active Products</p>
+                  <p id="stat-total-products" class="text-sm font-black text-slate-700">0 Items</p>
                 </div>
               </div>
             </div>
             <div class="text-right text-slate-400 text-[10px] font-semibold leading-relaxed">
-              <p>ระบบควบคุมการเงินและความปลอดภัยหลังบ้าน (Corporate App Core)</p>
-              <p class="text-emerald-600 mt-0.5">● สัญญาณการเชื่อมต่อปกติ</p>
+              <p>Security and Financial Control Panel (Corporate App Core)</p>
+              <p class="text-emerald-600 mt-0.5">● Active connection established</p>
             </div>
           </div>
 
@@ -605,37 +567,37 @@
       c.innerHTML = `
         <div class="bg-white border border-slate-200 rounded-2xl p-5 mb-5 shadow-sm flex justify-between items-center gap-4 flex-wrap">
           <div class="relative text-slate-700 flex-1 max-w-md">
-            <input id="admin-user-search" type="text" oninput="handleAdminUserSearch(this.value)" value="${adminUserSearch}" class="w-full pl-11 pr-4 py-2.5 bg-slate-50 border border-slate-200 text-slate-800 rounded-xl placeholder-slate-400 outline-none transition-all shadow-inner text-sm" placeholder="ค้นหาบัญชีผู้ใช้ หรือเบอร์โทรศัพท์...">
+            <input id="admin-user-search" type="text" oninput="handleAdminUserSearch(this.value)" value="${adminUserSearch}" class="w-full pl-11 pr-4 py-2.5 bg-slate-50 border border-slate-200 text-slate-800 rounded-xl placeholder-slate-400 outline-none transition-all shadow-inner text-sm" placeholder="Search accounts or phone number...">
             <div class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"><i data-lucide="search" class="w-4 h-4"></i></div>
           </div>
-          <button onclick="showAddUserModal()" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl transition shadow">+ เพิ่มผู้ใช้งานใหม่</button>
+          <button onclick="showAddUserModal()" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl transition shadow">+ Add New User</button>
         </div>
         
         <div class="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
           <table class="w-full text-left border-collapse text-sm">
             <thead>
               <tr class="bg-slate-50 border-b border-slate-200 text-slate-600 font-bold text-xs uppercase">
-                <th class="p-4">ผู้ใช้งาน</th>
-                <th class="p-4">เบอร์โทรศัพท์</th>
-                <th class="p-4">ระดับสิทธิ์ (Level)</th>
-                <th class="p-4">ทำรายการลำดับชิ้นที่</th>
-                <th class="p-4">เครดิต</th>
-                <th class="p-4 text-center">จัดการ</th>
+                <th class="p-4">User</th>
+                <th class="p-4">Phone Number</th>
+                <th class="p-4">User Level</th>
+                <th class="p-4">Current Order Index</th>
+                <th class="p-4">Credit</th>
+                <th class="p-4 text-center">Manage</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-slate-100 text-slate-600">
               ${getUsers().filter(u => {
-                const un = getField(u, 'username', 'ชื่อผู้ใช้') || '';
+                const un = u.username || '';
                 return un.toLowerCase().includes(adminUserSearch.toLowerCase()) || u.phone.includes(adminUserSearch);
               }).map(u => {
-                const level = getField(u, 'userLevel', 'ระดับผู้ใช้') || '1';
-                const runIndex = getField(u, 'runIndex', 'จำนวนงาน') || 0;
-                const credit = getField(u, 'credit', 'เครดิต') || 0;
-                const username = getField(u, 'username', 'ชื่อผู้ใช้') || 'ผู้ใช้';
+                const level = u.userLevel || '1';
+                const runIndex = u.runIndex || 0;
+                const credit = u.credit || 0;
+                const username = u.username || 'User';
                 
                 let levelText = 'VIP ' + level; 
-                if(level === 'fixturn') levelText = 'ซ่อมเทิร์น'; 
-                if(level === 'allowwd') levelText = 'ปล่อยถอน';
+                if(level === 'fixturn') levelText = 'Turnover Repair'; 
+                if(level === 'allowwd') levelText = 'Unblocked';
                 
                 return `
                 <tr class="hover:bg-slate-50/50 transition">
@@ -646,7 +608,7 @@
                   <td class="p-4 font-black text-emerald-600">฿${credit.toLocaleString()}</td>
                   <td class="p-4 text-center">
                     <button onclick="editAdminUser('${u.__backendId}')" class="px-3.5 py-1.5 bg-blue-50 hover:bg-blue-600 border border-blue-200 text-blue-700 hover:text-white rounded-lg text-xs font-bold transition flex items-center gap-1.5 mx-auto">
-                      <i data-lucide="sliders" class="w-3.5 h-3.5"></i> จัดการข้อมูล
+                      <i data-lucide="sliders" class="w-3.5 h-3.5"></i> Manage Account
                     </button>
                   </td>
                 </tr>`
@@ -659,25 +621,25 @@
 
     function showAddUserModal() {
       showModal(`
-        <h3 class="font-bold text-base mb-4 text-slate-800 flex items-center gap-1.5 border-b border-slate-100 pb-2"><i data-lucide="user-plus" class="text-blue-600"></i> เพิ่มผู้ใช้งานรายใหม่</h3>
+        <h3 class="font-bold text-base mb-4 text-slate-800 flex items-center gap-1.5 border-b border-slate-100 pb-2"><i data-lucide="user-plus" class="text-blue-600"></i> Add New User</h3>
         <div class="space-y-4 text-left text-slate-600">
           <div>
-            <label class="text-xs text-slate-400 font-bold block mb-1">เบอร์โทรศัพท์ (ใช้เข้าระบบ)</label>
-            <input id="an-phone" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm" placeholder="เช่น 0812345678">
+            <label class="text-xs text-slate-400 font-bold block mb-1">Phone Number (Login username)</label>
+            <input id="an-phone" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm" placeholder="e.g. 0812345678">
           </div>
           <div>
-            <label class="text-xs text-slate-400 font-bold block mb-1">ชื่อจริง / ชื่อผู้ใช้</label>
-            <input id="an-username" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm" placeholder="เช่น สุชาติ มั่งคั่ง">
+            <label class="text-xs text-slate-400 font-bold block mb-1">Display Name</label>
+            <input id="an-username" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm" placeholder="e.g. John Doe">
           </div>
           <div>
-            <label class="text-xs text-slate-400 font-bold block mb-1">ตั้งรหัสผ่านสำหรับลงชื่อเข้าใช้</label>
+            <label class="text-xs text-slate-400 font-bold block mb-1">Login Password</label>
             <input id="an-pass" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm" value="123456">
           </div>
           <div>
-            <label class="text-xs text-slate-400 font-bold block mb-1">ตั้งรหัส PIN ถอนเงิน (6 หลัก)</label>
+            <label class="text-xs text-slate-400 font-bold block mb-1">Security PIN (6 Digits)</label>
             <input id="an-pin" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-center font-mono" value="102552">
           </div>
-          <button onclick="doCreateUser()" class="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl transition text-sm">ยืนยันบันทึกผู้ใช้ใหม่</button>
+          <button onclick="doCreateUser()" class="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl transition text-sm">Save User Profile</button>
         </div>
       `);
     }
@@ -688,7 +650,7 @@
       const pw = $('an-pass').value.trim();
       const pin = $('an-pin').value.trim();
 
-      if (!ph || !un || !pw || !pin) return showToast('ข้อมูลไม่ครบถ้วน', 'error');
+      if (!ph || !un || !pw || !pin) return showToast('Please fill in all fields', 'error');
 
       try {
         await windowDataSdk.create({
@@ -708,24 +670,24 @@
           creditScore: 100,
           createdAt: new Date().toISOString()
         });
-        showToast('เพิ่มผู้ใช้งานสำเร็จ');
+        showToast('User created successfully');
         closeModal();
         renderAdminTab();
       } catch (err) {
-        showToast('ไม่สามารถสร้างยูสเซอร์ได้', 'error');
+        showToast('Error creating user profile', 'error');
       }
     }
 
     function editAdminUser(bid) {
       const u = adminUsersData.find(d => d.__backendId === bid); 
-      const level = getField(u, 'userLevel', 'ระดับผู้ใช้') || '1';
-      const credit = getField(u, 'credit', 'เครดิต') || 0;
-      const creditScore = getField(u, 'creditScore', 'คะแนนเครดิต') || 100;
-      const username = getField(u, 'username', 'ชื่อผู้ใช้') || 'ผู้ใช้';
-      const password = getField(u, 'password', 'รหัสผ่าน') || '';
-      const withdrawPassword = getField(u, 'withdrawPassword', 'รหัสถอนเงิน') || '';
-      const firstName = getField(u, 'firstName', 'ชื่อจริง') || '';
-      const lastName = getField(u, 'lastName', 'นามสกุล') || '';
+      const level = u.userLevel || '1';
+      const credit = u.credit || 0;
+      const creditScore = u.creditScore || 100;
+      const username = u.username || 'User';
+      const password = u.password || '';
+      const withdrawPassword = u.withdrawPassword || '';
+      const firstName = u.firstName || '';
+      const lastName = u.lastName || '';
 
       showModal(`
         <div class="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
@@ -733,30 +695,30 @@
             <span class="text-2xl">👤</span>
             <div>
               <h3 class="font-black text-sm text-slate-800">${username}</h3>
-              <p class="text-[10px] text-slate-400">บัญชีลูกค้า: ${u.phone}</p>
+              <p class="text-[10px] text-slate-400">Account: ${u.phone}</p>
             </div>
           </div>
           <div class="flex gap-1.5">
-            <button onclick="promptUserBalanceUpdate('${bid}', 'deposit')" class="px-2.5 py-1 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded text-xs font-bold hover:bg-emerald-100 transition">+ ฝากเครดิต</button>
-            <button onclick="promptUserBalanceUpdate('${bid}', 'withdraw')" class="px-2.5 py-1 bg-rose-50 text-rose-700 border border-rose-200 rounded text-xs font-bold hover:bg-rose-100 transition">- ตัดเครดิต</button>
+            <button onclick="promptUserBalanceUpdate('${bid}', 'deposit')" class="px-2.5 py-1 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded text-xs font-bold hover:bg-emerald-100 transition">+ Add Credit</button>
+            <button onclick="promptUserBalanceUpdate('${bid}', 'withdraw')" class="px-2.5 py-1 bg-rose-50 text-rose-700 border border-rose-200 rounded text-xs font-bold hover:bg-rose-100 transition">- Deduct Credit</button>
           </div>
         </div>
 
         <div class="space-y-4 max-h-[65vh] overflow-y-auto pr-1 scrollbar-none text-left">
           <div class="grid grid-cols-2 gap-2">
             <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-200">
-              <span class="text-[9px] text-slate-400 font-bold uppercase">เครดิตปัจจุบัน</span>
+              <span class="text-[9px] text-slate-400 font-bold uppercase">Current Credit</span>
               <p class="text-sm font-black text-blue-700">฿${credit.toLocaleString()}</p>
             </div>
             <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-200">
-              <span class="text-[9px] text-slate-400 font-bold uppercase">คะแนนเครดิต</span>
+              <span class="text-[9px] text-slate-400 font-bold uppercase">Credit Score</span>
               <input id="eu-score" type="number" class="w-full bg-transparent border-none text-sm font-bold text-slate-700 outline-none mt-0.5 p-0" value="${creditScore}">
             </div>
           </div>
 
           <div class="space-y-3">
             <div>
-              <span class="text-xs text-slate-500 font-bold">ระดับผู้ใช้ (VIP Level)</span>
+              <span class="text-xs text-slate-500 font-bold">User VIP Level</span>
               <select id="eu-level" class="w-full mt-1 px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-700">
                 <option value="1" ${level=='1'?'selected':''}>VIP 1</option>
                 <option value="2" ${level=='2'?'selected':''}>VIP 2</option>
@@ -764,49 +726,49 @@
                 <option value="4" ${level=='4'?'selected':''}>VIP 4</option>
                 <option value="5" ${level=='5'?'selected':''}>VIP 5</option>
                 <option value="6" ${level=='6'?'selected':''}>VIP 6</option>
-                <option value="fixturn" ${level=='fixturn'?'selected':''}>ซ่อมเทิร์น</option>
-                <option value="allowwd" ${level=='allowwd'?'selected':''}>ปล่อยถอน</option>
+                <option value="fixturn" ${level=='fixturn'?'selected':''}>Turnover Repair</option>
+                <option value="allowwd" ${level=='allowwd'?'selected':''}>Unblocked</option>
               </select>
             </div>
 
             <div class="grid grid-cols-2 gap-2">
               <div>
-                <span class="text-xs text-slate-500 font-bold">ชื่อจริง</span>
+                <span class="text-xs text-slate-500 font-bold">First Name</span>
                 <input id="eu-fname" class="w-full mt-1 px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700" value="${firstName}">
               </div>
               <div>
-                <span class="text-xs text-slate-500 font-bold">นามสกุล</span>
+                <span class="text-xs text-slate-500 font-bold">Last Name</span>
                 <input id="eu-lname" class="w-full mt-1 px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700" value="${lastName}">
               </div>
             </div>
 
             <div>
-              <span class="text-xs text-slate-500 font-bold">เบอร์โทรศัพท์</span>
+              <span class="text-xs text-slate-500 font-bold">Phone Number</span>
               <input id="eu-phone" class="w-full mt-1 px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700" value="${u.phone || ''}">
             </div>
 
             <div class="grid grid-cols-2 gap-2">
               <div>
-                <span class="text-xs text-slate-500 font-bold">รหัสผ่านสำหรับเข้าสู่ระบบ</span>
+                <span class="text-xs text-slate-500 font-bold">Login Password</span>
                 <input id="eu-pass" type="text" class="w-full mt-1 px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-700" value="${password}">
               </div>
               <div>
-                <span class="text-xs text-slate-500 font-bold">รหัสธุรกรรม (PIN ถอนเงิน)</span>
+                <span class="text-xs text-slate-500 font-bold">Withdraw PIN</span>
                 <input id="eu-pin" type="text" class="w-full mt-1 px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 text-center font-mono" value="${withdrawPassword}">
               </div>
             </div>
 
             <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 space-y-1">
-              <span class="text-[9px] text-slate-400 block uppercase font-bold">รายละเอียดข้อมูลการโอน</span>
-              <p class="text-xs text-slate-700">ธนาคาร: <span class="font-bold">${u.bankName || 'ยังไม่มีข้อมูล'}</span></p>
-              <p class="text-xs text-slate-700">เลขบัญชี: <span class="font-bold font-mono">${u.bankNumber || '-'}</span></p>
+              <span class="text-[9px] text-slate-400 block uppercase font-bold">User Bank Account</span>
+              <p class="text-xs text-slate-700">Bank: <span class="font-bold">${u.bankName || 'Not configured'}</span></p>
+              <p class="text-xs text-slate-700">Account No: <span class="font-bold font-mono">${u.bankNumber || '-'}</span></p>
             </div>
           </div>
 
           <div class="flex gap-2 pt-3 border-t border-slate-100">
-            <button onclick="closeModal()" class="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl text-xs font-bold transition">ยกเลิก</button>
-            <button onclick="saveAdminUser('${bid}')" class="flex-1 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition shadow">บันทึกข้อมูล</button>
-            <button onclick="deleteAdminUser('${bid}')" class="p-2.5 bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 rounded-xl transition" title="ลบผู้ใช้ถาวร"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+            <button onclick="closeModal()" class="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl text-xs font-bold transition">Cancel</button>
+            <button onclick="saveAdminUser('${bid}')" class="flex-1 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition shadow">Save Account</button>
+            <button onclick="deleteAdminUser('${bid}')" class="p-2.5 bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 rounded-xl transition" title="Delete User Permanently"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
           </div>
         </div>
       `);
@@ -814,10 +776,10 @@
     }
 
     function promptUserBalanceUpdate(bid, type) {
-      const label = type === 'deposit' ? 'เติมเงินเพิ่มเครดิต' : 'ถอนหักเงินเครดิต';
-      const amtStr = prompt(`ระบุจำนวนเงินที่ต้องการ ${label}:`);
+      const label = type === 'deposit' ? 'deposit' : 'withdraw';
+      const amtStr = prompt(`Specify the amount to ${label}:`);
       const amount = parseFloat(amtStr);
-      if (isNaN(amount) || amount <= 0) return alert('จำนวนเงินไม่ถูกต้อง');
+      if (isNaN(amount) || amount <= 0) return alert('Invalid amount specified');
       
       const multiplier = type === 'deposit' ? 1 : -1;
       adjustUserBalanceDirectly(bid, amount * multiplier);
@@ -825,24 +787,17 @@
 
     async function adjustUserBalanceDirectly(bid, adjustAmount) {
       const u = adminUsersData.find(d => d.__backendId === bid);
-      
       let userDocRef = doc(db, "users", u.id);
-      let userSnap = await getDocs(query(collection(db, "users"), where("id", "==", u.id)));
-      if (userSnap.empty) {
-        userDocRef = doc(db, "ผู้ใช้", u.id);
-      }
-
       let wdCol = collection(db, "withdrawals");
       try {
         await runTransaction(db, async (transaction) => {
           const snap = await transaction.get(userDocRef);
           if (!snap.exists()) return;
-          const currentCredit = getField(snap.data(), 'credit', 'เครดิต') || 0;
+          const currentCredit = snap.data().credit || 0;
 
-          const updatePayload = {};
-          const nextCreditVal = Math.max(0, currentCredit + adjustAmount);
-          if (snap.data().credit !== undefined) updatePayload.credit = nextCreditVal;
-          if (snap.data().เครดิต !== undefined) updatePayload.เครดิต = nextCreditVal;
+          const updatePayload = {
+            credit: Math.max(0, currentCredit + adjustAmount)
+          };
 
           transaction.update(userDocRef, updatePayload);
 
@@ -851,34 +806,26 @@
             type: 'withdrawal',
             id: newWdRef.id,
             userId: u.id,
-            username: getField(snap.data(), 'username', 'ชื่อผู้ใช้') || 'ผู้ใช้',
+            username: snap.data().username || 'User',
             amount: Math.abs(adjustAmount),
             status: adjustAmount > 0 ? 'deposit' : 'rejected',
             createdAt: new Date().toISOString()
           });
         });
-        showToast('ปรับปรุงยอดเครดิตสำเร็จ');
+        showToast('Credit adjusted successfully');
         closeModal();
         renderAdminTab();
       } catch (err) {
-        showToast('การปรับยอดเงินล้มเหลว', 'error');
+        showToast('Failed to adjust user balance', 'error');
       }
     }
 
     async function saveAdminUser(bid) {
       const u = adminUsersData.find(d => d.__backendId === bid);
-      
       let userDocRef = doc(db, "users", u.id);
-      let userSnap = await getDocs(query(collection(db, "users"), where("id", "==", u.id)));
-      if (userSnap.empty) {
-        userDocRef = doc(db, "ผู้ใช้", u.id);
-      }
 
       try {
         await runTransaction(db, async (transaction) => {
-          const snap = await transaction.get(userDocRef);
-          const userData = snap.data();
-
           const updatePayload = {
             firstName: $('eu-fname').value.trim(),
             lastName: $('eu-lname').value.trim(),
@@ -888,32 +835,26 @@
             userLevel: $('eu-level').value,
             creditScore: parseInt($('eu-score').value) || 100
           };
-
-          if (userData.รหัสผ่าน !== undefined) updatePayload.รหัสผ่าน = $('eu-pass').value.trim();
-          if (userData.ระดับผู้ใช้ !== undefined) updatePayload.ระดับผู้ใช้ = $('eu-level').value;
-          if (userData.คะแนนเครดิต !== undefined) updatePayload.คะแนนเครดิต = parseInt($('eu-score').value) || 100;
-
           transaction.update(userDocRef, updatePayload);
         });
-        showToast('อัปเดตข้อมูลผู้ใช้เรียบร้อย');
+        showToast('Account configuration updated');
         closeModal();
         renderAdminTab();
       } catch (err) {
-        showToast('เกิดข้อผิดพลาดในการเซฟ', 'error');
+        showToast('Failed to save account database', 'error');
       }
     }
 
     async function deleteAdminUser(bid) { 
       const u = adminUsersData.find(d => d.__backendId === bid); if(!u) return;
-      if(confirm('🚨 ยืนยันการลบลูกค้ารายนี้พร้อมล้างข้อมูลทั้งหมดจาก Firebase หรือไม่?')) { 
+      if(confirm('🚨 Are you sure you want to delete this user profile? All transactions and login permissions will be wiped permanently.')) { 
         try {
           await deleteDoc(doc(db, "users", bid));
-          await deleteDoc(doc(db, "ผู้ใช้", bid));
           closeModal(); 
-          showToast('ลบสมาชิกเรียบร้อยแล้ว');
+          showToast('User profile purged successfully');
           renderAdminTab();
         } catch (e) {
-          showToast('ไม่สามารถลบสมาชิกได้: ' + e.message, 'error');
+          showToast('Failed to purge user: ' + e.message, 'error');
         }
       } 
     }
@@ -927,15 +868,15 @@
       
       c.innerHTML = `
         <div class="bg-white border border-slate-200 rounded-2xl p-5 mb-5 shadow-sm flex justify-between items-center gap-4 flex-wrap">
-          <p class="text-sm font-bold text-slate-800 uppercase">จัดการสินค้าในกลุ่ม VIP: ${adminProductTab}</p>
-          <button onclick="showAddProduct()" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl transition shadow">+ เพิ่มสินค้าใหม่</button>
+          <p class="text-sm font-bold text-slate-800 uppercase">Product inventory Tier VIP: ${adminProductTab}</p>
+          <button onclick="showAddProduct()" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl transition shadow">+ Add Product</button>
         </div>
         <div class="space-y-3 pt-2">
-          ${products.length === 0 ? '<p class="text-slate-400 text-center py-8 text-xs font-semibold">ไม่มีข้อมูลรายการสินค้าในหมวดนี้</p>' : products.map(p => `
+          ${products.length === 0 ? '<p class="text-slate-400 text-center py-8 text-xs font-semibold">No products registered in this tier</p>' : products.map(p => `
             <div class="bg-white p-4 rounded-xl border border-slate-200 flex items-center justify-between shadow-sm">
               <div class="flex-1 min-w-0 pr-3 text-left">
-                <p class="font-bold text-slate-800 text-sm">ลำดับคิว ${p.productOrder||1}: ${p.productName}</p>
-                <p class="text-xs text-slate-500 mt-1 font-semibold">ราคาทุน: ฿${p.productPrice} | ค่าคอมมิชชัน: <span class="text-emerald-600">฿${p.commission}</span></p>
+                <p class="font-bold text-slate-800 text-sm">Sequence ${p.productOrder||1}: ${p.productName}</p>
+                <p class="text-xs text-slate-500 mt-1 font-semibold">Cost Price: ฿${p.productPrice} | Commission: <span class="text-emerald-600">฿${p.commission}</span></p>
               </div>
               <button onclick="editAdminProduct('${p.__backendId}')" class="p-2.5 bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white border border-blue-100 rounded-xl transition"><i data-lucide="edit" class="w-4 h-4"></i></button>
             </div>`).join('')}
@@ -945,31 +886,31 @@
 
     function showAddProduct() { 
       showModal(`
-        <h3 class="font-bold text-base mb-4 text-slate-800 border-b border-slate-100 pb-2">เพิ่มสินค้าเข้าระบบ (VIP ${adminProductTab})</h3>
+        <h3 class="font-bold text-base mb-4 text-slate-800 border-b border-slate-100 pb-2">Add New Product (VIP ${adminProductTab})</h3>
         <div class="space-y-3.5 text-left text-slate-600">
           <div>
-            <label class="text-xs text-slate-400 font-bold block mb-1">ลำดับการกดรัน (ลำดับคิวออเดอร์)</label>
-            <input id="ap-order" type="number" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm" placeholder="เช่น 1, 2, 3">
+            <label class="text-xs text-slate-400 font-bold block mb-1">Matching Sequence Order (Queue Index)</label>
+            <input id="ap-order" type="number" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm" placeholder="e.g. 1, 2, 3">
           </div>
           <div>
-            <label class="text-xs text-slate-400 font-bold block mb-1">ชื่อออเดอร์สินค้า</label>
-            <input id="ap-name" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm" placeholder="เช่น กระเป๋าเป้สะพายหลัง">
+            <label class="text-xs text-slate-400 font-bold block mb-1">Product Title</label>
+            <input id="ap-name" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm" placeholder="Product name">
           </div>
           <div class="grid grid-cols-2 gap-2">
             <div>
-              <label class="text-xs text-slate-400 font-bold block mb-1">ราคาสินค้าทุน (บาท)</label>
-              <input id="ap-price" type="number" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm" placeholder="ราคาทุน">
+              <label class="text-xs text-slate-400 font-bold block mb-1">Cost Price (฿)</label>
+              <input id="ap-price" type="number" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm" placeholder="Cost">
             </div>
             <div>
-              <label class="text-xs text-slate-400 font-bold block mb-1">ค่าคอมมิชชัน (บาท)</label>
-              <input id="ap-comm" type="number" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm" placeholder="กำไรคอมมิชชัน">
+              <label class="text-xs text-slate-400 font-bold block mb-1">Commission Profit (฿)</label>
+              <input id="ap-comm" type="number" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm" placeholder="Profit">
             </div>
           </div>
           <div>
-            <label class="text-xs text-slate-400 font-bold block mb-1">URL ลิงก์รูปภาพสินค้า</label>
-            <input id="ap-img" type="text" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm" placeholder="วางลิงก์รูปภาพ">
+            <label class="text-xs text-slate-400 font-bold block mb-1">Image URL Path</label>
+            <input id="ap-img" type="text" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm" placeholder="Image web url">
           </div>
-          <button onclick="doAddProduct()" class="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm rounded-xl transition mt-2">ยืนยันการบันทึก</button>
+          <button onclick="doAddProduct()" class="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm rounded-xl transition mt-2">Save Product Settings</button>
         </div>
       `); 
     }
@@ -986,17 +927,17 @@
           vipLevel: adminProductTab, 
           productImage:$('ap-img').value.trim() 
         }); 
-        showToast('เพิ่มสินค้าเข้าระบบสำเร็จ');
+        showToast('Product registered successfully');
         closeModal(); 
         renderAdminTab(); 
       } catch (err) {
-        showToast('เกิดข้อผิดพลาด: ' + err.message, 'error');
+        showToast('Error registering database: ' + err.message, 'error');
       }
     }
     
-    function editAdminProduct(bid) { const p = publicData.products.find(d => d.__backendId === bid); showModal(`<h3 class="font-bold text-base mb-4 text-slate-800 border-b border-slate-100 pb-2">แก้ไขรายละเอียดสินค้า</h3><div class="space-y-3.5 text-left text-slate-600"><div><label class="text-xs text-slate-400 font-bold">ลำดับคิวการรัน</label><input id="ep-order" type="number" class="w-full mt-1 px-4 py-2.5 bg-slate-50 border border-slate-200 text-slate-700 rounded-xl text-sm" value="${p.productOrder||1}"></div><div><label class="text-xs text-slate-400 font-bold">ชื่อสินค้า</label><input id="ep-name" class="w-full mt-1 px-4 py-2.5 bg-slate-50 border border-slate-200 text-slate-700 rounded-xl text-sm" value="${p.productName}"></div><div class="grid grid-cols-2 gap-2"><div><label class="text-xs text-slate-400 font-bold">ราคาสินค้าทุน</label><input id="ep-price" type="number" class="w-full mt-1 px-4 py-2.5 bg-slate-50 border border-slate-200 text-slate-700 rounded-xl text-sm" value="${p.productPrice}"></div><div><label class="text-xs text-slate-400 font-bold">คอมมิชชันได้รับ</label><input id="ep-comm" type="number" class="w-full mt-1 px-4 py-2.5 bg-slate-50 border border-slate-200 text-slate-700 rounded-xl text-sm" value="${p.commission}"></div></div><div><label class="text-xs text-slate-400 font-bold">ลิงก์ URL รูปภาพ</label><input id="ep-img" type="text" class="w-full mt-1 px-4 py-2.5 bg-slate-50 border border-slate-200 text-slate-700 rounded-xl text-sm" value="${p.productImage||''}"></div><div class="flex gap-2 pt-2"><button onclick="doEditProduct('${bid}')" class="flex-1 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl text-xs transition">บันทึกข้อมูลแก้ไข</button><button onclick="deleteProduct('${bid}')" class="px-4 bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 rounded-xl transition"><i data-lucide="trash-2"></i></button></div></div>`); }
+    function editAdminProduct(bid) { const p = publicData.products.find(d => d.__backendId === bid); showModal(`<h3 class="font-bold text-base mb-4 text-slate-800 border-b border-slate-100 pb-2">Modify Product Details</h3><div class="space-y-3.5 text-left text-slate-600"><div><label class="text-xs text-slate-400 font-bold">Sequence Order Index</label><input id="ep-order" type="number" class="w-full mt-1 px-4 py-2.5 bg-slate-50 border border-slate-200 text-slate-700 rounded-xl text-sm" value="${p.productOrder||1}"></div><div><label class="text-xs text-slate-400 font-bold">Product Title</label><input id="ep-name" class="w-full mt-1 px-4 py-2.5 bg-slate-50 border border-slate-200 text-slate-700 rounded-xl text-sm" value="${p.productName}"></div><div class="grid grid-cols-2 gap-2"><div><label class="text-xs text-slate-400 font-bold">Cost Price</label><input id="ep-price" type="number" class="w-full mt-1 px-4 py-2.5 bg-slate-50 border border-slate-200 text-slate-700 rounded-xl text-sm" value="${p.productPrice}"></div><div><label class="text-xs text-slate-400 font-bold">Commission Profit</label><input id="ep-comm" type="number" class="w-full mt-1 px-4 py-2.5 bg-slate-50 border border-slate-200 text-slate-700 rounded-xl text-sm" value="${p.commission}"></div></div><div><label class="text-xs text-slate-400 font-bold">Image URL Path</label><input id="ep-img" type="text" class="w-full mt-1 px-4 py-2.5 bg-slate-50 border border-slate-200 text-slate-700 rounded-xl text-sm" value="${p.productImage||''}"></div><div class="flex gap-2 pt-2"><button onclick="doEditProduct('${bid}')" class="flex-1 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl text-xs transition">Update Configuration</button><button onclick="deleteProduct('${bid}')" class="px-4 bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 rounded-xl transition"><i data-lucide="trash-2"></i></button></div></div>`); }
     async function doEditProduct(bid) { const p = publicData.products.find(d => d.__backendId === bid); await windowDataSdk.update({...p, productName:$('ep-name').value, productPrice:parseFloat($('ep-price').value)||0, productOrder:parseInt($('ep-order').value)||1, commission:parseFloat($('ep-comm').value)||0, productImage:$('ep-img').value.trim() }); closeModal(); renderAdminTab(); }
-    async function deleteProduct(bid) { if(confirm('ต้องการลบสินค้านี้ใช่หรือไม่?')) { await windowDataSdk.delete(publicData.products.find(d => d.__backendId === bid)); closeModal(); renderAdminTab(); } }
+    async function deleteProduct(bid) { if(confirm('Are you sure you want to delete this product?')) { await windowDataSdk.delete(publicData.products.find(d => d.__backendId === bid)); closeModal(); renderAdminTab(); } }
 
     // ==========================================
     // TABS: 3. SPECIAL ASSIGNMENTS
@@ -1009,29 +950,29 @@
       const paginated = assignments.slice((adminSpecialPage - 1) * ITEMS_PER_PAGE, adminSpecialPage * ITEMS_PER_PAGE);
       c.innerHTML = `
         <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm mb-6 text-left">
-          <h3 class="font-bold text-sm mb-3 text-blue-600 flex items-center gap-2 border-b border-slate-100 pb-2"><i data-lucide="star" class="w-4 h-4"></i> คลังเทมเพลตสำหรับสุ่มสินค้าพิเศษ</h3>
-          <button onclick="showCreateSpecialTemplate()" class="w-full py-2.5 bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 rounded-xl text-xs font-bold transition mb-4">+ สร้างแบบออเดอร์พิเศษใหม่</button>
+          <h3 class="font-bold text-sm mb-3 text-blue-600 flex items-center gap-2 border-b border-slate-100 pb-2"><i data-lucide="star" class="w-4 h-4"></i> Random Special Order Templates</h3>
+          <button onclick="showCreateSpecialTemplate()" class="w-full py-2.5 bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 rounded-xl text-xs font-bold transition mb-4">+ Add Special Template</button>
           <div class="flex overflow-x-auto gap-3 pb-2 scrollbar-none">
             ${templates.map(t => `
               <div class="w-44 flex-shrink-0 bg-slate-50 border border-slate-200 rounded-xl p-3.5 relative shadow-inner">
                 <button onclick="deleteSpecialTemplate('${t.__backendId}')" class="absolute top-2 right-2 p-1 bg-rose-50 text-rose-600 rounded-lg hover:bg-rose-500 hover:text-white transition"><i data-lucide="x" class="w-3 h-3"></i></button>
                 <p class="text-xs text-slate-800 font-bold truncate mb-3 pr-6">${t.productName}</p>
-                <button onclick="assignSpecialOrder('${t.__backendId}')" class="w-full py-1.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-lg transition">ล็อคให้ลูกค้า</button>
+                <button onclick="assignSpecialOrder('${t.__backendId}')" class="w-full py-1.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-lg transition">Lock for User</button>
               </div>`).join('')}
           </div>
         </div>
-        <h3 class="font-bold text-sm mb-3 text-slate-800 flex items-center gap-1.5 text-left"><i data-lucide="list-ordered" class="w-4 h-4 text-blue-600"></i> รายการสินค้าพิเศษที่ล็อคไว้ให้ลูกค้า</h3>
+        <h3 class="font-bold text-sm mb-3 text-slate-800 flex items-center gap-1.5 text-left"><i data-lucide="list-ordered" class="w-4 h-4 text-blue-600"></i> Active Locked Special Orders</h3>
         <div class="space-y-3">
           ${paginated.map(s => { 
             const u = adminUsersData.find(user => user.id === s.targetUser); 
-            const username = getField(u, 'username', 'ชื่อผู้ใช้') || 'ไม่ระบุตัวตน';
+            const username = u ? u.username : 'Unknown User';
             return `
             <div class="bg-white p-4 rounded-xl border border-blue-200 flex items-center justify-between shadow-sm">
               <div class="flex-1 min-w-0 pr-3 text-left">
-                <p class="font-black text-blue-700 text-xs uppercase tracking-wide">สุ่มเจอที่คิวชิ้นลำดับที่: ${s.targetIndex}</p>
+                <p class="font-black text-blue-700 text-xs uppercase tracking-wide">Triggers on matching sequence: ${s.targetIndex}</p>
                 <p class="font-bold text-slate-800 text-sm truncate mt-1">${s.productName}</p>
-                <p class="text-xs text-slate-500 mt-1">ราคาทุนสินค้า: <span class="text-slate-800 font-semibold">฿${(s.productPrice||0).toLocaleString()}</span> | คอมมิชชัน: <span class="text-emerald-600 font-semibold">฿${(s.commission||0).toLocaleString()}</span></p>
-                <p class="text-xs text-slate-500 mt-0.5">ผู้ใช้ที่ถูกล็อค: <span class="text-slate-800 font-semibold">${username}</span></p>
+                <p class="text-xs text-slate-500 mt-1">Cost Price: <span class="text-slate-800 font-semibold">฿${(s.productPrice||0).toLocaleString()}</span> | Commission: <span class="text-emerald-600 font-semibold">฿${(s.commission||0).toLocaleString()}</span></p>
+                <p class="text-xs text-slate-500 mt-0.5">Target Client: <span class="text-slate-800 font-semibold">${username}</span></p>
               </div>
               <div class="flex gap-1.5">
                 <button onclick="editAssignedSpecial('${s.__backendId}')" class="p-2 bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white rounded-xl transition"><i data-lucide="edit" class="w-4 h-4"></i></button>
@@ -1044,7 +985,7 @@
       lucide.createIcons();
     }
 
-    function showCreateSpecialTemplate() { showModal(`<h3 class="font-bold text-base mb-4 text-slate-800 border-b border-slate-100 pb-2">สร้างเทมเพลตสินค้าพิเศษ</h3><div class="space-y-3.5 text-left text-slate-600"><div><label class="text-xs text-slate-400 font-bold">ชื่อสินค้า</label><input id="st-n" class="w-full mt-1 px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm" placeholder="ระบุชื่อสินค้าสินค้าพิเศษ"></div><div class="grid grid-cols-2 gap-2"><div><label class="text-xs text-slate-400 font-bold">ราคาทุน</label><input id="st-p" type="number" class="w-full mt-1 px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm" placeholder="ราคาต้นทุน"></div><div><label class="text-xs text-slate-400 font-bold">คอมมิชชัน</label><input id="st-c" type="number" class="w-full mt-1 px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm" placeholder="ค่าคอมมิชชัน"></div></div><div><label class="text-xs text-slate-400 font-bold">URL รูปภาพสินค้า</label><input id="st-i" type="text" class="w-full mt-1 px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm" placeholder="ลิงก์เชื่อมต่อภาพสินค้า"></div><button onclick="doCreateST()" class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold transition flex-shrink-0 text-sm">สร้างบันทึกออเดอร์พิเศษ</button></div>`); }
+    function showCreateSpecialTemplate() { showModal(`<h3 class="font-bold text-base mb-4 text-slate-800 border-b border-slate-100 pb-2">Add Special Order Template</h3><div class="space-y-3.5 text-left text-slate-600"><div><label class="text-xs text-slate-400 font-bold">Product Title</label><input id="st-n" class="w-full mt-1 px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm" placeholder="Special product name"></div><div class="grid grid-cols-2 gap-2"><div><label class="text-xs text-slate-400 font-bold">Cost Price</label><input id="st-p" type="number" class="w-full mt-1 px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm" placeholder="Price"></div><div><label class="text-xs text-slate-400 font-bold">Commission</label><input id="st-c" type="number" class="w-full mt-1 px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm" placeholder="Commission amount"></div></div><div><label class="text-xs text-slate-400 font-bold">Image URL Path</label><input id="st-i" type="text" class="w-full mt-1 px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm" placeholder="Image web link"></div><button onclick="doCreateST()" class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold transition flex-shrink-0 text-sm">Save Template Configuration</button></div>`); }
     
     async function doCreateST() { 
       try {
@@ -1056,53 +997,53 @@
           commission:parseFloat($('st-c').value)||0, 
           productImage:$('st-i').value.trim() 
         }); 
-        showToast('สร้างเทมเพลตสินค้าพิเศษสำเร็จ');
+        showToast('Special template saved successfully');
         closeModal(); 
         renderAdminTab(); 
       } catch (err) {
-        showToast('เกิดข้อผิดพลาด: ' + err.message, 'error');
+        showToast('Failed to save config: ' + err.message, 'error');
       }
     }
     
-    async function deleteSpecialTemplate(bid) { if(confirm('ยืนยันลบเทมเพลตนี้หรือไม่?')) { await windowDataSdk.delete(adminSpecialTemplatesData.find(d => d.__backendId === bid)); renderAdminTab(); } }
+    async function deleteSpecialTemplate(bid) { if(confirm('Are you sure you want to delete this template?')) { await windowDataSdk.delete(adminSpecialTemplatesData.find(d => d.__backendId === bid)); renderAdminTab(); } }
 
     function assignSpecialOrder(templateBid) {
       const t = adminSpecialTemplatesData.find(d => d.__backendId === templateBid); if(!t) return;
       showModal(`
-        <h3 class="font-bold text-base mb-4 text-blue-600 border-b border-slate-100 pb-2">ล็อคออเดอร์สินค้าพิเศษแบบเจาะจง</h3>
+        <h3 class="font-bold text-base mb-4 text-blue-600 border-b border-slate-100 pb-2">Target Lock Special Order</h3>
         <div class="space-y-3.5 max-h-[75vh] overflow-y-auto px-1 text-left text-slate-600">
           <div>
-            <label class="text-xs text-slate-400 font-bold block mb-1">ชื่อสินค้าออเดอร์พิเศษ</label>
+            <label class="text-xs text-slate-400 font-bold block mb-1">Product Title</label>
             <input id="sa-name" type="text" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold" value="${t.productName}">
           </div>
           <div class="grid grid-cols-2 gap-2">
             <div>
-              <label class="text-xs text-slate-400 font-bold block mb-1">ราคาสินค้าทุน (บาท)</label>
+              <label class="text-xs text-slate-400 font-bold block mb-1">Cost Price (฿)</label>
               <input id="sa-price" type="number" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-mono font-bold" value="${t.productPrice}">
             </div>
             <div>
-              <label class="text-xs text-slate-400 font-bold block mb-1">คอมมิชชันได้รับ (บาท)</label>
+              <label class="text-xs text-slate-400 font-bold block mb-1">Commission Earned (฿)</label>
               <input id="sa-comm" type="number" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-mono font-bold" value="${t.commission}">
             </div>
           </div>
           <div>
-            <label class="text-xs text-slate-400 font-bold block mb-1">🔍 ค้นหาลูกค้ายูสเซอร์</label>
-            <input id="sa-user-search" type="text" oninput="filterAssignUsers(this.value)" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm placeholder-slate-400" placeholder="พิมพ์ชื่อเล่น หรือเบอร์โทรศัพท์...">
+            <label class="text-xs text-slate-400 font-bold block mb-1">🔍 Search Client Account</label>
+            <input id="sa-user-search" type="text" oninput="filterAssignUsers(this.value)" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm placeholder-slate-400" placeholder="Type username or phone number...">
           </div>
           <div>
-            <label class="text-xs text-slate-400 font-bold block mb-1">เลือกผู้ใช้เป้าหมายที่ต้องการส่งออเดอร์ให้</label>
+            <label class="text-xs text-slate-400 font-bold block mb-1">Target Client Account</label>
             <select id="sa-user" class="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-sm font-semibold bg-slate-50 text-slate-700">
               ${adminUsersData.map(u => {
-                const username = getField(u, 'username', 'ชื่อผู้ใช้') || 'ผู้ใช้';
+                const username = u.username || 'User';
                 return `<option value="${u.id}">${username} (${u.phone})</option>`;
               }).join('')}
             </select>
           </div>
           <div>
-            <label class="text-xs text-slate-400 font-bold block mb-1">สุ่มเจอในการกดสุ่มรันลำดับชิ้นที่เท่าไหร่?</label>
-            <input id="sa-idx" type="number" class="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold text-center text-blue-600" placeholder="เช่น 4 (การกดครั้งที่ 4)" value="1">
+            <label class="text-xs text-slate-400 font-bold block mb-1">Triggers exactly on which order matched sequence?</label>
+            <input id="sa-idx" type="number" class="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold text-center text-blue-600" value="1">
           </div>
-          <button onclick="doAssignSWithEdit('${t.productImage||''}')" class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl transition mt-2 text-sm">ยืนยันการตั้งค่าคิวออเดอร์</button>
+          <button onclick="doAssignSWithEdit('${t.productImage||''}')" class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl transition mt-2 text-sm">Deploy Locked Queue</button>
         </div>`);
     }
 
@@ -1111,11 +1052,11 @@
       const q = query.toLowerCase().trim();
       select.innerHTML = adminUsersData
         .filter(u => {
-          const username = getField(u, 'username', 'ชื่อผู้ใช้') || '';
+          const username = u.username || '';
           return username.toLowerCase().includes(q) || u.phone.includes(q);
         })
         .map(u => {
-          const username = getField(u, 'username', 'ชื่อผู้ใช้') || 'ผู้ใช้';
+          const username = u.username || 'User';
           return `<option value="${u.id}">${username} (${u.phone})</option>`;
         })
         .join('');
@@ -1127,8 +1068,8 @@
       const comm = parseFloat($('sa-comm').value) || 0;
       const targetUser = $('sa-user').value;
       const targetIndex = parseInt($('sa-idx').value) || 1;
-      if (!name) return showToast('กรุณากรอกชื่อสินค้า', 'error');
-      if (!targetUser) return showToast('กรุณาเลือกผู้ใช้งาน', 'error');
+      if (!name) return showToast('Product name cannot be empty', 'error');
+      if (!targetUser) return showToast('Please select target user', 'error');
       
       try {
         await windowDataSdk.create({
@@ -1136,51 +1077,51 @@
           productPrice: price, commission: comm, productImage: imgUrl,
           targetUser: targetUser, targetIndex: targetIndex, createdAt: new Date().toISOString()
         });
-        showToast('บันทึกออเดอร์พิเศษเรียบร้อย');
+        showToast('Locked queue assigned successfully');
         closeModal();
         renderAdminTab();
       } catch (err) {
-        showToast('เกิดข้อผิดพลาด: ' + err.message, 'error');
+        showToast('Database write failed: ' + err.message, 'error');
       }
     }
 
     function editAssignedSpecial(bid) {
       const s = adminSpecialAssignData.find(d => d.__backendId === bid); if(!s) return;
       showModal(`
-        <h3 class="font-bold text-base mb-4 text-blue-600 border-b border-slate-100 pb-2">แก้ไขรายละเอียดคิวออเดอร์พิเศษ</h3>
+        <h3 class="font-bold text-base mb-4 text-blue-600 border-b border-slate-100 pb-2">Modify Assigned Special Queue</h3>
         <div class="space-y-3.5 max-h-[75vh] overflow-y-auto px-1 text-left text-slate-600">
           <div>
-            <label class="text-xs text-slate-400 font-bold block mb-1">ชื่อสินค้า</label>
+            <label class="text-xs text-slate-400 font-bold block mb-1">Product Title</label>
             <input id="sa-edit-name" type="text" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold" value="${s.productName}">
           </div>
           <div class="grid grid-cols-2 gap-2">
             <div>
-              <label class="text-xs text-slate-400 font-bold block mb-1">ราคาสินค้าทุน</label>
+              <label class="text-xs text-slate-400 font-bold block mb-1">Cost Price</label>
               <input id="sa-edit-price" type="number" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-mono font-bold" value="${s.productPrice}">
             </div>
             <div>
-              <label class="text-xs text-slate-400 font-bold block mb-1">คอมมิชชันได้รับ</label>
+              <label class="text-xs text-slate-400 font-bold block mb-1">Commission Earned</label>
               <input id="sa-edit-comm" type="number" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-mono font-bold" value="${s.commission}">
             </div>
           </div>
           <div>
-            <label class="text-xs text-slate-400 font-bold block mb-1">🔍 ค้นหาลูกค้ายูสเซอร์</label>
-            <input id="sa-edit-user-search" type="text" oninput="filterEditAssignUsers(this.value)" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm placeholder-slate-400" placeholder="พิมพ์ชื่อเล่น หรือเบอร์โทรศัพท์...">
+            <label class="text-xs text-slate-400 font-bold block mb-1">🔍 Search Client Account</label>
+            <input id="sa-edit-user-search" type="text" oninput="filterEditAssignUsers(this.value)" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm placeholder-slate-400" placeholder="Type username or phone...">
           </div>
           <div>
-            <label class="text-xs text-slate-400 font-bold block mb-1">เลือกผู้ใช้เป้าหมาย</label>
+            <label class="text-xs text-slate-400 font-bold block mb-1">Target Client</label>
             <select id="sa-edit-user" class="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-sm font-semibold text-slate-700 bg-slate-50">
               ${adminUsersData.map(u => {
-                const username = getField(u, 'username', 'ชื่อผู้ใช้') || 'ผู้ใช้';
+                const username = u.username || 'User';
                 return `<option value="${u.id}" ${u.id === s.targetUser ? 'selected' : ''}>${username} (${u.phone})</option>`;
               }).join('')}
             </select>
           </div>
           <div>
-            <label class="text-xs text-slate-400 font-bold block mb-1">สุ่มเจอในการกดสุ่มรันลำดับชิ้นที่เท่าไหร่?</label>
+            <label class="text-xs text-slate-400 font-bold block mb-1">Trigger Match Order Index</label>
             <input id="sa-edit-idx" type="number" class="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold text-center text-blue-600" value="${s.targetIndex}">
           </div>
-          <button onclick="doUpdateAssignedS('${bid}', '${s.productImage||''}')" class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl transition mt-2 text-sm">อัปเดตข้อมูลคิวออเดอร์</button>
+          <button onclick="doUpdateAssignedS('${bid}', '${s.productImage||''}')" class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl transition mt-2 text-sm">Save Configurations</button>
         </div>`);
     }
 
@@ -1189,11 +1130,11 @@
       const q = query.toLowerCase().trim();
       select.innerHTML = adminUsersData
         .filter(u => {
-          const username = getField(u, 'username', 'ชื่อผู้ใช้') || '';
+          const username = u.username || '';
           return username.toLowerCase().includes(q) || u.phone.includes(q);
         })
         .map(u => {
-          const username = getField(u, 'username', 'ชื่อผู้ใช้') || 'ผู้ใช้';
+          const username = u.username || 'User';
           return `<option value="${u.id}">${username} (${u.phone})</option>`;
         })
         .join('');
@@ -1206,8 +1147,8 @@
       const comm = parseFloat($('sa-edit-comm').value) || 0;
       const targetUser = $('sa-edit-user').value;
       const targetIndex = parseInt($('sa-edit-idx').value) || 1;
-      if (!name) return showToast('กรุณากรอกชื่อสินค้า', 'error');
-      if (!targetUser) return showToast('กรุณาเลือกผู้ใช้งาน', 'error');
+      if (!name) return showToast('Product name is required', 'error');
+      if (!targetUser) return showToast('Target user is required', 'error');
       
       await windowDataSdk.update({
         ...s, productName: name, productPrice: price, commission: comm,
@@ -1215,10 +1156,10 @@
       });
       closeModal();
       renderAdminTab();
-      showToast('อัปเดตออเดอร์พิเศษเรียบร้อย');
+      showToast('Assigned special order updated');
     }
 
-    async function deleteAssignedSpecial(bid) { if(confirm('ต้องการยกเลิกคำสั่งล็อกออเดอร์พิเศษนี้หรือไม่?')) { await windowDataSdk.delete(adminSpecialAssignData.find(d => d.__backendId === bid)); renderAdminTab(); } }
+    async function deleteAssignedSpecial(bid) { if(confirm('Are you sure you want to delete this special assignment?')) { await windowDataSdk.delete(adminSpecialAssignData.find(d => d.__backendId === bid)); renderAdminTab(); } }
 
     // ==========================================
     // TABS: 4. WITHDRAWALS
@@ -1226,36 +1167,36 @@
     function renderAdminWithdrawals(c) {
       const wds = adminWithdrawalsData;
       if (wds.length === 0) {
-        c.innerHTML = '<div class="bg-white p-8 rounded-2xl text-center border border-slate-200 shadow-sm"><p class="text-slate-400 font-medium text-sm">ไม่มีประวัติคำขอฝากหรือถอนเงินในขณะนี้</p></div>';
+        c.innerHTML = '<div class="bg-white p-8 rounded-2xl text-center border border-slate-200 shadow-sm"><p class="text-slate-400 font-medium text-sm">No transaction records found</p></div>';
       } else {
         c.innerHTML = `
           <div class="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
             <table class="w-full text-left border-collapse text-sm">
               <thead>
                 <tr class="bg-slate-50 border-b border-slate-200 text-slate-600 font-bold text-xs uppercase">
-                  <th class="p-4">วันที่ทำรายการ</th>
-                  <th class="p-4">ชื่อสมาชิก</th>
-                  <th class="p-4">ประเภท</th>
-                  <th class="p-4">ยอดเงินทั้งหมด</th>
-                  <th class="p-4">รายละเอียดธนาคารลูกค้า</th>
-                  <th class="p-4">สถานะอนุมัติ</th>
-                  <th class="p-4 text-center">จัดการการโอน</th>
+                  <th class="p-4">Timestamp</th>
+                  <th class="p-4">User</th>
+                  <th class="p-4">Type</th>
+                  <th class="p-4">Amount</th>
+                  <th class="p-4">Bank Destination</th>
+                  <th class="p-4">Status</th>
+                  <th class="p-4 text-center">Actions</th>
                 </tr>
               </thead>
-              <tbody class="divide-y divide-slate-100 text-slate-600">
+              <tbody class="divide-y divide-slate-100 text-slate-300">
                 ${wds.map(w => {
-                  let statusText = 'รอดำเนินการ';
+                  let statusText = 'Pending';
                   let statusClass = 'text-amber-700 bg-amber-50 border-amber-200';
-                  if(w.status === 'approved') { statusText = 'ถอนสำเร็จ'; statusClass = 'text-emerald-700 bg-emerald-50 border-emerald-200'; }
-                  if(w.status === 'rejected') { statusText = 'คืนเงินแล้ว/ปฏิเสธ'; statusClass = 'text-rose-700 bg-rose-50 border-rose-200'; }
-                  if(w.status === 'deposit') { statusText = 'ฝากเงินสำเร็จ'; statusClass = 'text-blue-700 bg-blue-50 border-blue-200'; }
+                  if(w.status === 'approved') { statusText = 'Approved'; statusClass = 'text-emerald-700 bg-emerald-50 border-emerald-200'; }
+                  if(w.status === 'rejected') { statusText = 'Rejected'; statusClass = 'text-rose-700 bg-rose-50 border-rose-200'; }
+                  if(w.status === 'deposit') { statusText = 'Deposit Success'; statusClass = 'text-blue-700 bg-blue-50 border-blue-200'; }
                   
                   return `
                   <tr class="hover:bg-slate-50/50 transition">
-                    <td class="p-4 text-xs text-slate-400">${new Date(w.createdAt).toLocaleString('th-TH')}</td>
+                    <td class="p-4 text-xs text-slate-400">${new Date(w.createdAt).toLocaleString()}</td>
                     <td class="p-4 font-bold text-slate-800">${w.username}</td>
-                    <td class="p-4 text-xs font-semibold text-slate-500">${w.status === 'deposit' ? 'ฝากเงิน' : 'ถอนเงิน'}</td>
-                    <td class="p-4 font-black ${w.status === 'deposit' ? 'text-emerald-400' : 'text-slate-800'}">฿${w.amount.toLocaleString()}</td>
+                    <td class="p-4 text-xs font-semibold text-slate-500">${w.status === 'deposit' ? 'Deposit' : 'Withdrawal'}</td>
+                    <td class="p-4 font-black ${w.status === 'deposit' ? 'text-emerald-600' : 'text-slate-800'}">฿${w.amount.toLocaleString()}</td>
                     <td class="p-4 text-xs">
                       <p class="font-bold text-slate-700">${w.bankName || '-'}</p>
                       <p class="font-mono text-[11px] text-slate-400 mt-0.5">${w.bankNumber || '-'}</p>
@@ -1264,10 +1205,10 @@
                     <td class="p-4 text-center">
                       <div class="flex gap-1.5 justify-center">
                         ${w.status === 'pending' ? `
-                          <button onclick="approveWithdraw('${w.__backendId}')" class="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-xs font-bold transition">อนุมัติโอน</button>
-                          <button onclick="rejectWithdraw('${w.__backendId}')" class="px-2.5 py-1 bg-rose-600 hover:bg-rose-700 text-white rounded text-xs font-bold transition">ปฏิเสธ</button>
+                          <button onclick="approveWithdraw('${w.__backendId}')" class="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-xs font-bold transition">Approve</button>
+                          <button onclick="rejectWithdraw('${w.__backendId}')" class="px-2.5 py-1 bg-rose-600 hover:bg-rose-700 text-white rounded text-xs font-bold transition">Reject</button>
                         ` : ''}
-                        <button onclick="deleteWithdrawal('${w.__backendId}')" class="px-2 py-1 bg-slate-100 hover:bg-rose-50 border border-slate-200 hover:border-rose-200 text-slate-500 hover:text-rose-600 rounded text-xs font-bold transition" title="ลบข้อมูลถาวร"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
+                        <button onclick="deleteWithdrawal('${w.__backendId}')" class="px-2 py-1 bg-slate-100 hover:bg-rose-50 border border-slate-200 hover:border-rose-200 text-slate-500 hover:text-rose-600 rounded text-xs font-bold transition"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
                       </div>
                     </td>
                   </tr>`;
@@ -1284,43 +1225,33 @@
     async function rejectWithdraw(bid) { 
       const w = adminWithdrawalsData.find(d => d.__backendId === bid); 
       let userDocRef = doc(db, "users", w.userId);
-      let userSnap = await getDocs(query(collection(db, "users"), where("id", "==", w.userId)));
-      if (userSnap.empty) {
-        userDocRef = doc(db, "ผู้ใช้", w.userId);
-      }
-      
       const wdDocRef = doc(db, getCol('withdrawal'), bid);
 
       try {
         await runTransaction(db, async (transaction) => {
           const uSnap = await transaction.get(userDocRef);
           if (uSnap.exists()) {
-            const currentCredit = getField(uSnap.data(), 'credit', 'เครดิต') || 0;
-            const updatePayload = {};
+            const currentCredit = uSnap.data().credit || 0;
             const refundedVal = currentCredit + (w.amount || 0);
-            if (uSnap.data().credit !== undefined) updatePayload.credit = refundedVal;
-            if (uSnap.data().เครดิต !== undefined) updatePayload.เครดิต = refundedVal;
-            
-            transaction.update(userDocRef, updatePayload);
+            transaction.update(userDocRef, { credit: refundedVal });
           }
           transaction.update(wdDocRef, { status: 'rejected' });
         });
-        showToast('ปฏิเสธรายการถอนเงิน และคืนเครดิตสำเร็จ');
+        showToast('Transaction rejected. Balance refunded to user.');
         renderAdminTab();
       } catch (err) {
-        showToast('เกิดข้อผิดพลาดในการยกเลิก', 'error');
+        showToast('Error cancelling transaction', 'error');
       }
     }
 
     async function deleteWithdrawal(bid) {
-      if (confirm('ยืนยันที่จะลบข้อมูลรายงานฝาก-ถอนนี้ออกจากระบบ Firebase หรือไม่? (ข้อมูลนี้จะหายไปจากตารางประวัติผู้ใช้งานด้วย)')) {
+      if (confirm('Are you sure you want to delete this transaction record?')) {
         try {
           await deleteDoc(doc(db, "withdrawals", bid));
-          await deleteDoc(doc(db, "การถอนเงิน", bid));
-          showToast('ลบรายการถอนเงินเรียบร้อยแล้ว');
+          showToast('Record deleted successfully');
           renderAdminTab();
         } catch (err) {
-          showToast('เกิดข้อผิดพลาดในการลบ: ' + err.message, 'error');
+          showToast('Database write failed: ' + err.message, 'error');
         }
       }
     }
@@ -1331,32 +1262,32 @@
     function renderAdminOrders(c) {
       const orders = allUserOrdersData;
       if (orders.length === 0) {
-        c.innerHTML = '<div class="bg-white p-8 rounded-2xl text-center border border-slate-200 shadow-sm"><p class="text-slate-400 font-medium text-sm">ไม่พบคำสั่งซื้อในระบบในขณะนี้</p></div>';
+        c.innerHTML = '<div class="bg-white p-8 rounded-2xl text-center border border-slate-200 shadow-sm"><p class="text-slate-400 font-medium text-sm">No transaction records found</p></div>';
       } else {
         c.innerHTML = `
           <div class="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
             <table class="w-full text-left border-collapse text-sm">
               <thead>
                 <tr class="bg-slate-50 border-b border-slate-200 text-slate-600 font-bold text-xs uppercase">
-                  <th class="p-4">วันที่ซื้อสินค้า</th>
-                  <th class="p-4">ชื่อสมาชิกผู้สั่ง</th>
-                  <th class="p-4">ข้อมูลรายการสินค้า</th>
-                  <th class="p-4">ราคาทุน</th>
-                  <th class="p-4">ค่าคอมมิชชัน</th>
-                  <th class="p-4">สถานะชำระเงิน</th>
+                  <th class="p-4">Timestamp</th>
+                  <th class="p-4">Buyer</th>
+                  <th class="p-4">Product Info</th>
+                  <th class="p-4">Cost</th>
+                  <th class="p-4">Commission</th>
+                  <th class="p-4">Status</th>
                 </tr>
               </thead>
               <tbody class="divide-y divide-slate-100 text-slate-600">
                 ${orders.map(o => `
                   <tr class="hover:bg-slate-50/50 transition">
-                    <td class="p-4 text-xs text-slate-400">${new Date(o.createdAt).toLocaleString('th-TH')}</td>
+                    <td class="p-4 text-xs text-slate-400">${new Date(o.createdAt).toLocaleString()}</td>
                     <td class="p-4 font-bold text-slate-800">${o.username}</td>
                     <td class="p-4 text-xs truncate max-w-[200px]" title="${o.productName}">${o.productName}</td>
                     <td class="p-4 font-bold text-slate-700">฿${o.productPrice.toLocaleString()}</td>
                     <td class="p-4 font-black text-emerald-600">+฿${o.commission.toLocaleString()}</td>
                     <td class="p-4">
                       <span class="px-2.5 py-1 rounded-full text-xs font-bold ${o.status === 'completed' ? 'text-emerald-700 bg-emerald-50 border border-emerald-100' : 'text-amber-700 bg-amber-50 border border-amber-100'}">
-                        ${o.status === 'completed' ? 'รันสำเร็จแล้ว' : 'ค้างชำระ'}
+                        ${o.status === 'completed' ? 'Completed' : 'Pending Settle'}
                       </span>
                     </td>
                   </tr>`).join('')}
@@ -1373,18 +1304,18 @@
     function renderAdminMedia(c) {
       c.innerHTML = `
         <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm mb-6 text-left">
-          <h3 class="font-bold text-sm mb-3 text-blue-700 flex items-center gap-1.5 border-b border-slate-100 pb-2"><i data-lucide="image" class="w-4.5 h-4.5"></i> สื่อรูปแบนเนอร์สไลด์สไลด์หน้าแรก</h3>
-          <button onclick="showAddBanner()" class="w-full py-2.5 bg-blue-50 text-blue-700 border border-blue-200 rounded-xl text-xs font-bold hover:bg-blue-100 transition mb-4">+ เพิ่มรูปแบนเนอร์ภาพสไลด์</button>
+          <h3 class="font-bold text-sm mb-3 text-blue-700 flex items-center gap-1.5 border-b border-slate-100 pb-2"><i data-lucide="image" class="w-4.5 h-4.5"></i> Banner Carousel Manager</h3>
+          <button onclick="showAddBanner()" class="w-full py-2.5 bg-blue-50 text-blue-700 border border-blue-200 rounded-xl text-xs font-bold hover:bg-blue-100 transition mb-4">+ Add Banner Image</button>
           <div class="space-y-3">
             ${getBanners().map(b => `
               <div class="flex items-center gap-3 bg-slate-50 p-3 rounded-xl border border-slate-200">
                 <div class="flex flex-col gap-1 flex-shrink-0">
-                  <img src="${b.bannerUrl}" class="w-20 h-12 object-cover rounded-lg border border-slate-200" title="รูปบนมือถือ">
-                  ${b.bannerPcUrl ? `<img src="${b.bannerPcUrl}" class="w-20 h-10 object-cover rounded-lg border border-slate-200" title="รูปบนคอมพิวเตอร์">` : `<div class="w-20 h-10 bg-slate-100 flex items-center justify-center rounded-lg text-[9px] text-slate-400 border border-slate-200 font-semibold">ไม่มีรูป PC</div>`}
+                  <img src="${b.bannerUrl}" class="w-20 h-12 object-cover rounded-lg border border-slate-200" title="Mobile Banner">
+                  ${b.bannerPcUrl ? `<img src="${b.bannerPcUrl}" class="w-20 h-10 object-cover rounded-lg border border-slate-200" title="Desktop Banner">` : `<div class="w-20 h-10 bg-slate-100 flex items-center justify-center rounded-lg text-[9px] text-slate-400 border border-slate-200 font-semibold">No PC Image</div>`}
                 </div>
                 <div class="flex-1 min-w-0">
                   <p class="text-xs text-slate-700 truncate font-semibold">Mobile: ${b.bannerUrl}</p>
-                  <p class="text-[11px] text-slate-400 truncate font-mono mt-0.5">PC: ${b.bannerPcUrl || 'ยังไม่ได้กำหนด'}</p>
+                  <p class="text-[11px] text-slate-400 truncate font-mono mt-0.5">PC: ${b.bannerPcUrl || 'Not configured'}</p>
                 </div>
                 <div class="flex gap-1.5">
                   <button onclick="editBanner('${b.__backendId}')" class="p-2 text-blue-600 hover:bg-slate-100 rounded-lg transition"><i data-lucide="edit" class="w-4 h-4"></i></button>
@@ -1394,8 +1325,8 @@
           </div>
         </div>
         <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm text-left">
-          <h3 class="font-bold text-sm mb-3 text-purple-700 flex items-center gap-1.5 border-b border-slate-100 pb-2"><i data-lucide="grid" class="w-4.5 h-4.5"></i> แกลเลอรีรูปภาพ</h3>
-          <button onclick="showAddGallery()" class="w-full py-2.5 bg-purple-50 text-purple-700 border border-purple-200 rounded-xl text-xs font-bold hover:bg-purple-100 transition mb-4">+ เพิ่มรูปภาพในแกลเลอรี</button>
+          <h3 class="font-bold text-sm mb-3 text-purple-700 flex items-center gap-1.5 border-b border-slate-100 pb-2"><i data-lucide="grid" class="w-4.5 h-4.5"></i> Gallery Catalog</h3>
+          <button onclick="showAddGallery()" class="w-full py-2.5 bg-purple-50 text-purple-700 border border-purple-200 rounded-xl text-xs font-bold hover:bg-purple-100 transition mb-4">+ Add Gallery Image</button>
           <div class="grid grid-cols-2 gap-3">
             ${getGallery().map(g => `
               <div class="relative h-28 rounded-xl overflow-hidden bg-slate-50 border border-slate-200 shadow-sm group">
@@ -1411,24 +1342,24 @@
 
     function showAddBanner() { 
       showModal(`
-        <h3 class="font-bold text-base mb-4 text-slate-800 border-b border-slate-100 pb-2">เพิ่มภาพแบนเนอร์ใหม่</h3>
+        <h3 class="font-bold text-base mb-4 text-slate-800 border-b border-slate-100 pb-2">Add Carousel Banner</h3>
         <div class="space-y-3.5 text-left text-slate-600">
           <div>
-            <label class="text-xs text-slate-400 font-bold block mb-1">ลิงก์ภาพสำหรับหน้าจอโมบายล์ (สัดส่วนประมาณ 5:3)</label>
-            <input id="ab-url" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm" placeholder="เช่น https://domain.com/banner-mobile.jpg">
+            <label class="text-xs text-slate-400 font-bold block mb-1">Mobile Resolution Image (5:3 aspect ratio URL)</label>
+            <input id="ab-url" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm" placeholder="https://domain.com/mobile-image.jpg">
           </div>
           <div>
-            <label class="text-xs text-slate-400 font-bold block mb-1">ลิงก์ภาพสำหรับแสดงบนพีซี/แท็บเล็ต (สัดส่วนประมาณ 20:10)</label>
-            <input id="ab-pc-url" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm" placeholder="เช่น https://domain.com/banner-pc.jpg">
+            <label class="text-xs text-slate-400 font-bold block mb-1">Desktop Resolution Image (20:10 aspect ratio URL)</label>
+            <input id="ab-pc-url" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm" placeholder="https://domain.com/pc-image.jpg">
           </div>
-          <button onclick="doAddBanner()" class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl transition text-sm">ยืนยันบันทึกข้อมูล</button>
+          <button onclick="doAddBanner()" class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl transition text-sm">Save Banner Configuration</button>
         </div>
       `); 
     }
     async function doAddBanner() { 
       const url = $('ab-url').value.trim();
       const pcUrl = $('ab-pc-url').value.trim();
-      if(!url) return showToast('กรุณากรอก URL รูปภาพสำหรับมือถือ', 'error');
+      if(!url) return showToast('Mobile image url is required', 'error');
       await windowDataSdk.create({ 
         type: 'banner', id: genId(), bannerUrl: url, bannerPcUrl: pcUrl
       }); 
@@ -1438,17 +1369,17 @@
     function editBanner(bid) { 
       const b = publicData.banners.find(d => d.__backendId === bid); 
       showModal(`
-        <h3 class="font-bold text-base mb-4 text-slate-800 border-b border-slate-100 pb-2">แก้ไขภาพแบนเนอร์เดิม</h3>
+        <h3 class="font-bold text-base mb-4 text-slate-800 border-b border-slate-100 pb-2">Modify Banner Image Path</h3>
         <div class="space-y-3.5 text-left text-slate-600">
           <div>
-            <label class="text-xs text-slate-400 font-bold block mb-1">ลิงก์ภาพสำหรับแสดงผลผ่านอุปกรณ์โมบายล์</label>
+            <label class="text-xs text-slate-400 font-bold block mb-1">Mobile Image Resolution URL</label>
             <input id="eb-url" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm" value="${b.bannerUrl || ''}">
           </div>
           <div>
-            <label class="text-xs text-slate-400 font-bold block mb-1">ลิงก์ภาพสำหรับแสดงผลผ่านหน้าจอพีซี</label>
+            <label class="text-xs text-slate-400 font-bold block mb-1">Desktop Image Resolution URL</label>
             <input id="eb-pc-url" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm" value="${b.bannerPcUrl || ''}">
           </div>
-          <button onclick="doEditBanner('${bid}')" class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl transition text-sm">บันทึกความเปลี่ยนแปลง</button>
+          <button onclick="doEditBanner('${bid}')" class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl transition text-sm">Save Configuration</button>
         </div>
       `); 
     }
@@ -1456,138 +1387,138 @@
       const b = publicData.banners.find(d => d.__backendId === bid); 
       const url = $('eb-url').value.trim();
       const pcUrl = $('eb-pc-url').value.trim();
-      if(!url) return showToast('กรุณากรอก URL รูปภาพสำหรับมือถือ', 'error');
+      if(!url) return showToast('Mobile image path is required', 'error');
       await windowDataSdk.update({
         ...b, bannerUrl: url, bannerPcUrl: pcUrl
       }); 
       closeModal(); 
       renderAdminTab(); 
     }
-    async function deleteBanner(bid) { if(confirm('ต้องการลบแบนเนอร์รูปภาพนี้ใช่หรือไม่?')) { await windowDataSdk.delete(publicData.banners.find(d => d.__backendId === bid)); renderAdminTab(); } }
-    function showAddGallery() { showModal(`<h3 class="font-bold text-base mb-4 border-b pb-2">เพิ่มภาพในอัลบั้มแกลเลอรี</h3><input id="ag-url" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl mb-4 text-sm" placeholder="URL ลิงก์รูปภาพแกลเลอรี"><button onclick="doAddGallery()" class="w-full py-3 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-xl transition text-sm">ยืนยันข้อมูล</button>`); }
+    async function deleteBanner(bid) { if(confirm('Are you sure you want to delete this banner?')) { await windowDataSdk.delete(publicData.banners.find(d => d.__backendId === bid)); renderAdminTab(); } }
+    function showAddGallery() { showModal(`<h3 class="font-bold text-base mb-4 border-b pb-2">Add Gallery Image</h3><input id="ag-url" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl mb-4 text-sm" placeholder="Image file url"><button onclick="doAddGallery()" class="w-full py-3 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-xl transition text-sm">Save Image</button>`); }
     async function doAddGallery() { await windowDataSdk.create({ type:'gallery', id:genId(), galleryUrl:$('ag-url').value.trim() }); closeModal(); renderAdminTab(); }
-    function editGallery(bid) { const g = publicData.galleries.find(d => d.__backendId === bid); showModal(`<h3 class="font-bold text-base mb-4 border-b pb-2">แก้ไขภาพแกลเลอรี</h3><input id="eg-url" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl mb-4 text-sm" value="${g.galleryUrl}"><button onclick="doEditGallery('${bid}')" class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl transition text-sm">บันทึกข้อมูลใหม่</button>`); }
+    function editGallery(bid) { const g = publicData.galleries.find(d => d.__backendId === bid); showModal(`<h3 class="font-bold text-base mb-4 border-b pb-2">Modify Gallery Link</h3><input id="eg-url" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 text-slate-700 rounded-xl mb-4 text-sm" value="${g.galleryUrl}"><button onclick="doEditGallery('${bid}')" class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl transition text-sm">Save Configuration</button>`); }
     async function doEditGallery(bid) { const g = publicData.galleries.find(d => d.__backendId === bid); await windowDataSdk.update({...g, galleryUrl: $('eg-url').value.trim()}); closeModal(); renderAdminTab(); }
-    async function deleteGallery(bid) { if(confirm('ต้องการลบรูปภาพนี้ใช่หรือไม่?')) { await windowDataSdk.delete(publicData.galleries.find(d => d.__backendId === bid)); renderAdminTab(); } }
+    async function deleteGallery(bid) { if(confirm('Are you sure you want to delete this catalog image?')) { await windowDataSdk.delete(publicData.galleries.find(d => d.__backendId === bid)); renderAdminTab(); } }
 
     // ==========================================
     // TABS: 7. SYSTEM SETTINGS
     // ==========================================
     function renderAdminSettings(c) {
       const cfg = getConfig() || {}; const logoUrl = getLogoUrl(); const inviteCode = getInviteCode(); const marqueeText = getMarqueeText(); const lineQrUrl = getLineQrUrl(); const lineId = getLineId(); const topupQrUrl = getTopupQrUrl(); const topupAccount = getTopupAccount(); 
-      const tP = getField(cfg, 'themePrimary', 'ธีมหลัก') || '#1e40af'; 
-      const tS = getField(cfg, 'themeSecondary', 'ธีมรอง') || '#3b82f6';
-      const loginBgUrl = getField(cfg, 'loginBgUrl', 'loginBgUrl') || '';
-      const userBgUrl = getField(cfg, 'userBgUrl', 'userBgUrl') || '';
-      const banks = getField(cfg, 'supportedBanks', 'รายการธนาคาร') || 'ธนาคารกสิกรไทย,ธนาคารไทยพาณิชย์,ธนาคารกรุงเทพ,ธนาคารกรุงไทย,ธนาคารกรุงศรีอยุธยา,ธนาคารออมสิน,ทรูวอลเลท';
+      const tP = cfg.themePrimary || '#1e40af'; 
+      const tS = cfg.themeSecondary || '#3b82f6';
+      const loginBgUrl = cfg.loginBgUrl || '';
+      const userBgUrl = cfg.userBgUrl || '';
+      const banks = cfg.supportedBanks || 'KBank,SCB,BBL,KTB,Krungsri,GSB,TrueMoney';
       
       c.innerHTML = `
         <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm mb-6 text-left">
-          <h3 class="font-bold text-sm mb-4 text-blue-600 flex items-center gap-2 border-b border-slate-100 pb-2"><i data-lucide="globe" class="w-4 h-4"></i> กำหนดตั้งค่าหน้าเว็บเบราว์เซอร์และแท็บหลัก</h3>
+          <h3 class="font-bold text-sm mb-4 text-blue-600 flex items-center gap-2 border-b border-slate-100 pb-2"><i data-lucide="globe" class="w-4 h-4"></i> Browser Tab & Page Header Configurations</h3>
           <div class="space-y-3">
             <div>
-              <label class="text-xs text-slate-400 font-semibold block mb-1">ข้อความหัวเรื่องเว็บบนแถบแท็บหน้าจอ (Tab Title)</label>
-              <input id="cfg-tab-title" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-700 text-xs" placeholder="เช่น TOS Shopping" value="${getTabTitle()}">
+              <label class="text-xs text-slate-400 font-semibold block mb-1">Browser Tab Title (App Header Name)</label>
+              <input id="cfg-tab-title" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-700 text-xs" placeholder="e.g. TOS Shopping" value="${getTabTitle()}">
             </div>
             <div>
-              <label class="text-xs text-slate-400 font-semibold block mb-1">URL ลิงก์สัญลักษณ์ Favicon เล็กๆบนแท็บ</label>
-              <input id="cfg-tab-favicon" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-700 text-xs" placeholder="วางลิงก์ไฟล์ไอคอนรูปโลโก้ .ico หรือ .png" value="${getTabFavicon()}">
+              <label class="text-xs text-slate-400 font-semibold block mb-1">Favicon Small Tab Icon File Path URL</label>
+              <input id="cfg-tab-favicon" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-700 text-xs" placeholder="Favicon file path link" value="${getTabFavicon()}">
             </div>
-            <button onclick="saveAdminSettings('tab_config')" class="w-full py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl transition">อัปเดตและบันทึกข้อมูลหน้าเว็บ</button>
+            <button onclick="saveAdminSettings('tab_config')" class="w-full py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl transition">Save Page Configurations</button>
           </div>
         </div>
 
         <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm mb-6 text-left">
-          <h3 class="font-bold text-sm mb-4 text-blue-600 flex items-center gap-2 border-b border-slate-100 pb-2"><i data-lucide="palette" class="w-4 h-4"></i> คุมโทนและปรับแต่งสีแอปพลิเคชัน</h3>
+          <h3 class="font-bold text-sm mb-4 text-blue-600 flex items-center gap-2 border-b border-slate-100 pb-2"><i data-lucide="palette" class="w-4 h-4"></i> UI Color Customizer (System Theme)</h3>
           <div class="grid grid-cols-2 gap-4 mb-4">
             <div>
-              <label class="text-xs text-slate-400 mb-1 block font-semibold">เฉดสีหลักแอปหน้าบ้าน (Primary)</label>
+              <label class="text-xs text-slate-400 mb-1 block font-semibold">Primary Color Code</label>
               <div class="flex gap-2">
                 <input type="color" id="cfg-theme-p-picker" class="w-10 h-10 bg-transparent cursor-pointer rounded-lg border border-slate-200 p-1" value="${tP}" oninput="$('cfg-theme-p-text').value=this.value">
                 <input type="text" id="cfg-theme-p-text" class="flex-1 px-3 py-1.5 text-xs border border-slate-200 rounded-xl bg-slate-50 text-slate-700 font-mono" value="${tP}">
               </div>
             </div>
             <div>
-              <label class="text-xs text-slate-400 mb-1 block font-semibold">เฉดสีรองแอปหน้าบ้าน (Secondary)</label>
+              <label class="text-xs text-slate-400 mb-1 block font-semibold">Secondary Color Code</label>
               <div class="flex gap-2">
                 <input type="color" id="cfg-theme-s-picker" class="w-10 h-10 bg-transparent cursor-pointer rounded-lg border border-slate-200 p-1" value="${tS}" oninput="$('cfg-theme-s-text').value=this.value">
                 <input type="text" id="cfg-theme-s-text" class="flex-1 px-3 py-1.5 text-xs border border-slate-200 rounded-xl bg-slate-50 text-slate-700 font-mono" value="${tS}">
               </div>
             </div>
           </div>
-          <button onclick="saveAdminTheme()" class="w-full py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl transition">ยืนยันปรับใช้ธีมสีใหม่</button>
+          <button onclick="saveAdminTheme()" class="w-full py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl transition">Save Custom Themes</button>
         </div>
 
         <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm mb-6 text-left">
-          <h3 class="font-bold text-sm mb-4 text-blue-600 flex items-center gap-2 border-b border-slate-100 pb-2"><i data-lucide="image" class="w-4 h-4"></i> จัดการฉากภาพหน้าวอลล์เปเปอร์พื้นหลังหน้าบ้าน</h3>
+          <h3 class="font-bold text-sm mb-4 text-blue-600 flex items-center gap-2 border-b border-slate-100 pb-2"><i data-lucide="image" class="w-4 h-4"></i> User Wallpaper Background Link Configurations</h3>
           <div class="space-y-3">
             <div>
-              <label class="text-xs text-slate-400 font-semibold block mb-1">ภาพพื้นหลังที่หน้าฟอร์มเข้าสู่ระบบ (Login background URL)</label>
-              <input id="cfg-login-bg" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-700 text-xs" placeholder="URL ลิงก์ภาพหน้าล็อกอิน" value="${loginBgUrl}">
+              <label class="text-xs text-slate-400 font-semibold block mb-1">Login Frame Background Wallpaper URL</label>
+              <input id="cfg-login-bg" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-700 text-xs" placeholder="Wallpaper url link" value="${loginBgUrl}">
             </div>
             <div>
-              <label class="text-xs text-slate-400 font-semibold block mb-1">ภาพพื้นหลังเมื่อเข้าใช้งานภายในแอปพลิเคชัน (User Dashboard background URL)</label>
-              <input id="cfg-user-bg" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-700 text-xs" placeholder="URL ลิงก์ภาพหน้าแดชบอร์ดด้านใน" value="${userBgUrl}">
+              <label class="text-xs text-slate-400 font-semibold block mb-1">Dashboard Inside App Background Wallpaper URL</label>
+              <input id="cfg-user-bg" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-700 text-xs" placeholder="Wallpaper url link" value="${userBgUrl}">
             </div>
-            <button onclick="saveAdminSettings('bgs')" class="w-full py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl transition">บันทึกอัปเดตพื้นหลัง</button>
+            <button onclick="saveAdminSettings('bgs')" class="w-full py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl transition">Save Wallpaper Assets</button>
           </div>
         </div>
 
         <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm mb-6 text-left">
-          <h3 class="font-bold text-sm mb-3 text-blue-600 flex items-center gap-2 border-b border-slate-100 pb-2"><i data-lucide="volume-2" class="w-4 h-4"></i> ข้อความวิ่งประกาศแจ้งเตือนหน้าแรกแอป</h3>
+          <h3 class="font-bold text-sm mb-3 text-blue-600 flex items-center gap-2 border-b border-slate-100 pb-2"><i data-lucide="volume-2" class="w-4 h-4"></i> Announcement Marquee Running Text</h3>
           <input id="cfg-marquee" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-700 mb-3 text-xs" value="${marqueeText}">
-          <button onclick="saveAdminSettings('marquee')" class="w-full py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl transition">แก้ไขข้อความวิ่ง</button>
+          <button onclick="saveAdminSettings('marquee')" class="w-full py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl transition">Save Marquee Text</button>
         </div>
 
         <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm mb-6 text-left">
-          <h3 class="font-bold text-sm mb-3 text-blue-600 flex items-center gap-2 border-b border-slate-100 pb-2"><i data-lucide="message-square" class="w-4 h-4"></i> ช่องทางแอดมินฝ่ายบริการติดต่อลูกค้า</h3>
+          <h3 class="font-bold text-sm mb-3 text-blue-600 flex items-center gap-2 border-b border-slate-100 pb-2"><i data-lucide="message-square" class="w-4 h-4"></i> Administration Contact Channels</h3>
           <div class="space-y-3">
             <div>
-              <label class="text-xs text-slate-400 font-semibold block mb-1">URL รูปภาพคิวอาร์โค้ด LINE</label>
-              <input id="cfg-line-qr" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-700 text-xs" placeholder="เช่น https://domain.com/my-line-qr.jpg" value="${lineQrUrl}">
+              <label class="text-xs text-slate-400 font-semibold block mb-1">Support Contact LINE QR Code Link</label>
+              <input id="cfg-line-qr" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-700 text-xs" placeholder="LINE QR image web URL link" value="${lineQrUrl}">
             </div>
             <div>
-              <label class="text-xs text-slate-400 font-semibold block mb-1">ไอดีไลน์หลัก (LINE ID)</label>
-              <input id="cfg-line-id" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-700 text-xs" placeholder="พิมพ์ LINE ID" value="${lineId}">
+              <label class="text-xs text-slate-400 font-semibold block mb-1">Support Customer Service LINE ID Account</label>
+              <input id="cfg-line-id" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-700 text-xs" placeholder="LINE username account" value="${lineId}">
             </div>
-            <button onclick="saveAdminSettings('line')" class="w-full py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl transition">บันทึกเปลี่ยนข้อมูลติดต่อ</button>
+            <button onclick="saveAdminSettings('line')" class="w-full py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl transition">Save Support Info</button>
           </div>
         </div>
 
         <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm mb-6 text-left">
-          <h3 class="font-bold text-sm mb-3 text-blue-600 flex items-center gap-2 border-b border-slate-100 pb-2"><i data-lucide="banknote" class="w-4 h-4"></i> รายชื่อธนาคารและช่องทางรับโอนเงินของทางร้าน</h3>
+          <h3 class="font-bold text-sm mb-3 text-blue-600 flex items-center gap-2 border-b border-slate-100 pb-2"><i data-lucide="banknote" class="w-4 h-4"></i> Payment Gateway & Receiver Banks</h3>
           <div class="space-y-4">
             <div>
-              <label class="text-xs text-slate-400 font-semibold block mb-1">รายชื่อตัวเลือกธนาคารที่จะไปให้หน้ายูสเซอร์เลือก (คั่นด้วยจุลภาค ",")</label>
-              <textarea id="cfg-banks" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-700 text-xs h-20" placeholder="ตัวอย่าง: ธนาคารกสิกรไทย,ธนาคารไทยพาณิชย์,ทรูวอลเลท">${banks}</textarea>
+              <label class="text-xs text-slate-400 font-semibold block mb-1">Comma-separated Banks Allowed For Client Profiles (",")</label>
+              <textarea id="cfg-banks" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-700 text-xs h-20" placeholder="e.g. KBank,SCB,BBL,KTB,Krungsri">${banks}</textarea>
             </div>
             <div>
-              <label class="text-xs text-slate-400 font-semibold block mb-1">ลิงก์คิวอาร์โค้ดสแกนรับเงิน (QR Code เติมเครดิต)</label>
-              <input id="cfg-topup-qr" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-700 text-xs" placeholder="วางลิงก์รูปภาพสแกนชำระ" value="${topupQrUrl}">
+              <label class="text-xs text-slate-400 font-semibold block mb-1">Receiver Payment QR Image Link URL</label>
+              <input id="cfg-topup-qr" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-700 text-xs" placeholder="QR code receiver link" value="${topupQrUrl}">
             </div>
             <div>
-              <label class="text-xs text-slate-400 font-semibold block mb-1">ข้อความรายละเอียดบัญชีธนาคารรับโอนของทางร้าน</label>
+              <label class="text-xs text-slate-400 font-semibold block mb-1">Receiver Official Bank Account Info Text</label>
               <textarea id="cfg-topup-acc" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-700 h-20 text-xs">${topupAccount}</textarea>
             </div>
-            <button onclick="saveAdminSettings('topup_banks')" class="w-full py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl transition">บันทึกข้อมูลการเงินทั้งหมด</button>
+            <button onclick="saveAdminSettings('topup_banks')" class="w-full py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl transition">Save Monetary Configurations</button>
           </div>
         </div>
 
         <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm mb-6 text-left">
-          <h3 class="font-bold text-sm mb-3 text-blue-600 flex items-center gap-2 border-b border-slate-100 pb-2"><i data-lucide="award" class="w-4 h-4"></i> ลิงก์รูปภาพโลโก้ของระบบ</h3>
+          <h3 class="font-bold text-sm mb-3 text-blue-600 flex items-center gap-2 border-b border-slate-100 pb-2"><i data-lucide="award" class="w-4 h-4"></i> Official Corporate Logo</h3>
           <input id="cfg-logo" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-700 mb-3 text-xs" value="${logoUrl}">
-          <button onclick="saveAdminSettings('logo')" class="w-full py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl transition">บันทึกอัปเดตโลโก้</button>
+          <button onclick="saveAdminSettings('logo')" class="w-full py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl transition">Save Logo Assets</button>
         </div>
 
         <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm mb-6 text-left">
-          <h3 class="font-bold text-sm mb-3 text-blue-600 flex items-center gap-2 border-b border-slate-100 pb-2"><i data-lucide="key" class="w-4 h-4"></i> รหัสแนะนำ (Invite code) สำหรับลูกค้าใช้สมัครสมาชิก</h3>
+          <h3 class="font-bold text-sm mb-3 text-blue-600 flex items-center gap-2 border-b border-slate-100 pb-2"><i data-lucide="key" class="w-4 h-4"></i> Invitation Security Key Code</h3>
           <input id="cfg-invite" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-700 mb-3 text-xs text-center font-mono tracking-widest font-bold" value="${inviteCode}">
-          <button onclick="saveAdminSettings('invite')" class="w-full py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl transition">อัปเดตรหัสแนะนำการสมัคร</button>
+          <button onclick="saveAdminSettings('invite')" class="w-full py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl transition">Save Invitation Codes</button>
         </div>
 
         <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm mb-4 text-left">
-          <h3 class="font-bold text-sm mb-3 text-blue-600 flex items-center gap-2 border-b border-slate-100 pb-2"><i data-lucide="menu" class="w-4 h-4"></i> ลิงก์รายละเอียดปุ่มไอคอนคู่มือหน้าแรก</h3>
-          <button onclick="showAddMenuIcon()" class="w-full py-2 mb-3 bg-blue-50 text-blue-700 border border-blue-200 rounded-xl text-xs font-bold hover:bg-blue-100 transition">+ เพิ่มปุ่มเมนูใหม่</button>
+          <h3 class="font-bold text-sm mb-3 text-blue-600 flex items-center gap-2 border-b border-slate-100 pb-2"><i data-lucide="menu" class="w-4 h-4"></i> User Guides & Information Icons</h3>
+          <button onclick="showAddMenuIcon()" class="w-full py-2 mb-3 bg-blue-50 text-blue-700 border border-blue-200 rounded-xl text-xs font-bold hover:bg-blue-100 transition">+ Add Custom Guideline Icon</button>
           <div class="space-y-2">
             ${getMenuIcons().map(m => `
               <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 flex items-center justify-between">
@@ -1603,45 +1534,28 @@
 
     async function saveAdminTheme() {
       const p = $('cfg-theme-p-text').value.trim(); const s = $('cfg-theme-s-text').value.trim();
-      let config = getConfig(); 
-      if(!config) config = { type: 'config', id: 'system_config', __collection: 'configs' }; 
+      let config = getConfig() || {};
       
       const updatePayload = {
         ...config,
         themePrimary: p,
-        themeSecondary: s,
-        "ธีมหลัก": p,
-        "ธีมรอง": s
+        themeSecondary: s
       };
       
-      const idx = publicData.configs.findIndex(d => d.type === 'config' || d.type === 'การตั้งค่า' || d.พิมพ์ === 'การตั้งค่า');
-      if (idx !== -1) {
-        publicData.configs[idx] = updatePayload;
-      } else {
-        publicData.configs.push(updatePayload);
-      }
-
+      publicData.configs = [updatePayload];
+      applyTheme(p, s);
       await saveConfigToFirebase(updatePayload); 
-      showToast('บันทึกและซิงค์สีธีมสำเร็จ');
+      showToast('Theme configuration updated successfully');
       renderAdminTab();
     }
 
     async function saveAdminSettings(type) {
-      let config = getConfig(); 
-      if(!config) {
-        config = { 
-          type: 'config', 
-          id: 'system_config', 
-          inviteCode: '12345', 
-          logoUrl: '', 
-          loginBgUrl: '', 
-          userBgUrl: '',
-          supportedBanks: 'ธนาคารกสิกรไทย,ธนาคารไทยพาณิชย์,ธนาคารกรุงเทพ,ธนาคารกรุงไทย,ธนาคารกรุงศรีอยุธยา,ธนาคารออมสิน,ทรูวอลเลท',
-          "พิมพ์": "การตั้งค่า"
-        }; 
-      }
-      
-      const updatePayload = { ...config };
+      let config = getConfig() || {};
+      const updatePayload = { 
+        ...config,
+        type: 'config',
+        id: 'system_config'
+      };
 
       if (type === 'logo') {
         updatePayload.logoUrl = $('cfg-logo').value.trim();
@@ -1652,13 +1566,11 @@
       }
       else if (type === 'invite') { 
         const newInvite = $('cfg-invite').value.trim(); 
-        if (!newInvite) return showToast('กรุณากรอกรหัสแนะนำ', 'error'); 
+        if (!newInvite) return showToast('Please specify invite code', 'error'); 
         updatePayload.inviteCode = newInvite; 
-        updatePayload["รหัสเชิญ"] = newInvite;
       }
       else if (type === 'marquee') {
         updatePayload.marqueeText = $('cfg-marquee').value.trim();
-        updatePayload["ข้อความวิ่ง"] = $('cfg-marquee').value.trim();
       }
       else if (type === 'line') { 
         updatePayload.lineQrUrl = $('cfg-line-qr').value.trim(); 
@@ -1668,31 +1580,23 @@
         updatePayload.topupQrUrl = $('cfg-topup-qr').value.trim(); 
         updatePayload.topupAccount = $('cfg-topup-acc').value.trim(); 
         updatePayload.supportedBanks = $('cfg-banks').value.trim();
-        updatePayload["รายการธนาคาร"] = $('cfg-banks').value.trim();
       }
       else if (type === 'tab_config') { 
         updatePayload.tabTitle = $('cfg-tab-title').value.trim(); 
-        updatePayload["แท็บชื่อเรื่อง"] = $('cfg-tab-title').value.trim();
         updatePayload.tabFaviconUrl = $('cfg-tab-favicon').value.trim(); 
       }
 
-      const idx = publicData.configs.findIndex(d => d.type === 'config' || d.type === 'การตั้งค่า' || d.พิมพ์ === 'การตั้งค่า');
-      if (idx !== -1) {
-        publicData.configs[idx] = updatePayload;
-      } else {
-        publicData.configs.push(updatePayload);
-      }
-
+      publicData.configs = [updatePayload];
       await saveConfigToFirebase(updatePayload); 
-      showToast('บันทึกตั้งค่าเรียบร้อย'); 
+      showToast('Configurations successfully recorded'); 
       renderAdminTab();
     }
 
-    function showAddMenuIcon() { showModal(`<h3 class="font-bold text-base mb-4 text-slate-800 border-b pb-2">เพิ่มปุ่มเมนูคู่มือใหม่</h3><input id="mi-label" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl mb-3 text-sm text-slate-700" placeholder="ชื่อเมนูคู่มือ"><input id="mi-url" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl mb-3 text-sm text-slate-700" placeholder="URL ลิงก์รูปภาพไอคอนคู่มือ"><textarea id="mi-content" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl h-28 mb-4 text-slate-700 text-sm" placeholder="เนื้อหารายละเอียดที่จะสปริงฟอร์มโชว์หน้าผู้ใช้..."></textarea><button onclick="doAddMenuIcon()" class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold transition text-sm">ยืนยันการสร้างเมนู</button>`); }
-    function editMenuIcon(bid) { const m = publicData.menuIcons.find(d => d.__backendId === bid); showModal(`<h3 class="font-bold text-base mb-4 text-slate-800 border-b pb-2">แก้ไขข้อมูลเมนูคู่มือ</h3><input id="mi-label" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 text-slate-700 rounded-xl mb-3 text-sm" value="${m.menuLabel}"><input id="mi-url" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 text-slate-700 rounded-xl mb-3 text-sm" value="${m.menuIconUrl||''}"><textarea id="mi-content" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 text-slate-700 rounded-xl h-28 mb-4 text-sm">${m.menuContent||''}</textarea><button onclick="doEditMenuIcon('${bid}')" class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold transition text-sm">อัปเดตข้อมูลเมนู</button>`); }
+    function showAddMenuIcon() { showModal(`<h3 class="font-bold text-base mb-4 text-slate-800 border-b pb-2">Create Custom Guide Menu</h3><input id="mi-label" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl mb-3 text-sm text-slate-700" placeholder="Title"><input id="mi-url" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl mb-3 text-sm text-slate-700" placeholder="Icon image url"><textarea id="mi-content" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl h-28 mb-4 text-slate-700 text-sm" placeholder="Guideline details..."></textarea><button onclick="doAddMenuIcon()" class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold transition text-sm">Save Menu Option</button>`); }
+    function editMenuIcon(bid) { const m = publicData.menuIcons.find(d => d.__backendId === bid); showModal(`<h3 class="font-bold text-base mb-4 text-slate-800 border-b pb-2">Modify Guide Option</h3><input id="mi-label" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 text-slate-700 rounded-xl mb-3 text-sm" value="${m.menuLabel}"><input id="mi-url" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 text-slate-700 rounded-xl mb-3 text-sm" value="${m.menuIconUrl||''}"><textarea id="mi-content" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 text-slate-700 rounded-xl h-28 mb-4 text-sm">${m.menuContent||''}</textarea><button onclick="doEditMenuIcon('${bid}')" class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold transition text-sm">Update Option</button>`); }
     function doAddMenuIcon() { windowDataSdk.create({ type:'menuIcon', id:genId(), menuLabel: $('mi-label').value.trim(), menuContent: $('mi-content').value.trim(), menuIconUrl: $('mi-url').value.trim() }); closeModal(); renderAdminTab(); }
     function doEditMenuIcon(bid) { const m = publicData.menuIcons.find(d => d.__backendId === bid); windowDataSdk.update({ ...m, menuLabel: $('mi-label').value.trim(), menuContent: $('mi-content').value.trim(), menuIconUrl: $('mi-url').value.trim() }); closeModal(); renderAdminTab(); }
-    function deleteMenuIcon(bid) { if(confirm('ต้องการลบข้อมูลนี้หรือไม่?')) { windowDataSdk.delete(publicData.menuIcons.find(d => d.__backendId === bid)); renderAdminTab(); } }
+    function deleteMenuIcon(bid) { if(confirm('Are you sure you want to delete this menu icon option?')) { windowDataSdk.delete(publicData.menuIcons.find(d => d.__backendId === bid)); renderAdminTab(); } }
 
     function handleAdminUserSearch(value) { adminUserSearch = value; renderAdminTab(); }
 
