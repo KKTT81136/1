@@ -1023,6 +1023,13 @@
 
     function renderHome(c) {
       const u = currentUser;
+      if (!u || !u.id) {
+        c.innerHTML = `
+          <div class="flex items-center justify-center min-h-[50vh]">
+            <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-primary"></div>
+          </div>`;
+        return;
+      }
       const creditVal = u.credit || 0;
       const usernameVal = u.username || 'User';
       
@@ -1083,6 +1090,13 @@
 
     function renderProducts(c) {
       const u = currentUser; 
+      if (!u || !u.id) {
+        c.innerHTML = `
+          <div class="flex items-center justify-center min-h-[50vh]">
+            <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-primary"></div>
+          </div>`;
+        return;
+      }
       const userLevel = u.userLevel || '1';
       const creditVal = u.credit || 0;
       const done = u.runIndex || 0;
@@ -1148,6 +1162,7 @@
       if (isOrderProcessing) return; isOrderProcessing = true;
       if (btnElement) { btnElement.disabled = true; btnElement.innerHTML = `<i data-lucide="loader-2" class="animate-spin"></i> ${t('processing')}`; lucide.createIcons(); }
       const u = currentUser;
+      if (!u) return;
       const creditVal = u.credit || 0;
       const done = u.runIndex || 0;
       const userLevel = u.userLevel || '1';
@@ -1224,6 +1239,7 @@
 
     async function processOrderFlowStep2(productIdOrObj, isSpecial) {
       const u = currentUser; 
+      if (!u) return;
       const creditVal = u.credit || 0;
       const usernameVal = u.username || 'User';
       
@@ -1354,7 +1370,15 @@
     function switchHistoryTab(tab) { historyTab = tab; if($('history-container')) $('history-container').remove(); renderHistory($('dash-content')); }
 
     function renderHistory(c) {
-      const u = currentUser; let listHtml = '';
+      const u = currentUser; 
+      if (!u || !u.id) {
+        c.innerHTML = `
+          <div class="flex items-center justify-center min-h-[50vh]">
+            <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-primary"></div>
+          </div>`;
+        return;
+      }
+      let listHtml = '';
       const done = u.runIndex || 0;
       const userLevel = u.userLevel || '1';
       const creditVal = u.credit || 0;
@@ -1475,6 +1499,13 @@
 
     function renderProfile(c) {
       const u = currentUser;
+      if (!u || !u.id || !u.phone) {
+        c.innerHTML = `
+          <div class="flex items-center justify-center min-h-[50vh]">
+            <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-primary"></div>
+          </div>`;
+        return;
+      }
       const creditVal = u.credit || 0;
       const usernameVal = u.username || 'User';
       const userLevel = u.userLevel || '1';
@@ -1514,7 +1545,7 @@
           </div>
           <div class="bg-white p-5 rounded-[32px] shadow-sm border border-slate-100">
             <div class="flex justify-between items-center mb-4">
-              <h3 class="font-bold text-slate-800 flex items-center gap-2 text-sm"><i data-lucide="credit-card" class="w-5 h-5 text-primary stroke-[2.2]"></i> ${t('bankAccount')}</h3>
+              <h3 class="font-bold text-slate-800 flex items-center gap-2 text-sm"><i data-lucide="credit-card" class="text-primary stroke-[2.2]"></i> ${t('bankAccount')}</h3>
               <button onclick="showEditBank()" class="text-xs text-primary font-bold bg-blue-50 px-3.5 py-1.5 rounded-xl hover:bg-blue-100 transition">${t('editBank')}</button>
             </div>
             ${u.bankName ? `
@@ -1539,6 +1570,7 @@
 
     function showEditBank() {
       const u = currentUser;
+      if (!u) return;
       const cfg = getConfig();
       const bankString = cfg.supportedBanks || 'KBank,SCB,BBL,KTB,Krungsri,GSB,TrueMoney';
       const bankList = bankString.split(',').map(b => b.trim()).filter(Boolean);
@@ -1557,6 +1589,7 @@
     }
 
     async function saveBank() {
+      if (!currentUser) return;
       const bankName = $('inp-bank').value; if (!bankName) return showToast(t('pleaseSelectBank'), 'error');
       const bankNum = $('inp-bank-num').value.trim(); if (!bankNum) return showToast(t('pleaseFillAcc'), 'error');
       currentUser.bankName = bankName; currentUser.bankNumber = bankNum;
@@ -1568,6 +1601,7 @@
 
     function showWithdrawModal() {
       const u = currentUser;
+      if (!u) return;
       const creditVal = u.credit || 0;
       if (!u.bankName || !u.bankNumber) return showToast(t('noBankDetails'),'error');
       if (getUserOrders().find(o => o.status === 'pending')) return showToast(t('cantWdPending'),'error');
@@ -1586,7 +1620,9 @@
     }
 
     async function doWithdraw() {
-      const u = currentUser; const amt = parseFloat($('inp-wd-amount').value); const pin = $('inp-wd-pin').value.trim();
+      const u = currentUser; 
+      if (!u) return;
+      const amt = parseFloat($('inp-wd-amount').value); const pin = $('inp-wd-pin').value.trim();
       const creditVal = u.credit || 0;
       const withdrawPassword = u.withdrawPassword;
       const usernameVal = u.username || 'User';
