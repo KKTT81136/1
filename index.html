@@ -146,6 +146,13 @@
     </div>
   </div>
   
+  <script>
+    // ป้องกันการกระพริบตัวโหลดสีขาวสำหรับลูกค้าที่ล็อกอินแล้วโดยเด็ดขาด
+    if (localStorage.getItem('tos_logged_user_id')) {
+      document.getElementById('initial-loader').style.display = 'none';
+    }
+  </script>
+  
   <div id="app" class="h-full w-full overflow-auto relative flex flex-col"></div>
 
   <script type="module">
@@ -245,7 +252,11 @@
     const getBanners = () => publicData.banners;
     const getGallery = () => publicData.galleries;
     const getMenuIcons = () => publicData.menuIcons;
-    const getConfig = () => publicData.configs.find(d => d.type === 'config' || d.type === 'การตั้งค่า' || d.พิมพ์ === 'การตั้งค่า') || null;
+    
+    // ดึงค่าการตั้งค่าจากคอลเลกชันที่เพิ่งรับล่าสุด
+    const getConfig = () => {
+      return publicData.configs.find(d => d.themePrimary !== undefined || d.themeSecondary !== undefined || d["ธีมหลัก"] !== undefined) || publicData.configs[0] || null;
+    };
 
     const getInviteCode = () => { const c = getConfig(); return String(getField(c, 'inviteCode', 'รหัสเชิญ') || '12345').trim(); };
     const getLogoUrl = () => { const c = getConfig(); return getField(c, 'logoUrl', 'logoUrl') || ''; };
@@ -365,7 +376,7 @@
       const loader = document.getElementById('initial-loader');
       if (loader) {
         loader.style.opacity = '0';
-        setTimeout(() => loader.remove(), 200);
+        setTimeout(() => loader.remove(), 150);
       }
     }
 
@@ -391,20 +402,22 @@
             logoContainer.style.backgroundColor = 'white';
           }
         }
-        setTimeout(() => {
-          isConfigsLoaded = true;
-          dismissPreloader();
-        }, 100); 
+        isConfigsLoaded = true;
+        dismissPreloader();
       }
     }
 
     function startPublicSubscriptions() {
-      const configHandler = (snapshot) => {
-        let configs = [];
-        snapshot.forEach(d => configs.push({ ...d.data(), __backendId: d.id }));
-        if (configs.length > 0 || publicData.configs.length === 0) {
-          publicData.configs = configs;
-        }
+      const configHandler = (snapshot, sourceCol) => {
+        snapshot.forEach(d => {
+          const item = { ...d.data(), __backendId: d.id, __collection: sourceCol };
+          const idx = publicData.configs.findIndex(c => c.__backendId === d.id);
+          if (idx !== -1) {
+            publicData.configs[idx] = item;
+          } else {
+            publicData.configs.push(item);
+          }
+        });
         
         const cfg = getConfig();
         if (cfg) {
@@ -429,8 +442,8 @@
         handlePublicDataLoadComplete();
       };
 
-      activeListeners.configs = onSnapshot(collection(db, "configs"), configHandler, configErrorHandler);
-      activeListeners.configsThai = onSnapshot(collection(db, "การกำหนดค่า"), configHandler, configErrorHandler);
+      activeListeners.configs = onSnapshot(collection(db, "configs"), (snap) => configHandler(snap, 'configs'), configErrorHandler);
+      activeListeners.configsThai = onSnapshot(collection(db, "การกำหนดค่า"), (snap) => configHandler(snap, 'การกำหนดค่า'), configErrorHandler);
 
       activeListeners.banners = onSnapshot(collection(db, "banners"), (snapshot) => {
         let banners = [];
@@ -553,24 +566,23 @@
       if (activeListeners.userSpecialAssigns) { activeListeners.userSpecialAssigns(); activeListeners.userSpecialAssigns = null; }
     }
 
-    // ========================================================
-    // REFACTORED INSTANT RELOAD & SYNC BLOCK
-    // ========================================================
+    // ==========================================
+    // REFACTORED INSTANT LOAD CHECKER
+    // ==========================================
     function checkCustomLoginState() {
-      // 1. ตรวจสอบจาก LocalStorage ทันทีโดยไม่ต้องรอกลไก Auth แอนดรอยด์/เว็บที่ช้า
       const cachedUserId = localStorage.getItem('tos_logged_user_id');
       if (cachedUserId) {
         currentUser = { id: cachedUserId }; 
         currentTab = sessionStorage.getItem('tos_current_tab') || 'home'; 
         startUserSubscriptions(cachedUserId);
-        renderDashboard(); // เรนเดอร์หน้าจอปัจจุบันทันทีเพื่อไม่ให้ระบบหลุด
-        dismissPreloader(); // เคลียร์ Preloader ออกไปอย่างรวดเร็ว
+        renderDashboard(); 
+        dismissPreloader();
       } else {
         renderLogin();
         dismissPreloader();
       }
 
-      // 2. ทำงานร่วมกับระบบ Auth หลังบ้านเป็นคู่ขนาน
+      // ป้องกันการโหลดแอนิเมชั่นค้างหรือกระพริบเสี้ยววิ
       signInAnonymously(auth).catch(err => {
         console.warn("Auth background error: ", err);
       });
