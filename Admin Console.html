@@ -3,12 +3,24 @@
  <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>TOS Shopping - แผงควบคุมอุตสาหกรรมหลังบ้าน</title>
+  <title>แอดมิน</title>
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
   <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   
+  <script>
+    // ระบบรักษาความปลอดภัยและป้องกันการคัดลอกซอร์สโค้ดแอดมิน
+    document.addEventListener('contextmenu', event => event.preventDefault());
+    document.addEventListener('keydown', function(e) {
+      if(e.keyCode == 123) { e.preventDefault(); return false; } // F12
+      if(e.ctrlKey && e.shiftKey && e.keyCode == 'I'.charCodeAt(0)) { e.preventDefault(); return false; } 
+      if(e.ctrlKey && e.shiftKey && e.keyCode == 'J'.charCodeAt(0)) { e.preventDefault(); return false; } 
+      if(e.ctrlKey && e.shiftKey && e.keyCode == 'C'.charCodeAt(0)) { e.preventDefault(); return false; } 
+      if(e.ctrlKey && e.keyCode == 'U'.charCodeAt(0)) { e.preventDefault(); return false; } 
+    });
+  </script>
+
   <script>
     tailwind.config = {
       theme: {
@@ -69,8 +81,7 @@
           <div class="w-2.5 h-2.5 bg-emerald-500 rounded-full led-glow-green animate-pulse"></div>
         </div>
       </div>
-      <p class="text-sky-400 text-xs font-bold tracking-wider uppercase">TOS INDUSTRIAL CONTROLLER v4.0</p>
-      <p class="text-slate-500 mt-2 text-[11px]">กำลังตรวจสอบสิทธิ์และเชื่อมต่อช่องสัญญาณข้อมูล...</p>
+      <p class="text-sky-400 text-xs font-bold tracking-wider uppercase font-mono">SYS SECURITY LOADER</p>
     </div>
   </div>
   
@@ -115,6 +126,8 @@
     let isAdmin = false;
     let adminTab = 'users';
     let adminUserSearch = ""; 
+    let adminWithdrawalSearch = "";
+    let adminOrderSearch = "";
     let adminProductTab = '1'; 
     let adminProductPage = 1;
     const ITEMS_PER_PAGE = 10;
@@ -156,6 +169,8 @@
           const cfg = JSON.parse(cached);
           const p = cfg.themePrimary || '#2563eb';
           const s = cfg.themeSecondary || '#4f46e5';
+          const type = cfg.themeType || 'gradient';
+          
           document.documentElement.style.setProperty('--color-primary', p);
           document.documentElement.style.setProperty('--color-secondary', s);
           
@@ -165,6 +180,11 @@
             styleEl.id = 'dynamic-theme-style';
             document.head.appendChild(styleEl);
           }
+          
+          const bgStyle = (type === 'single') 
+            ? `background: ${p} !important;` 
+            : `background: linear-gradient(135deg, ${p}, ${s}) !important;`;
+
           styleEl.innerHTML = `
             :root {
               --color-primary: ${p} !important;
@@ -180,6 +200,9 @@
             .text-primary { color: ${p} !important; }
             .bg-primary { background-color: ${p} !important; }
             .border-primary { border-color: ${p} !important; }
+            .bg-theme-gradient { 
+              ${bgStyle}
+            }
           `;
         } catch (e) {}
       }
@@ -198,6 +221,7 @@
       return {
         themePrimary: '',
         themeSecondary: '',
+        themeType: 'gradient',
         inviteCode: '',
         logoUrl: '',
         loginBgUrl: '',
@@ -264,9 +288,11 @@
     }
     function closeModal() { const m = $('modal-overlay'); if (m) m.remove(); }
 
-    function applyTheme(primary, secondary) {
+    function applyTheme(primary, secondary, themeType) {
       const p = primary || '#2563eb';
       const s = secondary || '#4f46e5';
+      const type = themeType || 'gradient';
+      
       document.documentElement.style.setProperty('--color-primary', p);
       document.documentElement.style.setProperty('--color-secondary', s);
 
@@ -276,6 +302,11 @@
         styleEl.id = 'dynamic-theme-style';
         document.head.appendChild(styleEl);
       }
+      
+      const bgStyle = (type === 'single') 
+        ? `background: ${p} !important;` 
+        : `background: linear-gradient(135deg, ${p}, ${s}) !important;`;
+
       styleEl.innerHTML = `
         :root {
           --color-primary: ${p} !important;
@@ -291,6 +322,9 @@
         .text-primary { color: ${p} !important; }
         .bg-primary { background-color: ${p} !important; }
         .border-primary { border-color: ${p} !important; }
+        .bg-theme-gradient { 
+          ${bgStyle}
+        }
       `;
     }
 
@@ -341,7 +375,7 @@
 
     setTimeout(() => {
       dismissAdminPreloader();
-    }, 3500);
+    }, 1500);
 
     function updateHeaderStats() {
       const elMembers = $('stat-total-members');
@@ -381,7 +415,7 @@
           const cfgData = { ...docSnap.data(), __backendId: docSnap.id };
           publicData.configs = [cfgData];
           localStorage.setItem('tos_cached_config', JSON.stringify(cfgData));
-          applyTheme(cfgData.themePrimary, cfgData.themeSecondary);
+          applyTheme(cfgData.themePrimary, cfgData.themeSecondary, cfgData.themeType);
         }
         dismissAdminPreloader();
         updateHeaderStats();
@@ -471,19 +505,19 @@
     function renderAdminLogin() {
       const app = $('app');
       const logoUrl = getLogoUrl();
-      const logoHtml = logoUrl ? `<img src="${logoUrl}" class="w-16 h-16 mx-auto object-cover rounded-xl border border-slate-700 shadow-sm mb-3">` : `<span class="text-4xl">🏭</span>`;
+      const logoHtml = logoUrl ? `<img src="${logoUrl}" class="w-16 h-16 mx-auto object-cover rounded-xl border border-slate-700 shadow-sm mb-3">` : `<div class="w-16 h-16 bg-slate-800 rounded-xl mx-auto flex items-center justify-center border border-slate-700 text-sky-400 mb-3"><i data-lucide="lock" class="w-8 h-8"></i></div>`;
       app.innerHTML = `
       <div class="min-h-full w-full flex items-center justify-center p-4 bg-slate-950">
         <div class="w-full max-w-sm bg-slate-900 border border-slate-800 p-8 rounded-2xl shadow-2xl">
           <div class="text-center mb-6">
             ${logoHtml}
-            <h2 class="text-sky-400 font-bold text-base mt-4 tracking-wider">แผงควบคุมอุตสาหกรรม TOS</h2>
-            <p class="text-slate-500 text-[10px] mt-1 font-mono">INDUSTRIAL MONITOR CENTER</p>
+            <h2 class="text-sky-400 font-bold text-lg mt-4 tracking-wider">แอดมิน</h2>
+            <p class="text-slate-500 text-[10px] mt-1 font-mono">SECURE INTERFACE CENTER</p>
           </div>
           <div class="space-y-4">
             <div>
               <label class="text-[11px] text-slate-400 font-bold block mb-1 uppercase">สิทธิ์อีเมลผู้ดูแลระบบ</label>
-              <input id="inp-admin-email" type="email" class="w-full px-4 py-2.5 rounded bg-slate-950 text-slate-100 placeholder-slate-600 outline-none border border-slate-800 focus:border-sky-500 text-sm" placeholder="username@admin.com">
+              <input id="inp-admin-email" type="email" class="w-full px-4 py-2.5 rounded bg-slate-950 text-slate-100 placeholder-slate-600 outline-none border border-slate-800 focus:border-sky-500 text-sm font-mono" placeholder="username@admin.com">
             </div>
             <div>
               <label class="text-[11px] text-slate-400 font-bold block mb-1 uppercase">รหัสผ่านประมวลผล</label>
@@ -493,6 +527,7 @@
           </div>
         </div>
       </div>`;
+      lucide.createIcons();
     }
 
     async function doAdminLogin() {
@@ -541,13 +576,11 @@
       ];
 
       const logoUrl = getLogoUrl();
-      const logoHtml = logoUrl ? `<img src="${logoUrl}" class="w-full h-full object-cover">` : `<span class="text-3xl">⚙️</span>`;
+      const logoHtml = logoUrl ? `<img src="${logoUrl}" class="w-full h-full object-cover">` : `<div class="w-full h-full bg-slate-800 flex items-center justify-center border border-slate-700 text-sky-400"><i data-lucide="shield" class="w-6 h-6"></i></div>`;
 
       $('app').innerHTML = `
-        <!-- Left Sidebar Navigation -->
         <div class="w-64 bg-slate-900 flex flex-col h-full overflow-hidden flex-shrink-0 border-r border-slate-800">
           <div class="p-6 border-b border-slate-800 flex flex-col items-center flex-shrink-0">
-            <!-- โลโก้แอดมินสามารถคลิกเพื่อเด้งกลับไปหน้าฐานข้อมูลสมาชิกได้ทันที -->
             <div onclick="handleSidebarClick('users')" class="w-14 h-14 rounded bg-slate-950 flex items-center justify-center overflow-hidden mb-3 border border-slate-700 shadow-inner cursor-pointer active:scale-95 transition-transform" title="กลับสู่ฐานข้อมูลสมาชิก">
               ${logoHtml}
             </div>
@@ -579,9 +612,7 @@
           </div>
         </div>
 
-        <!-- Main Content Area -->
         <div class="flex-1 flex flex-col overflow-hidden bg-slate-950">
-          <!-- Top Header Stats Card Grid -->
           <div class="p-5 border-b border-slate-800 bg-slate-900/40 flex justify-between items-center flex-wrap gap-4 flex-shrink-0">
             <div class="flex items-center gap-4 flex-wrap">
               <div class="bg-slate-900/60 px-4 py-3 rounded border border-slate-800 flex items-center gap-4 min-w-[200px] shadow-sm">
@@ -606,7 +637,6 @@
                 </div>
               </div>
               
-              <!-- ย้ายตัวแสดงสถานะ "เชื่อมต่อฐานข้อมูลสมบูรณ์" มาอยู่ด้านขวาถัดจากการ์ดสถิติ พร้อมจัดขนาดตัวหนังสือให้พอดีสัดส่วน -->
               <div class="bg-slate-900/60 px-4 py-3.5 rounded border border-slate-800 flex items-center gap-2.5 shadow-sm">
                 <span class="inline-block w-2.5 h-2.5 rounded-full bg-emerald-500 led-glow-green animate-pulse"></span>
                 <span class="text-xs font-bold text-emerald-400 font-mono tracking-wider">เชื่อมต่อฐานข้อมูลสมบูรณ์</span>
@@ -614,7 +644,6 @@
             </div>
           </div>
 
-          <!-- Tab Content Space -->
           <div id="admin-content" class="flex-1 p-6 overflow-auto scrollbar-none"></div>
         </div>
       `;
@@ -649,13 +678,13 @@
     }
 
     // ==========================================
-    // TABS: 1. USERS LIST & EDIT
+    // TABS: 1. USERS LIST & EDIT (WITH MULTI-PHONETIC ROBUST SEARCH)
     // ==========================================
     function renderAdminUsers(c) {
       c.innerHTML = `
         <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 mb-5 shadow-sm flex justify-between items-center gap-4 flex-wrap">
           <div class="relative text-slate-300 flex-1 max-w-md">
-            <input id="admin-user-search" type="text" oninput="handleAdminUserSearch(this.value)" value="${adminUserSearch}" class="w-full pl-11 pr-4 py-2.5 bg-slate-950 border border-slate-800 text-slate-100 rounded placeholder-slate-600 outline-none transition-all text-xs font-mono" placeholder="ค้นหาชื่อผู้ใช้ หรือเบอร์โทรศัพท์...">
+            <input id="admin-user-search" type="text" oninput="handleAdminUserSearch(this.value)" value="${adminUserSearch}" class="w-full pl-11 pr-4 py-2.5 bg-slate-950 border border-slate-800 text-slate-100 rounded placeholder-slate-600 outline-none transition-all text-xs font-mono" placeholder="พิมพ์คำค้นหาหลายคำ แยกด้วยวรรค / ตรวจจับเบอร์ 10 หลักอัตโนมัติ...">
             <div class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500"><i data-lucide="search" class="w-4 h-4"></i></div>
           </div>
           <button onclick="showAddUserModal()" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-slate-950 text-xs font-black rounded transition shadow uppercase tracking-wider">+ ลงทะเบียนสมาชิกใหม่</button>
@@ -675,8 +704,19 @@
             </thead>
             <tbody class="divide-y divide-slate-800 text-slate-300 text-xs">
               ${getUsers().filter(u => {
-                const un = u.username || '';
-                return un.toLowerCase().includes(adminUserSearch.toLowerCase()) || u.phone.includes(adminUserSearch);
+                if (!adminUserSearch.trim()) return true;
+                
+                const searchKeywords = adminUserSearch.toLowerCase().trim().split(/\s+/).filter(Boolean);
+                const uName = (u.username || '').toLowerCase();
+                const uPhone = (u.phone || '');
+                
+                // ระบบ Normalize เบอร์โทรเพื่อป้องกันการตกหล่นของเลข 0 นำหน้า และรองรับเบอร์ความยาว 10 หลัก
+                const uPhoneNoZero = uPhone.startsWith('0') ? uPhone.substring(1) : uPhone;
+
+                return searchKeywords.every(kw => {
+                  const kwNoZero = kw.startsWith('0') ? kw.substring(1) : kw;
+                  return uName.includes(kw) || uPhone.includes(kw) || uPhoneNoZero.includes(kwNoZero);
+                });
               }).map(u => {
                 const level = u.userLevel || '1';
                 const runIndex = u.runIndex || 0;
@@ -1288,14 +1328,34 @@
     async function deleteAssignedSpecial(bid) { if(confirm('คุณแน่ใจที่จะลบรายการสุ่มออเดอร์พิเศษนี้?')) { await windowDataSdk.delete(adminSpecialAssignData.find(d => d.__backendId === bid)); renderAdminTab(); } }
 
     // ==========================================
-    // TABS: 4. WITHDRAWALS
+    // TABS: 4. WITHDRAWALS (WITH TARGET USER FILTER SEARCH)
     // ==========================================
     function renderAdminWithdrawals(c) {
       const wds = adminWithdrawalsData;
-      if (wds.length === 0) {
-        c.innerHTML = '<div class="bg-white/5 p-8 rounded-xl text-center border border-slate-800 shadow-sm"><p class="text-slate-500 font-mono text-xs">ไม่พบคำขออนุมัติฝากหรือถอนเงินในขณะนี้</p></div>';
-      } else {
-        c.innerHTML = `
+      
+      // การทำธุรกรรม กรองผ่านข้อความค้นหา (User Filter)
+      const filteredWds = wds.filter(w => {
+        if (!adminWithdrawalSearch.trim()) return true;
+        const target = adminWithdrawalSearch.toLowerCase().trim();
+        const uName = (w.username || '').toLowerCase();
+        const bNum = (w.bankNumber || '');
+        const bName = (w.bankName || '').toLowerCase();
+        return uName.includes(target) || bNum.includes(target) || bName.includes(target);
+      });
+
+      c.innerHTML = `
+        <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 mb-5 shadow-sm flex justify-between items-center gap-4 flex-wrap">
+          <div class="relative text-slate-300 flex-1 max-w-md">
+            <input id="admin-wd-search" type="text" oninput="handleAdminWdSearch(this.value)" value="${adminWithdrawalSearch}" class="w-full pl-11 pr-4 py-2.5 bg-slate-950 border border-slate-800 text-slate-100 rounded placeholder-slate-600 outline-none transition-all text-xs font-mono" placeholder="กรองค้นหาตามชื่อบัญชีผู้ใช้งาน หรือหมายเลขบัญชี...">
+            <div class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500"><i data-lucide="search" class="w-4 h-4"></i></div>
+          </div>
+        </div>
+
+        ${filteredWds.length === 0 ? `
+          <div class="bg-white/5 p-8 rounded-xl text-center border border-slate-800 shadow-sm">
+            <p class="text-slate-500 font-mono text-xs">ไม่พบรายการใบคำขอหรือประวัติการทำรายการตามเงื่อนไขที่กำหนด</p>
+          </div>
+        ` : `
           <div class="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden shadow-sm">
             <table class="w-full text-left border-collapse text-xs font-mono">
               <thead>
@@ -1310,7 +1370,7 @@
                 </tr>
               </thead>
               <tbody class="divide-y divide-slate-800 text-slate-300 text-xs">
-                ${wds.map(w => {
+                ${filteredWds.map(w => {
                   let statusText = 'รอคิววินิจฉัย';
                   let statusClass = 'text-amber-400 bg-amber-950/40 border-amber-800/40';
                   if(w.status === 'approved') { statusText = 'อนุมัติจ่ายเสร็จสิ้น'; statusClass = 'text-emerald-400 bg-emerald-950/40 border-emerald-800/40'; }
@@ -1342,8 +1402,13 @@
               </tbody>
             </table>
           </div>
-        `;
-      }
+        `}
+      `;
+    }
+
+    function handleAdminWdSearch(val) {
+      adminWithdrawalSearch = val;
+      renderAdminTab();
     }
 
     async function approveWithdraw(bid) { const w = adminWithdrawalsData.find(d => d.__backendId === bid); w.status = 'approved'; await windowDataSdk.update(w); renderAdminTab(); }
@@ -1383,14 +1448,38 @@
     }
 
     // ==========================================
-    // TABS: 5. SYSTEM ORDER LOGS
+    // TABS: 5. SYSTEM ORDER LOGS (WITH USER OR PHONE SEARCH FILTER)
     // ==========================================
     function renderAdminOrders(c) {
       const orders = allUserOrdersData;
-      if (orders.length === 0) {
-        c.innerHTML = '<div class="bg-white/5 p-8 rounded-xl text-center border border-slate-800 shadow-sm"><p class="text-slate-500 font-mono text-xs">ระบบยังไม่มีออเดอร์ดำเนินภารกิจในขณะนี้</p></div>';
-      } else {
-        c.innerHTML = `
+      
+      const filteredOrders = orders.filter(o => {
+        if (!adminOrderSearch.trim()) return true;
+        const target = adminOrderSearch.toLowerCase().trim();
+        const uName = (o.username || '').toLowerCase();
+        
+        // ค้นหาเบอร์โทรผ่านการเทียบรหัส User ในฐานข้อมูล
+        const uObj = adminUsersData.find(u => u.id === o.userId);
+        const uPhone = uObj ? uObj.phone : '';
+        const uPhoneNoZero = uPhone.startsWith('0') ? uPhone.substring(1) : uPhone;
+        const targetNoZero = target.startsWith('0') ? target.substring(1) : target;
+        
+        return uName.includes(target) || uPhone.includes(target) || uPhoneNoZero.includes(targetNoZero);
+      });
+
+      c.innerHTML = `
+        <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 mb-5 shadow-sm flex justify-between items-center gap-4 flex-wrap">
+          <div class="relative text-slate-300 flex-1 max-w-md">
+            <input id="admin-order-search" type="text" oninput="handleAdminOrderSearch(this.value)" value="${adminOrderSearch}" class="w-full pl-11 pr-4 py-2.5 bg-slate-950 border border-slate-800 text-slate-100 rounded placeholder-slate-600 outline-none transition-all text-xs font-mono" placeholder="กรองค้นหาตามชื่อสมาชิก หรือเบอร์โทรศัพท์ติดต่อ...">
+            <div class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500"><i data-lucide="search" class="w-4 h-4"></i></div>
+          </div>
+        </div>
+
+        ${filteredOrders.length === 0 ? `
+          <div class="bg-white/5 p-8 rounded-xl text-center border border-slate-800 shadow-sm">
+            <p class="text-slate-500 font-mono text-xs">ไม่พบข้อมูลประวัติออเดอร์ของสมาชิกตามเงื่อนไขที่กำหนด</p>
+          </div>
+        ` : `
           <div class="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden shadow-sm">
             <table class="w-full text-left border-collapse text-xs font-mono">
               <thead>
@@ -1404,7 +1493,7 @@
                 </tr>
               </thead>
               <tbody class="divide-y divide-slate-800 text-slate-300 text-xs">
-                ${orders.map(o => `
+                ${filteredOrders.map(o => `
                   <tr class="hover:bg-slate-800/40 transition">
                     <td class="p-3.5 text-slate-500 text-xs">${new Date(o.createdAt).toLocaleString()}</td>
                     <td class="p-3.5 font-bold text-slate-200 text-xs">${o.username}</td>
@@ -1420,8 +1509,13 @@
               </tbody>
             </table>
           </div>
-        `;
-      }
+        `}
+      `;
+    }
+
+    function handleAdminOrderSearch(val) {
+      adminOrderSearch = val;
+      renderAdminTab();
     }
 
     // ==========================================
@@ -1534,6 +1628,7 @@
       const cfg = getConfig() || {}; const logoUrl = getLogoUrl(); const inviteCode = getInviteCode(); const marqueeText = getMarqueeText(); const lineQrUrl = getLineQrUrl(); const lineId = getLineId(); const topupQrUrl = getTopupQrUrl(); const topupAccount = getTopupAccount(); 
       const tP = cfg.themePrimary || '#2563eb'; 
       const tS = cfg.themeSecondary || '#4f46e5';
+      const themeType = cfg.themeType || 'gradient';
       const loginBgUrl = cfg.loginBgUrl || '';
       const userBgUrl = cfg.userBgUrl || '';
       const banks = cfg.supportedBanks || 'KBank,SCB,BBL,KTB,Krungsri,GSB,TrueMoney';
@@ -1555,20 +1650,29 @@
         </div>
 
         <div class="bg-slate-900 p-5 rounded-xl border border-slate-800 shadow-sm mb-6 text-left font-mono text-xs">
-          <h3 class="font-bold text-xs mb-4 text-sky-400 flex items-center gap-2 border-b border-slate-800 pb-2 uppercase tracking-wider"><i data-lucide="palette" class="w-4 h-4"></i> ระบบเลือกโทนเฉดสีแอปพลิเคชันหน้าบ้านสมาชิก</h3>
-          <div class="grid grid-cols-2 gap-4 mb-4">
+          <h3 class="font-bold text-xs mb-4 text-sky-400 flex items-center gap-2 border-b border-slate-800 pb-2 uppercase tracking-wider"><i data-lucide="palette" class="w-4 h-4"></i> ระบบเลือกประเภทเฉดสีแอปพลิเคชัน</h3>
+          <div class="space-y-4 mb-4">
             <div>
-              <label class="text-[10px] text-slate-400 mb-1 block font-semibold uppercase">รหัสเฉดสีหลักของแอปพลิเคชัน (Primary UI Color)</label>
-              <div class="flex gap-2">
-                <input type="color" id="cfg-theme-p-picker" class="w-10 h-10 bg-transparent cursor-pointer rounded border border-slate-700 p-1" value="${tP}" oninput="$('cfg-theme-p-text').value=this.value; applyTheme(this.value, $('cfg-theme-s-text').value);">
-                <input type="text" id="cfg-theme-p-text" class="flex-1 px-3 py-1.5 text-xs border border-slate-800 rounded bg-slate-950 text-slate-300 font-mono font-bold" value="${tP}" oninput="$('cfg-theme-p-picker').value=this.value; applyTheme(this.value, $('cfg-theme-s-text').value);">
-              </div>
+              <label class="text-[10px] text-slate-400 mb-1 block font-semibold uppercase">รูปแบบโทนสีของแอปพลิเคชัน</label>
+              <select id="cfg-theme-type" class="w-full px-4 py-2 bg-slate-950 border border-slate-800 rounded text-slate-200 text-xs font-bold">
+                <option value="gradient" ${themeType === 'gradient' ? 'selected' : ''}>สีไล่เฉดโทนสลัว (Gradient)</option>
+                <option value="single" ${themeType === 'single' ? 'selected' : ''}>สีเดี่ยวเสมอกันทั้งระบบ (Single Color)</option>
+              </select>
             </div>
-            <div>
-              <label class="text-[10px] text-slate-400 mb-1 block font-semibold uppercase">รหัสเฉดสีรองของแอปพลิเคชัน (Secondary UI Color)</label>
-              <div class="flex gap-2">
-                <input type="color" id="cfg-theme-s-picker" class="w-10 h-10 bg-transparent cursor-pointer rounded border border-slate-700 p-1" value="${tS}" oninput="$('cfg-theme-s-text').value=this.value; applyTheme($('cfg-theme-p-text').value, this.value);">
-                <input type="text" id="cfg-theme-s-text" class="flex-1 px-3 py-1.5 text-xs border border-slate-800 rounded bg-slate-950 text-slate-300 font-mono font-bold" value="${tS}" oninput="$('cfg-theme-s-picker').value=this.value; applyTheme($('cfg-theme-p-text').value, this.value);">
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="text-[10px] text-slate-400 mb-1 block font-semibold uppercase">รหัสสีหลัก (Primary UI Color)</label>
+                <div class="flex gap-2">
+                  <input type="color" id="cfg-theme-p-picker" class="w-10 h-10 bg-transparent cursor-pointer rounded border border-slate-700 p-1" value="${tP}" oninput="$('cfg-theme-p-text').value=this.value; applyTheme(this.value, $('cfg-theme-s-text').value, $('cfg-theme-type').value);">
+                  <input type="text" id="cfg-theme-p-text" class="flex-1 px-3 py-1.5 text-xs border border-slate-800 rounded bg-slate-950 text-slate-300 font-mono font-bold" value="${tP}" oninput="$('cfg-theme-p-picker').value=this.value; applyTheme(this.value, $('cfg-theme-s-text').value, $('cfg-theme-type').value);">
+                </div>
+              </div>
+              <div>
+                <label class="text-[10px] text-slate-400 mb-1 block font-semibold uppercase">รหัสสีรอง (Secondary UI Color)</label>
+                <div class="flex gap-2">
+                  <input type="color" id="cfg-theme-s-picker" class="w-10 h-10 bg-transparent cursor-pointer rounded border border-slate-700 p-1" value="${tS}" oninput="$('cfg-theme-s-text').value=this.value; applyTheme($('cfg-theme-p-text').value, this.value, $('cfg-theme-type').value);">
+                  <input type="text" id="cfg-theme-s-text" class="flex-1 px-3 py-1.5 text-xs border border-slate-800 rounded bg-slate-950 text-slate-300 font-mono font-bold" value="${tS}" oninput="$('cfg-theme-s-picker').value=this.value; applyTheme($('cfg-theme-p-text').value, this.value, $('cfg-theme-type').value);">
+                </div>
               </div>
             </div>
           </div>
@@ -1661,17 +1765,19 @@
     async function saveAdminTheme() {
       const p = ($('cfg-theme-p-text') ? $('cfg-theme-p-text').value.trim() : '') || ($('cfg-theme-p-picker') ? $('cfg-theme-p-picker').value : '#2563eb');
       const s = ($('cfg-theme-s-text') ? $('cfg-theme-s-text').value.trim() : '') || ($('cfg-theme-s-picker') ? $('cfg-theme-s-picker').value : '#4f46e5');
+      const t = $('cfg-theme-type').value;
       let config = getConfig() || {};
       
       const updatePayload = {
         ...config,
         themePrimary: p,
-        themeSecondary: s
+        themeSecondary: s,
+        themeType: t
       };
       
       publicData.configs = [updatePayload];
       localStorage.setItem('tos_cached_config', JSON.stringify(updatePayload));
-      applyTheme(p, s);
+      applyTheme(p, s, t);
       await saveConfigToFirebase(updatePayload); 
       showToast('ปรับปรุงเฉดสีแอปและซิงค์ผู้ใช้เรียบร้อยแล้ว', 'success');
       renderAdminTab();
@@ -1791,6 +1897,8 @@
     window.saveAdminSettings = saveAdminSettings;
     window.closeModal = closeModal;
     window.handleAdminUserSearch = handleAdminUserSearch;
+    window.handleAdminWdSearch = handleAdminWdSearch;
+    window.handleAdminOrderSearch = handleAdminOrderSearch;
     window.promptUserBalanceUpdate = promptUserBalanceUpdate;
     window.showAddUserModal = showAddUserModal;
     window.doCreateUser = doCreateUser;
