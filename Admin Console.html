@@ -7,6 +7,8 @@
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
   <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <!-- นำเข้า SweetAlert2 สกินดีไซน์เรียบหรู -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   
   <script>
     tailwind.config = {
@@ -61,7 +63,7 @@
  <body class="h-full antialiased selection:bg-sky-900 selection:text-sky-100">
 
   <!-- หน้าจอโหลดระบบผู้ดูแลส่วนกลาง -->
-  <div id="initial-loader" class="fixed inset-0 z-[9999] bg-slate-950 flex flex-col items-center justify-center transition-opacity duration-300">
+  <div id="initial-loader" class="fixed inset-0 z-[9999] bg-white flex flex-col items-center justify-center transition-all duration-300">
     <div class="text-center">
       <div class="relative w-16 h-16 mx-auto mb-5">
         <div class="animate-spin rounded-full h-16 w-16 border-4 border-slate-800 border-t-sky-500"></div>
@@ -184,25 +186,27 @@
       return Date.now().toString(36) + Math.random().toString(36).slice(2,8);
     }
 
+    // ปรับปรุงการใช้ SweetAlert2 ในหลังบ้านเพื่อสุนทรียภาพทางด้าน UX/UI
     function showToast(msg, type='success') {
-      const old = $('toast-container'); if (old) old.remove();
-      const colors = { 
-        success:'bg-emerald-950 border-emerald-500 text-emerald-300', 
-        error:'bg-rose-950 border-rose-500 text-rose-300', 
-        info:'bg-sky-950 border-sky-500 text-sky-300' 
-      };
-      const icons = { success:'check-circle', error:'alert-circle', info:'info' };
-      const div = document.createElement('div');
-      div.id = 'toast-container';
-      div.className = 'fixed top-6 left-1/2 -translate-x-1/2 z-[9999] toast-show w-max max-w-[90vw]';
-      div.innerHTML = `
-        <div class="${colors[type]} px-6 py-3.5 rounded-xl shadow-2xl border-2 flex items-center gap-3 text-sm font-bold tracking-wide">
-          <i data-lucide="${icons[type]}" class="w-5 h-5 flex-shrink-0"></i>
-          <span>${msg}</span>
-        </div>`;
-      document.body.appendChild(div);
-      lucide.createIcons();
-      setTimeout(() => { if(div) div.remove(); }, 2500);
+      const Toast = Swal.mixin({
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 3000,
+        timerProgressBar: true,
+        background: '#1e293b',
+        color: '#f8fafc',
+        iconColor: type === 'success' ? '#10b981' : (type === 'error' ? '#ef4444' : '#0284c7'),
+        didOpen: (toast) => {
+          toast.addEventListener('mouseenter', Swal.stopTimer)
+          toast.addEventListener('mouseleave', Swal.resumeTimer)
+        }
+      });
+
+      Toast.fire({
+        icon: type === 'success' ? 'success' : (type === 'error' ? 'error' : 'info'),
+        title: msg
+      });
     }
 
     function showModal(content) {
@@ -271,7 +275,7 @@
       }
     }
 
-    // ระบบข้ามการค้างกรณีดาวน์โหลดฐานข้อมูลล่าช้า
+    // ป้องกันหน้าโหลดค้างเด็ดขาด
     setTimeout(() => {
       dismissAdminPreloader();
     }, 3500);
@@ -482,8 +486,8 @@
             <div class="w-14 h-14 rounded bg-slate-950 flex items-center justify-center overflow-hidden mb-3 border border-slate-700 shadow-inner">
               ${logoHtml}
             </div>
-            <p class="text-xs font-black text-slate-100 uppercase tracking-widest font-mono">TOS CONTROLLER v4.0</p>
-            <div class="mt-2.5 px-3 py-1 bg-sky-500/10 border border-sky-500/30 text-sky-400 rounded text-[9px] font-bold tracking-widest font-mono">
+            <!-- ดึงคำว่า TOS CONTROLLER v4.0 ด้านล่างของโลโก้ออกเรียบร้อยแล้วตามคำสั่ง -->
+            <div class="mt-1 px-3 py-1 bg-sky-500/10 border border-sky-500/30 text-sky-400 rounded text-[9px] font-bold tracking-widest font-mono">
               SYS STATUS: ACTIVE
             </div>
           </div>
@@ -588,7 +592,7 @@
       c.innerHTML = `
         <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 mb-5 shadow-sm flex justify-between items-center gap-4 flex-wrap">
           <div class="relative text-slate-300 flex-1 max-w-md">
-            <input id="admin-user-search" type="text" oninput="handleAdminUserSearch(this.value)" value="${adminUserSearch}" class="w-full pl-11 pr-4 py-2.5 bg-slate-950 border border-slate-800 text-slate-100 rounded placeholder-slate-600 outline-none transition-all text-sm font-mono" placeholder="ป้อนชื่อผู้ใช้ หรือ เบอร์โทรเพื่อกรองระบบ...">
+            <input id="admin-user-search" type="text" oninput="handleAdminUserSearch(this.value)" value="${adminUserSearch}" class="w-full pl-11 pr-4 py-2.5 bg-slate-950 border border-slate-800 text-slate-100 rounded placeholder-slate-600 outline-none transition-all text-sm font-mono" placeholder="ค้นหาชื่อผู้ใช้ หรือเบอร์โทรศัพท์...">
             <div class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500"><i data-lucide="search" class="w-4 h-4"></i></div>
           </div>
           <button onclick="showAddUserModal()" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-slate-950 text-xs font-black rounded transition shadow uppercase tracking-wider">+ ลงทะเบียนสมาชิกใหม่</button>
@@ -720,7 +724,7 @@
             <span class="text-xl">⚙️</span>
             <div>
               <h3 class="font-black text-sm text-sky-400">${username}</h3>
-              <p class="text-[10px] text-slate-500">บัญชี: ${u.phone}</p>
+              <p class="text-[10px] text-slate-400">บัญชี: ${u.phone}</p>
             </div>
           </div>
           <div class="flex gap-1">
@@ -1044,7 +1048,7 @@
       lucide.createIcons();
     }
 
-    function showCreateSpecialTemplate() { showModal(`<h3 class="font-bold text-sm mb-4 text-sky-400 border-b border-slate-800 pb-2 font-mono">สร้างเทมเพลตสินค้าออเดอร์พิเศษ</h3><div class="space-y-3.5 text-left text-xs font-mono"><div><label class="text-[10px] text-slate-400 font-bold block mb-1">ชื่อสินค้าทางเทคนิค</label><input id="st-n" class="w-full px-4 py-2 bg-slate-950 border border-slate-800 text-slate-200 rounded text-xs" placeholder="ระบุชื่อเรียก"></div><div class="grid grid-cols-2 gap-2"><div><label class="text-[10px] text-slate-400 font-bold block mb-1">ราคาทุนระบบ (บาท)</label><input id="st-p" type="number" class="w-full px-4 py-2 bg-slate-950 border border-slate-800 text-slate-200 rounded text-xs" placeholder="ทุน"></div><div><label class="text-[10px] text-slate-400 font-bold block mb-1">กำไรคอมมิชชัน (บาท)</label><input id="st-c" type="number" class="w-full px-4 py-2 bg-slate-950 border border-slate-800 text-slate-200 rounded text-xs" placeholder="กำไร"></div></div><div><label class="text-[10px] text-slate-400 font-bold block mb-1">ลิงก์ภาพสินค้า URL</label><input id="st-i" type="text" class="w-full px-4 py-2 bg-slate-950 border border-slate-800 text-slate-200 rounded text-xs" placeholder="วางลิงก์รูปภาพ"></div><button onclick="doCreateST()" class="w-full py-2.5 bg-sky-600 hover:bg-sky-500 text-slate-950 font-bold rounded transition text-xs">บันทึกข้อมูลเทมเพลต</button></div>`); }
+    function showCreateSpecialTemplate() { showModal(`<h3 class="font-bold text-sm mb-4 text-sky-400 border-b border-slate-800 pb-2 font-mono">สร้างเทมเพลตสินค้าออเดอร์พิเศษ</h3><div class="space-y-3.5 text-left text-xs font-mono"><div><label class="text-[10px] text-slate-400 font-bold block mb-1">ชื่อสินค้าทางเทคนิค</label><input id="st-n" class="w-full px-4 py-2 bg-slate-950 border border-slate-800 text-slate-200 rounded text-xs" placeholder="ระบุชื่อเรียก"></div><div class="grid grid-cols-2 gap-2"><div><label class="text-[10px] text-slate-400 font-bold block mb-1">ราคาทุนระบบ (บาท)</label><input id="st-p" type="number" class="w-full mt-1 px-4 py-2 bg-slate-950 border border-slate-800 text-slate-200 rounded text-xs" placeholder="ทุน"></div><div><label class="text-[10px] text-slate-400 font-bold block mb-1">กำไรคอมมิชชัน (บาท)</label><input id="st-c" type="number" class="w-full mt-1 px-4 py-2 bg-slate-950 border border-slate-800 text-slate-200 rounded text-xs" placeholder="กำไร"></div></div><div><label class="text-[10px] text-slate-400 font-bold block mb-1">ลิงก์ภาพสินค้า URL</label><input id="st-i" type="text" class="w-full px-4 py-2 bg-slate-950 border border-slate-800 text-slate-200 rounded text-xs" placeholder="วางลิงก์รูปภาพ"></div><button onclick="doCreateST()" class="w-full py-2.5 bg-sky-600 hover:bg-sky-500 text-slate-950 font-bold rounded transition text-xs">บันทึกข้อมูลเทมเพลต</button></div>`); }
     
     async function doCreateST() { 
       try {
@@ -1086,7 +1090,7 @@
             </div>
           </div>
           <div>
-            <label class="text-[10px] text-slate-400 block mb-1">🔍 กรองค้นหาสมาชิกปลายทาง</label>
+            <label class="text-[10px] text-slate-400 block mb-1">🔍 ค้นหาสมาชิกปลายทาง</label>
             <input id="sa-user-search" type="text" oninput="filterAssignUsers(this.value)" class="w-full px-3.5 py-2 bg-slate-950 border border-slate-800 rounded text-slate-400 placeholder-slate-600" placeholder="พิมพ์ชื่อผู้ใช้ หรือเบอร์โทรเพื่อคัดกรอง...">
           </div>
           <div>
@@ -1177,7 +1181,7 @@
             </select>
           </div>
           <div>
-            <label class="text-[10px] text-slate-400 block mb-1">แสดงผลที่ภารกิจลำดับขั้นตอนกดที่</label>
+            <label class="text-[10px] text-slate-400 block mb-1">ทำงานเมื่อจับคู่ออเดอร์ลำดับที่เท่าไร</label>
             <input id="sa-edit-idx" type="number" class="w-full px-3.5 py-2 bg-slate-950 border border-slate-800 rounded text-amber-500 font-black text-center" value="${s.targetIndex}">
           </div>
           <button onclick="doUpdateAssignedS('${bid}', '${s.productImage||''}')" class="w-full py-2.5 bg-sky-600 hover:bg-sky-500 text-slate-950 font-bold rounded transition mt-2">บันทึกอัปเดตข้อมูล</button>
@@ -1267,7 +1271,7 @@
                           <button onclick="approveWithdraw('${w.__backendId}')" class="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-500 text-slate-950 rounded text-[10px] font-bold transition">อนุมัติ</button>
                           <button onclick="rejectWithdraw('${w.__backendId}')" class="px-2.5 py-1 bg-rose-600 hover:bg-rose-500 text-rose-300 rounded text-[10px] font-bold transition">ปฏิเสธ</button>
                         ` : ''}
-                        <button onclick="deleteWithdrawal('${w.__backendId}')" class="px-2 py-1 bg-slate-950 hover:bg-rose-950 border border-slate-800 hover:border-rose-800 text-slate-500 hover:text-rose-400 rounded transition"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
+                        <button onclick="deleteWithdrawal('${w.__backendId}')" class="px-2 py-1 bg-slate-100 hover:bg-rose-950 border border-slate-200 hover:border-rose-200 text-slate-500 hover:text-rose-400 rounded transition"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
                       </div>
                     </td>
                   </tr>`;
@@ -1405,11 +1409,11 @@
         <div class="space-y-3.5 text-left text-xs font-mono">
           <div>
             <label class="text-[10px] text-slate-400 font-bold block mb-1">ภาพสำหรับเวอร์ชันแสดงผลบนโทรศัพท์มือถือ (สัดส่วน 5:3)</label>
-            <input id="ab-url" class="w-full px-4 py-2 bg-slate-950 border border-slate-800 text-slate-200 rounded text-xs" placeholder="https://domain.com/mobile-image.jpg">
+            <input id="ab-url" class="w-full px-4 py-2 bg-slate-950 border border-slate-200 rounded text-xs" placeholder="https://domain.com/mobile-image.jpg">
           </div>
           <div>
             <label class="text-[10px] text-slate-400 font-bold block mb-1">ภาพสำหรับเวอร์ชันแสดงผลบนหน้าจอ PC (สัดส่วน 20:10)</label>
-            <input id="ab-pc-url" class="w-full px-4 py-2 bg-slate-950 border border-slate-800 text-slate-200 rounded text-xs" placeholder="https://domain.com/pc-image.jpg">
+            <input id="ab-pc-url" class="w-full px-4 py-2 bg-slate-950 border border-slate-200 rounded text-xs" placeholder="https://domain.com/pc-image.jpg">
           </div>
           <button onclick="doAddBanner()" class="w-full py-2.5 bg-sky-600 hover:bg-sky-500 text-slate-950 font-bold rounded transition mt-2">นำส่งข้อมูลรูปแบนเนอร์</button>
         </div>
@@ -1428,7 +1432,7 @@
     function editBanner(bid) { 
       const b = publicData.banners.find(d => d.__backendId === bid); 
       showModal(`
-        <h3 class="font-bold text-sm mb-4 text-sky-400 border-b border-slate-800 pb-2 font-mono">ปรับปรุงรายละเอียดพารามิเตอร์รูปภาพแบนเนอร์</h3>
+        <h3 class="font-bold text-sm mb-4 text-sky-400 border-b border-slate-100 pb-2 font-mono">ปรับปรุงรายละเอียดพารามิเตอร์รูปภาพแบนเนอร์</h3>
         <div class="space-y-3.5 text-left text-xs font-mono">
           <div>
             <label class="text-[10px] text-slate-400 font-bold block mb-1">รูปเวอร์ชันมือถือ</label>
@@ -1480,28 +1484,29 @@
               <input id="cfg-tab-title" class="w-full px-4 py-2 bg-slate-950 border border-slate-800 rounded text-slate-200 text-xs" placeholder="เช่น TOS Shopping" value="${getTabTitle()}">
             </div>
             <div>
-              <label class="text-[10px] text-slate-400 font-semibold block mb-1">ลิงก์ไอคอนเล็กสำหรับหน้าเบราว์เซอร์หน้าจอสมาชิก (Favicon URL)</label>
+              <label class="text-[10px] text-slate-400 font-semibold block mb-1">ลิงก์ไฟล์ไอคอนเล็กสำหรับหน้าเบราว์เซอร์หน้าจอสมาชิก (Favicon URL)</label>
               <input id="cfg-tab-favicon" class="w-full px-4 py-2 bg-slate-950 border border-slate-800 rounded text-slate-200 text-xs" placeholder="ระบุที่อยู่ URL สำหรับรูปไอคอน" value="${getTabFavicon()}">
             </div>
             <button onclick="saveAdminSettings('tab_config')" class="w-full py-2 bg-sky-600 hover:bg-sky-500 text-slate-950 font-bold text-xs rounded transition">บันทึกข้อมูลหน้าเบราว์เซอร์</button>
           </div>
         </div>
 
+        <!-- ดีไซน์ระบบเลือกโทนเฉดสีแอปพลิเคชันแบบสลับสีเรียลไทม์ ซิงก์ 2 ช่องทางสมบูรณ์แบบ -->
         <div class="bg-slate-900 p-5 rounded-xl border border-slate-800 shadow-sm mb-6 text-left font-mono text-xs">
           <h3 class="font-bold text-sm mb-4 text-sky-400 flex items-center gap-2 border-b border-slate-800 pb-2"><i data-lucide="palette" class="w-4 h-4"></i> ระบบเลือกโทนเฉดสีแอปพลิเคชันหน้าบ้านสมาชิก</h3>
           <div class="grid grid-cols-2 gap-4 mb-4">
             <div>
               <label class="text-[10px] text-slate-400 mb-1 block font-semibold">รหัสเฉดสีหลักของแอปพลิเคชัน (Primary UI Color)</label>
               <div class="flex gap-2">
-                <input type="color" id="cfg-theme-p-picker" class="w-10 h-10 bg-transparent cursor-pointer rounded border border-slate-700 p-1" value="${tP}" oninput="$('cfg-theme-p-text').value=this.value">
-                <input type="text" id="cfg-theme-p-text" class="flex-1 px-3 py-1.5 text-xs border border-slate-800 rounded bg-slate-950 text-slate-300 font-mono" value="${tP}">
+                <input type="color" id="cfg-theme-p-picker" class="w-10 h-10 bg-transparent cursor-pointer rounded border border-slate-700 p-1" value="${tP}" oninput="$('cfg-theme-p-text').value=this.value; document.documentElement.style.setProperty('--color-primary', this.value);">
+                <input type="text" id="cfg-theme-p-text" class="flex-1 px-3 py-1.5 text-xs border border-slate-800 rounded bg-slate-950 text-slate-300 font-mono font-bold" value="${tP}" oninput="$('cfg-theme-p-picker').value=this.value; document.documentElement.style.setProperty('--color-primary', this.value);">
               </div>
             </div>
             <div>
               <label class="text-[10px] text-slate-400 mb-1 block font-semibold">รหัสเฉดสีรองของแอปพลิเคชัน (Secondary UI Color)</label>
               <div class="flex gap-2">
-                <input type="color" id="cfg-theme-s-picker" class="w-10 h-10 bg-transparent cursor-pointer rounded border border-slate-700 p-1" value="${tS}" oninput="$('cfg-theme-s-text').value=this.value">
-                <input type="text" id="cfg-theme-s-text" class="flex-1 px-3 py-1.5 text-xs border border-slate-800 rounded bg-slate-950 text-slate-300 font-mono" value="${tS}">
+                <input type="color" id="cfg-theme-s-picker" class="w-10 h-10 bg-transparent cursor-pointer rounded border border-slate-700 p-1" value="${tS}" oninput="$('cfg-theme-s-text').value=this.value; document.documentElement.style.setProperty('--color-secondary', this.value);">
+                <input type="text" id="cfg-theme-s-text" class="flex-1 px-3 py-1.5 text-xs border border-slate-800 rounded bg-slate-950 text-slate-300 font-mono font-bold" value="${tS}" oninput="$('cfg-theme-s-picker').value=this.value; document.documentElement.style.setProperty('--color-secondary', this.value);">
               </div>
             </div>
           </div>
@@ -1537,15 +1542,15 @@
               <input id="cfg-line-qr" class="w-full px-4 py-2 bg-slate-950 border border-slate-800 rounded text-slate-200 text-xs" placeholder="วางที่อยู่ลิงก์รูปภาพ QR CODE" value="${lineQrUrl}">
             </div>
             <div>
-              <label class="text-[10px] text-slate-400 font-semibold block mb-1">ไอดีบัญชี LINE ซัพพอร์ต (LINE ID สำหรับคัดลอกคีย์)</label>
+              <label class="text-[10px] text-slate-400 font-semibold block mb-1">บัญชีไอดี LINE ซัพพอร์ต (LINE ID สำหรับคัดลอกคีย์)</label>
               <input id="cfg-line-id" class="w-full px-4 py-2 bg-slate-950 border border-slate-800 rounded text-slate-200 text-xs" placeholder="เช่น @tossupport" value="${lineId}">
             </div>
-            <button onclick="saveAdminSettings('line')" class="w-full py-2 bg-sky-600 hover:bg-sky-500 text-slate-950 font-bold text-xs rounded transition">บันทึกข้อมูลบริการซัพพอร์ต</button>
+            <button onclick="saveAdminSettings('line')" class="w-full py-2 bg-sky-600 hover:bg-sky-500 text-slate-950 font-bold text-xs rounded transition">บันทึกข้อมูลติดต่อให้บริการ</button>
           </div>
         </div>
 
         <div class="bg-slate-900 p-5 rounded-xl border border-slate-800 shadow-sm mb-6 text-left font-mono text-xs">
-          <h3 class="font-bold text-sm mb-3 text-sky-400 flex items-center gap-2 border-b border-slate-800 pb-2"><i data-lucide="banknote" class="w-4 h-4"></i> จัดการช่องทางการฝากเงินเข้าพอร์ตและธนาคารในระบบ</h3>
+          <h3 class="font-bold text-sm mb-3 text-sky-400 flex items-center gap-2 border-b border-slate-800 pb-2"><i data-lucide="banknote" class="w-4 h-4"></i> ระบบตั้งค่าช่องทางการรับฝากเงินและธนาคารในระบบ</h3>
           <div class="space-y-4">
             <div>
               <label class="text-[10px] text-slate-400 font-semibold block mb-1">ลิสต์ชื่อธนาคารที่สมาชิกระบบสามารถใช้ได้ (แยกด้วยลูกน้ำ ",")</label>
@@ -1570,13 +1575,13 @@
         </div>
 
         <div class="bg-slate-900 p-5 rounded-xl border border-slate-800 shadow-sm mb-6 text-left font-mono text-xs">
-          <h3 class="font-bold text-sm mb-3 text-sky-400 flex items-center gap-2 border-b border-slate-800 pb-2"><i data-lucide="key" class="w-4 h-4"></i> รหัสเชิญสมัครเข้าร่วมพอร์ตรักษาความปลอดภัยระบบ</h3>
+          <h3 class="font-bold text-sm mb-3 text-sky-400 flex items-center gap-2 border-b border-slate-100 pb-2"><i data-lucide="key" class="w-4 h-4"></i> รหัสเชิญสมัครเข้าร่วมพอร์ตรักษาความปลอดภัยระบบ</h3>
           <input id="cfg-invite" class="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded text-slate-200 mb-3 text-xs text-center font-bold tracking-widest" value="${inviteCode}">
           <button onclick="saveAdminSettings('invite')" class="w-full py-2 bg-sky-600 hover:bg-sky-500 text-slate-950 font-bold text-xs rounded transition">บันทึกคีย์รหัสเชิญความปลอดภัย</button>
         </div>
 
         <div class="bg-slate-900 p-5 rounded-xl border border-slate-800 shadow-sm mb-4 text-left font-mono text-xs">
-          <h3 class="font-bold text-sm mb-3 text-sky-400 flex items-center gap-2 border-b border-slate-800 pb-2"><i data-lucide="menu" class="w-4 h-4"></i> ข้อมูลหัวข้อการตั้งค่าเมนูคู่มือสำหรับสมาชิกส่วนหน้าบ้าน</h3>
+          <h3 class="font-bold text-sm mb-3 text-sky-400 flex items-center gap-2 border-b border-slate-100 pb-2"><i data-lucide="menu" class="w-4 h-4"></i> ข้อมูลหัวข้อการตั้งค่าเมนูคู่มือสำหรับสมาชิกส่วนหน้าบ้าน</h3>
           <button onclick="showAddMenuIcon()" class="w-full py-2 mb-3 bg-slate-950 hover:bg-slate-800 text-slate-300 border border-slate-800 rounded text-xs font-bold transition">+ ลงทะเบียนเพิ่มหัวข้อคู่มือใหม่</button>
           <div class="space-y-2">
             ${getMenuIcons().map(m => `
@@ -1592,7 +1597,9 @@
     }
 
     async function saveAdminTheme() {
-      const p = $('cfg-theme-p-text').value.trim(); const s = $('cfg-theme-s-text').value.trim();
+      // ดึงรหัสสีที่ป้อนในช่องกรอกข้อความเพื่อความชัวร์และแม่นยำสูงสุด
+      const p = ($('cfg-theme-p-text') ? $('cfg-theme-p-text').value.trim() : '') || ($('cfg-theme-p-picker') ? $('cfg-theme-p-picker').value : '#1e40af');
+      const s = ($('cfg-theme-s-text') ? $('cfg-theme-s-text').value.trim() : '') || ($('cfg-theme-s-picker') ? $('cfg-theme-s-picker').value : '#3b82f6');
       let config = getConfig() || {};
       
       const updatePayload = {
@@ -1604,7 +1611,7 @@
       publicData.configs = [updatePayload];
       applyTheme(p, s);
       await saveConfigToFirebase(updatePayload); 
-      showToast('บันทึกและส่งผ่านพารามิเตอร์ธีมสีแอปสำเร็จ');
+      showToast('ปรับปรุงเฉดสีแอปและซิงค์ผู้ใช้เรียบร้อยแล้ว', 'success');
       renderAdminTab();
     }
 
@@ -1647,12 +1654,12 @@
 
       publicData.configs = [updatePayload];
       await saveConfigToFirebase(updatePayload); 
-      showToast('บันทึกกำหนดค่าพารามิเตอร์เข้าสู่ระบบเรียบร้อย'); 
+      showToast('บันทึกปรับปรุงแก้ไขการตั้งค่าสำเร็จ', 'success'); 
       renderAdminTab();
     }
 
     function showAddMenuIcon() { showModal(`<h3 class="font-bold text-sm mb-4 text-sky-400 border-b border-slate-800 pb-2 font-mono">ลงทะเบียนเพิ่มคู่มือผู้ใช้</h3><input id="mi-label" class="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 text-slate-200 rounded mb-3 text-xs" placeholder="ระบุหัวข้อหัวข้อย่อยคู่มือ"><input id="mi-url" class="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 text-slate-200 rounded mb-3 text-xs" placeholder="ที่อยู่ไฟล์รูปภาพไอคอน URL (ถ้ามี)"><textarea id="mi-content" class="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 text-slate-200 rounded h-28 mb-4 text-xs" placeholder="รายละเอียดเนื้อความคำแนะนำแนะนำ..."></textarea><button onclick="doAddMenuIcon()" class="w-full py-2.5 bg-sky-600 hover:bg-sky-500 text-slate-950 font-bold rounded transition">ส่งพอร์ตบันทึกข้อมูล</button>`); }
-    function editMenuIcon(bid) { const m = publicData.menuIcons.find(d => d.__backendId === bid); showModal(`<h3 class="font-bold text-sm mb-4 text-sky-400 border-b border-slate-800 pb-2 font-mono">แก้ไขรายละเอียดหัวข้อแนะนำระบบ</h3><input id="mi-label" class="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 text-slate-200 rounded mb-3 text-xs" value="${m.menuLabel}"><input id="mi-url" class="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 text-slate-200 rounded mb-3 text-xs" value="${m.menuIconUrl||''}"><textarea id="mi-content" class="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 text-slate-200 rounded h-28 mb-4 text-xs">${m.menuContent||''}</textarea><button onclick="doEditMenuIcon('${bid}')" class="w-full py-2.5 bg-sky-600 hover:bg-sky-500 text-slate-950 font-bold rounded transition text-xs">อัปเดตและบันทึกข้อมูล</button>`); }
+    function editMenuIcon(bid) { const m = publicData.menuIcons.find(d => d.__backendId === bid); showModal(`<h3 class="font-bold text-sm mb-4 text-sky-400 border-b border-slate-800 pb-2 font-mono">แก้ไขรายละเอียดหัวข้อแนะนำระบบ</h3><input id="mi-label" class="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 text-slate-200 rounded mb-3 text-xs" value="${m.menuLabel}"><input id="mi-url" class="w-full px-4 py-2.5 bg-slate-950 border border-slate-200 text-slate-200 rounded mb-3 text-xs" value="${m.menuIconUrl||''}"><textarea id="mi-content" class="w-full px-4 py-2.5 bg-slate-950 border border-slate-200 text-slate-200 rounded h-28 mb-4 text-xs">${m.menuContent||''}</textarea><button onclick="doEditMenuIcon('${bid}')" class="w-full py-2.5 bg-sky-600 hover:bg-sky-500 text-slate-950 font-bold rounded transition text-xs">อัปเดตและบันทึกข้อมูล</button>`); }
     function doAddMenuIcon() { windowDataSdk.create({ type:'menuIcon', id:genId(), menuLabel: $('mi-label').value.trim(), menuContent: $('mi-content').value.trim(), menuIconUrl: $('mi-url').value.trim() }); closeModal(); renderAdminTab(); }
     function doEditMenuIcon(bid) { const m = publicData.menuIcons.find(d => d.__backendId === bid); windowDataSdk.update({ ...m, menuLabel: $('mi-label').value.trim(), menuContent: $('mi-content').value.trim(), menuIconUrl: $('mi-url').value.trim() }); closeModal(); renderAdminTab(); }
     function deleteMenuIcon(bid) { if(confirm('คุณต้องการลบข้อตกลงแนะนำชิ้นนี้ออกอย่างถาวร?')) { windowDataSdk.delete(publicData.menuIcons.find(d => d.__backendId === bid)); renderAdminTab(); } }
