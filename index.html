@@ -140,7 +140,7 @@
  </head>
  <body class="h-full text-slate-800 antialiased selection:bg-blue-200">
 
-  <div id="initial-loader" class="fixed inset-0 z-[9999] bg-white flex flex-col items-center justify-center transition-opacity duration-300">
+  <div id="initial-loader" class="fixed inset-0 z-[9999] bg-white flex flex-col items-center justify-center transition-all duration-300">
     <div id="loader-logo-container" class="w-28 h-28 rounded-full overflow-hidden flex items-center justify-center bg-slate-50 border border-slate-100 p-0 shadow-sm">
       <span class="text-5xl">🛒</span>
     </div>
@@ -157,9 +157,6 @@
       getAuth, signInAnonymously, signOut, onAuthStateChanged 
     } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 
-    // ==========================================
-    // Firebase Config (Base64)
-    // ==========================================
     const _0xdbKey = [
       "QUl6YVN5QnhWazBMQlg5UkNzOXYzRXNNUDF5SnNpR3ItYmpwb3Jz", 
       "a2std2ViLTdkMDJiLmZpcmViYXNlYXBwLmNvbQ==",             
@@ -322,7 +319,6 @@
 
       applyTheme(getField(cfg, 'themePrimary', 'ธีมหลัก'), getField(cfg, 'themeSecondary', 'ธีมรอง'));
 
-      // พื้นหลังล็อกอิน
       const loginWrapper = document.getElementById('form-card-wrapper');
       if (loginWrapper) {
         const bgUrl = getLoginBgUrl();
@@ -338,7 +334,6 @@
         }
       }
 
-      // พื้นหลังแดชบอร์ดด้านในผู้ใช้
       const dashOuter = document.getElementById('dash-outer-container');
       if (dashOuter) {
         const userBgUrl = getUserBgUrl();
@@ -354,13 +349,11 @@
         }
       }
 
-      // ข้อความวิ่งประกาศเตือน
       const marqueeEl = document.getElementById('marquee-text-display');
       if (marqueeEl) {
         marqueeEl.innerText = getMarqueeText();
       }
 
-      // อัปเดตรูปโลโก้
       const logos = document.querySelectorAll('.app-logo-img');
       logos.forEach(img => {
         const logoUrl = getLogoUrl();
@@ -372,14 +365,36 @@
       const loader = document.getElementById('initial-loader');
       if (loader) {
         loader.style.opacity = '0';
-        setTimeout(() => loader.remove(), 300);
+        setTimeout(() => loader.remove(), 350);
       }
     }
 
     function handlePublicDataLoadComplete() {
       if (!isConfigsLoaded) {
-        isConfigsLoaded = true;
-        dismissPreloader();
+        const cfg = getConfig();
+        const loader = document.getElementById('initial-loader');
+        if (loader && cfg) {
+          const loginBg = getLoginBgUrl();
+          const logoUrl = getLogoUrl();
+          if (loginBg) {
+            loader.style.backgroundImage = `url('${loginBg}')`;
+            loader.style.backgroundSize = 'cover';
+            loader.style.backgroundPosition = 'center';
+            loader.style.backgroundColor = 'transparent';
+          } else {
+            const primaryColor = getField(cfg, 'themePrimary', 'ธีมหลัก') || '#2563eb';
+            loader.style.backgroundColor = primaryColor;
+          }
+          const logoContainer = document.getElementById('loader-logo-container');
+          if (logoContainer && logoUrl) {
+            logoContainer.innerHTML = `<img src="${logoUrl}" class="w-full h-full object-cover rounded-full">`;
+            logoContainer.style.backgroundColor = 'white';
+          }
+        }
+        setTimeout(() => {
+          isConfigsLoaded = true;
+          dismissPreloader();
+        }, 800); // ดีเลย์เล็กน้อยเพื่อให้พื้นหลังและโลโก้เปลี่ยนตามการตั้งค่าสำเร็จก่อนปิด Preloader
       }
     }
 
@@ -623,7 +638,9 @@
       const password = $('inp-pass-login').value.trim();
       if (!phone || !password) return showToast('กรุณากรอกข้อมูลให้ครบถ้วน','error');
       
-      $('btn-login').disabled = true; $('btn-login').textContent = 'กำลังตรวจสอบ...';
+      const btn = $('btn-login');
+      btn.disabled = true; 
+      btn.textContent = 'กำลังตรวจสอบ...';
 
       try {
         let q = query(collection(db, "users"), where("phone", "==", phone));
@@ -644,16 +661,21 @@
             localStorage.setItem('tos_logged_user_id', userId);
             startUserSubscriptions(userId);
             showToast('เข้าสู่ระบบสำเร็จ!');
+            currentTab = 'home';
+            renderDashboard(); // ย้ายหน้าเข้าหน้าแดชบอร์ดทันที ป้องกันอาการค้าง
           } else {
-            $('btn-login').disabled = false; $('btn-login').textContent = 'ลงชื่อเข้าใช้';
+            btn.disabled = false; 
+            btn.textContent = 'ลงชื่อเข้าใช้';
             showToast('รหัสผ่านไม่ถูกต้อง', 'error');
           }
         } else {
-          $('btn-login').disabled = false; $('btn-login').textContent = 'ลงชื่อเข้าใช้';
+          btn.disabled = false; 
+          btn.textContent = 'ลงชื่อเข้าใช้';
           showToast('ไม่พบเบอร์โทรศัพท์นี้ในระบบ', 'error');
         }
       } catch (err) {
-        $('btn-login').disabled = false; $('btn-login').textContent = 'ลงชื่อเข้าใช้';
+        btn.disabled = false; 
+        btn.textContent = 'ลงชื่อเข้าใช้';
         showToast('การเชื่อมต่อขัดข้อง: ' + err.message, 'error');
       }
     }
@@ -1357,17 +1379,15 @@
 
     function showEditBank() {
       const u = currentUser;
+      const cfg = getConfig();
+      const bankString = getField(cfg, 'supportedBanks', 'รายการธนาคาร') || 'ธนาคารกสิกรไทย,ธนาคารไทยพาณิชย์,ธนาคารกรุงเทพ,ธนาคารกรุงไทย,ธนาคารกรุงศรีอยุธยา,ธนาคารออมสิน,ทรูวอลเลท';
+      const bankList = bankString.split(',').map(b => b.trim()).filter(Boolean);
+
       showModal(`
         <h3 class="font-bold text-lg mb-4 text-slate-800">ข้อมูลบัญชีธนาคาร</h3>
         <select id="inp-bank" class="w-full px-4 py-3 border border-slate-200 bg-slate-50 rounded-2xl mb-3 outline-none text-slate-700 font-medium text-sm">
           <option value="" disabled ${!u.bankName ? 'selected' : ''}>-- เลือกธนาคาร --</option>
-          <option value="ธนาคารกสิกรไทย" ${u.bankName==='ธนาคารกสิกรไทย'?'selected':''}>ธนาคารกสิกรไทย (KBank)</option>
-          <option value="ธนาคารไทยพาณิชย์" ${u.bankName==='ธนาคารไทยพาณิชย์'?'selected':''}>ธนาคารไทยพาณิชย์ (SCB)</option>
-          <option value="ธนาคารกรุงเทพ" ${u.bankName==='ธนาคารกรุงเทพ'?'selected':''}>ธนาคารกรุงเทพ (BBL)</option>
-          <option value="ธนาคารกรุงไทย" ${u.bankName==='ธนาคารกรุงไทย'?'selected':''}>ธนาคารกรุงไทย (KTB)</option>
-          <option value="ธนาคารกรุงศรีอยุธยา" ${u.bankName==='ธนาคารกรุงศรีอยุธยา'?'selected':''}>ธนาคารกรุงศรีอยุธยา (Krungsri)</option>
-          <option value="ธนาคารออมสิน" ${u.bankName==='ธนาคารออมสิน'?'selected':''}>ธนาคารออมสิน (GSB)</option>
-          <option value="ทรูวอลเลท" ${u.bankName==='ทรูวอลเลท'?'selected':''}>ทรูวอลเลท (TrueMoney)</option>
+          ${bankList.map(bank => `<option value="${bank}" ${u.bankName===bank?'selected':''}>${bank}</option>`).join('')}
         </select>
         <input id="inp-bank-num" class="w-full px-4 py-3 border border-slate-200 bg-slate-50 rounded-2xl mb-5 outline-none font-semibold text-sm" placeholder="เลขบัญชี 10 หลัก" value="${u.bankNumber||''}">
         <div class="flex gap-3">
