@@ -69,9 +69,10 @@
       getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged 
     } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 
+    // แก้ไข Base64 คีย์เรียบร้อย ไร้อักษรภาษาไทยปะปน
     const _0xdbKey = [
       "QUl6YVN5QnhWazBMQlg5UkNzOXYzRXNNUDF5SnNpR3ItYmpwb3Jz", 
-      "a2std2ViLTdkMDJiLmZpcmViYXNลสปปผผ.com",             
+      "a2std2ViLTdkMDJiLmZpcmViYXNlYXBwLmNvbQ==",             
       "a2std2ViLTdkMDJi",                                     
       "a2std2ViLTdkMDJiLmZpcmViYXNlc3RvcmFnZS5hcHA=",         
       "ODY2ODE4NTI4MjAw",                                     
@@ -146,7 +147,9 @@
       return undefined;
     }
 
-    const getConfig = () => publicData.configs.find(d => d.type === 'config' || d.type === 'การตั้งค่า' || d.พิมพ์ === 'การตั้งค่า') || null;
+    const getConfig = () => {
+      return publicData.configs.find(d => d.themePrimary !== undefined || d.themeSecondary !== undefined || d["ธีมหลัก"] !== undefined) || publicData.configs[0] || null;
+    };
 
     const getInviteCode = () => { const c = getConfig(); return String(getField(c, 'inviteCode', 'รหัสเชิญ') || '12345').trim(); };
     const getLogoUrl = () => { const c = getConfig(); return getField(c, 'logoUrl', 'logoUrl') || ''; };
@@ -277,17 +280,18 @@
       return html;
     }
 
-    // ========================================================
-    // REFACTORED CONFIG DUAL-WRITE SYNC METHOD
-    // ========================================================
+    // ==========================================
+    // DUAL WRITE CONFIG METHOD
+    // ==========================================
     async function saveConfigToFirebase(payload) {
-      // บันทึกแบบขนานไปยังทั้ง 'configs' และ 'การกำหนดค่า' เพื่อให้ฝั่ง User อัปเดตทันที
-      const docId = payload.__backendId || payload.id;
-      const payloadToSave = { ...payload };
-      delete payloadToSave.__collection; // ล้างข้อมูลเมตาเพื่อความปลอดภัยก่อนบันทึก
+      const docId = payload.__backendId || payload.id || "system_config";
+      payload.id = docId;
+      payload.__backendId = docId;
+      const cleanData = { ...payload };
+      delete cleanData.__collection; // ล้างคีย์จำลองก่อนบันทึกจริง
 
-      await setDoc(doc(db, "configs", docId), payloadToSave);
-      await setDoc(doc(db, "การกำหนดค่า", docId), payloadToSave);
+      await setDoc(doc(db, "configs", docId), cleanData);
+      await setDoc(doc(db, "การกำหนดค่า", docId), cleanData);
     }
 
     function startPublicSubscriptions() {
@@ -310,8 +314,13 @@
         updateHeaderStats();
       };
 
-      activeListeners.configs = onSnapshot(collection(db, "configs"), (snap) => configHandler(snap, 'configs'));
-      activeListeners.configsThai = onSnapshot(collection(db, "การกำหนดค่า"), (snap) => configHandler(snap, 'การกำหนดค่า'));
+      const configErrorHandler = (err) => {
+        console.warn("Admin config load error: ", err);
+        dismissAdminPreloader();
+      };
+
+      activeListeners.configs = onSnapshot(collection(db, "configs"), (snap) => configHandler(snap, 'configs'), configErrorHandler);
+      activeListeners.configsThai = onSnapshot(collection(db, "การกำหนดค่า"), (snap) => configHandler(snap, 'การกำหนดค่า'), configErrorHandler);
 
       activeListeners.banners = onSnapshot(collection(db, "banners"), (snapshot) => {
         let banners = [];
@@ -416,20 +425,6 @@
       if (activeListeners.adminSpecialTemplates) { activeListeners.adminSpecialTemplates(); activeListeners.adminSpecialTemplates = null; }
       if (activeListeners.allOrders) { activeListeners.allOrders(); activeListeners.allOrders = null; }
     }
-
-    onAuthStateChanged(auth, (user) => {
-      if (user && user.email.endsWith('@admin.com')) {
-        isAdmin = true;
-        adminTab = sessionStorage.getItem('tos_admin_tab') || 'users'; 
-        startAdminSubscriptions();
-        renderAdmin();
-      } else {
-        isAdmin = false;
-        renderAdminLogin();
-      }
-    });
-
-    startPublicSubscriptions();
 
     // ==========================================
     // ADMIN AUTH UI
@@ -1047,7 +1042,7 @@
       lucide.createIcons();
     }
 
-    function showCreateSpecialTemplate() { showModal(`<h3 class="font-bold text-base mb-4 text-slate-800 border-b border-slate-100 pb-2">สร้างเทมเพลตสินค้าพิเศษ</h3><div class="space-y-3.5 text-left text-slate-600"><div><label class="text-xs text-slate-400 font-bold">ชื่อสินค้า</label><input id="st-n" class="w-full mt-1 px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm" placeholder="ระบุชื่อสินค้าสินค้าพิเศษ"></div><div class="grid grid-cols-2 gap-2"><div><label class="text-xs text-slate-400 font-bold">ราคาทุน</label><input id="st-p" type="number" class="w-full mt-1 px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm" placeholder="ราคาต้นทุน"></div><div><label class="text-xs text-slate-400 font-bold">คอมมิชชัน</label><input id="st-c" type="number" class="w-full mt-1 px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm" placeholder="ค่าคอมมิชชัน"></div></div><div><label class="text-xs text-slate-400 font-bold">URL รูปภาพสินค้า</label><input id="st-i" type="text" class="w-full mt-1 px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm" placeholder="ลิงก์เชื่อมต่อภาพสินค้า"></div><button onclick="doCreateST()" class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold transition flex-shrink-0">สร้างบันทึกออเดอร์พิเศษ</button></div>`); }
+    function showCreateSpecialTemplate() { showModal(`<h3 class="font-bold text-base mb-4 text-slate-800 border-b border-slate-100 pb-2">สร้างเทมเพลตสินค้าพิเศษ</h3><div class="space-y-3.5 text-left text-slate-600"><div><label class="text-xs text-slate-400 font-bold">ชื่อสินค้า</label><input id="st-n" class="w-full mt-1 px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm" placeholder="ระบุชื่อสินค้าสินค้าพิเศษ"></div><div class="grid grid-cols-2 gap-2"><div><label class="text-xs text-slate-400 font-bold">ราคาทุน</label><input id="st-p" type="number" class="w-full mt-1 px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm" placeholder="ราคาต้นทุน"></div><div><label class="text-xs text-slate-400 font-bold">คอมมิชชัน</label><input id="st-c" type="number" class="w-full mt-1 px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm" placeholder="ค่าคอมมิชชัน"></div></div><div><label class="text-xs text-slate-400 font-bold">URL รูปภาพสินค้า</label><input id="st-i" type="text" class="w-full mt-1 px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm" placeholder="ลิงก์เชื่อมต่อภาพสินค้า"></div><button onclick="doCreateST()" class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold transition flex-shrink-0 text-sm">สร้างบันทึกออเดอร์พิเศษ</button></div>`); }
     
     async function doCreateST() { 
       try {
@@ -1105,7 +1100,7 @@
             <label class="text-xs text-slate-400 font-bold block mb-1">สุ่มเจอในการกดสุ่มรันลำดับชิ้นที่เท่าไหร่?</label>
             <input id="sa-idx" type="number" class="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold text-center text-blue-600" placeholder="เช่น 4 (การกดครั้งที่ 4)" value="1">
           </div>
-          <button onclick="doAssignSWithEdit('${t.productImage||''}')" class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl transition mt-2">ยืนยันการตั้งค่าคิวออเดอร์</button>
+          <button onclick="doAssignSWithEdit('${t.productImage||''}')" class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl transition mt-2 text-sm">ยืนยันการตั้งค่าคิวออเดอร์</button>
         </div>`);
     }
 
@@ -1183,7 +1178,7 @@
             <label class="text-xs text-slate-400 font-bold block mb-1">สุ่มเจอในการกดสุ่มรันลำดับชิ้นที่เท่าไหร่?</label>
             <input id="sa-edit-idx" type="number" class="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold text-center text-blue-600" value="${s.targetIndex}">
           </div>
-          <button onclick="doUpdateAssignedS('${bid}', '${s.productImage||''}')" class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl transition mt-2">อัปเดตข้อมูลคิวออเดอร์</button>
+          <button onclick="doUpdateAssignedS('${bid}', '${s.productImage||''}')" class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl transition mt-2 text-sm">อัปเดตข้อมูลคิวออเดอร์</button>
         </div>`);
     }
 
@@ -1391,7 +1386,7 @@
                 </div>
                 <div class="flex gap-1.5">
                   <button onclick="editBanner('${b.__backendId}')" class="p-2 text-blue-600 hover:bg-slate-100 rounded-lg transition"><i data-lucide="edit" class="w-4 h-4"></i></button>
-                  <button onclick="deleteBanner('${b.__backendId}')" class="p-2 text-rose-600 hover:bg-rose-50 rounded-lg transition"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                  <button onclick="deleteBanner('${b.__backendId}')" class="p-2 text-rose-600 hover:bg-slate-50 rounded-lg transition"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
                 </div>
               </div>`).join('')}
           </div>
@@ -1605,12 +1600,12 @@
     }
 
     // ==========================================
-    // REFACTORED STATE AND CACHE REFRESH FIXES
+    // BULLETPROOF SYSTEM SAVE WITH REALTIME SYNC
     // ==========================================
     async function saveAdminTheme() {
       const p = $('cfg-theme-p-text').value.trim(); const s = $('cfg-theme-s-text').value.trim();
       let config = getConfig(); 
-      if(!config) config = { type: 'config', id: genId() }; 
+      if(!config) config = { type: 'config', id: 'system_config', __collection: 'configs' }; 
       
       const updatePayload = {
         ...config,
@@ -1628,7 +1623,7 @@
       }
 
       await saveConfigToFirebase(updatePayload); 
-      showToast('บันทึกสีธีมสำเร็จ');
+      showToast('บันทึกและซิงค์สีธีมสำเร็จ');
       renderAdminTab();
     }
 
@@ -1637,7 +1632,7 @@
       if(!config) {
         config = { 
           type: 'config', 
-          id: genId(), 
+          id: 'system_config', 
           inviteCode: '12345', 
           logoUrl: '', 
           loginBgUrl: '', 
@@ -1690,7 +1685,7 @@
       }
 
       await saveConfigToFirebase(updatePayload); 
-      showToast('บันทึกสำเร็จ!'); 
+      showToast('บันทึกตั้งค่าเรียบร้อย'); 
       renderAdminTab();
     }
 
