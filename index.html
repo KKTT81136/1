@@ -3,7 +3,7 @@
  <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
-  <title>TOS Shopping</title>
+  <title></title>
   <link rel="icon" type="image/x-icon" href="">
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
   <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
@@ -198,6 +198,12 @@
     let isOrderProcessing = false;
     let isConfigsLoaded = false;
     let currentLang = localStorage.getItem('tos_lang') || 'th';
+
+    // ตัวแปรเก็บประวัติจำลองสถานะการโหลดข้อมูลเพื่อแก้บั๊กภาพไม่เรนเดอร์ตอนเปลี่ยนหน้า
+    let renderedBannersCount = -1;
+    let renderedGalleryCount = -1;
+    let renderedMenuCount = -1;
+    let renderedProductsBannersCount = -1;
 
     const translations = {
       th: {
@@ -422,6 +428,55 @@
       userDoc: null, userOrders: null, userWithdrawals: null, userSpecialAssigns: null
     };
 
+    // ระบบประมวลผลชุดตกแต่งแบบทันทีป้องกันการ Flickering ของหน้าจอเมื่อโหลดใหม่
+    (function initCachedStyles() {
+      const cached = localStorage.getItem('tos_cached_config');
+      if (cached) {
+        try {
+          const cfg = JSON.parse(cached);
+          const p = cfg.themePrimary || '#2563eb';
+          const s = cfg.themeSecondary || '#4f46e5';
+          document.documentElement.style.setProperty('--color-primary', p);
+          document.documentElement.style.setProperty('--color-secondary', s);
+          
+          let styleEl = document.getElementById('dynamic-theme-style');
+          if (!styleEl) {
+            styleEl = document.createElement('style');
+            styleEl.id = 'dynamic-theme-style';
+            document.head.appendChild(styleEl);
+          }
+          styleEl.innerHTML = `
+            :root {
+              --color-primary: ${p} !important;
+              --color-secondary: ${s} !important;
+            }
+            .text-primary { color: ${p} !important; }
+            .bg-primary { background-color: ${p} !important; }
+            .border-primary { border-color: ${p} !important; }
+            .bg-theme-gradient { 
+              background: linear-gradient(135deg, ${p}, ${s}) !important; 
+            }
+            .fill-blue-100\\/50 {
+              fill: ${p}33 !important;
+            }
+          `;
+          
+          if (cfg.tabTitle) {
+            document.title = cfg.tabTitle;
+          }
+          if (cfg.tabFaviconUrl) {
+            let link = document.querySelector("link[rel~='icon']");
+            if (!link) {
+              link = document.createElement('link');
+              link.rel = 'icon';
+              document.head.appendChild(link);
+            }
+            link.href = cfg.tabFaviconUrl;
+          }
+        } catch (e) {}
+      }
+    })();
+
     function applyTheme(primary, secondary) {
       const p = primary || '#2563eb';
       const s = secondary || '#4f46e5';
@@ -430,7 +485,6 @@
       document.body.style.setProperty('--color-primary', p);
       document.body.style.setProperty('--color-secondary', s);
 
-      // ใช้ Dynamic Style Injector เพื่อป้องกันปัญหาการบังคับวาดใหม่ (Repaint) ของหน้าเว็บ
       let styleEl = document.getElementById('dynamic-theme-style');
       if (!styleEl) {
         styleEl = document.createElement('style');
@@ -455,16 +509,22 @@
     }
 
     function updateBrowserTab() {
-      document.title = getTabTitle();
+      const title = getTabTitle();
+      document.title = title ? title : "";
+      
       const favUrl = getTabFavicon();
+      let link = document.querySelector("link[rel~='icon']");
       if (favUrl) {
-        let link = document.querySelector("link[rel~='icon']");
         if (!link) {
           link = document.createElement('link');
           link.rel = 'icon';
           document.head.appendChild(link);
         }
         link.href = favUrl;
+      } else {
+        if (link) {
+          link.remove();
+        }
       }
     }
 
@@ -479,30 +539,36 @@
       if (publicData.configs && publicData.configs.length > 0) {
         return publicData.configs[0];
       }
+      const cached = localStorage.getItem('tos_cached_config');
+      if (cached) {
+        try {
+          return JSON.parse(cached);
+        } catch (e) {}
+      }
       return {
-        themePrimary: '#2563eb',
-        themeSecondary: '#4f46e5',
-        inviteCode: '12345',
+        themePrimary: '',
+        themeSecondary: '',
+        inviteCode: '',
         logoUrl: '',
         loginBgUrl: '',
         userBgUrl: '',
-        marqueeText: 'Welcome to TOS Shopping',
-        tabTitle: 'TOS Shopping',
+        marqueeText: '',
+        tabTitle: '',
         tabFaviconUrl: '',
         supportedBanks: 'KBank,SCB,BBL,KTB,Krungsri,GSB,TrueMoney'
       };
     };
 
-    const getInviteCode = () => { const c = getConfig(); return String(c.inviteCode || '12345').trim(); };
+    const getInviteCode = () => { const c = getConfig(); return String(c.inviteCode || '').trim(); };
     const getLogoUrl = () => { const c = getConfig(); return c.logoUrl || ''; };
     const getLoginBgUrl = () => { const c = getConfig(); return c.loginBgUrl || ''; };
     const getUserBgUrl = () => { const c = getConfig(); return c.userBgUrl || ''; };
-    const getMarqueeText = () => { const c = getConfig(); return c.marqueeText || 'Welcome to TOS Shopping'; };
+    const getMarqueeText = () => { const c = getConfig(); return c.marqueeText || ''; };
     const getLineQrUrl = () => { const c = getConfig(); return c.lineQrUrl || ''; };
     const getLineId = () => { const c = getConfig(); return c.lineId || ''; };
     const getTopupQrUrl = () => { const c = getConfig(); return c.topupQrUrl || ''; };
     const getTopupAccount = () => { const c = getConfig(); return c.topupAccount || ''; };
-    const getTabTitle = () => { const c = getConfig(); return c.tabTitle || 'TOS Shopping'; };
+    const getTabTitle = () => { const c = getConfig(); return c.tabTitle || ''; };
     const getTabFavicon = () => { const c = getConfig(); return c.tabFaviconUrl || ''; };
 
     const getUserOrders = () => userOrdersData;
@@ -564,8 +630,6 @@
       if (!cfg) return;
 
       applyTheme(cfg.themePrimary, cfg.themeSecondary);
-      
-      // บังคับอัปเดตชื่อแถบเว็บไซต์และภาพไอคอนของระบบทุกครั้งที่มีการเปลี่ยนมุมมองข้อมูล
       updateBrowserTab();
 
       const loginWrapper = document.getElementById('form-card-wrapper');
@@ -635,9 +699,13 @@
             loader.style.backgroundColor = primaryColor;
           }
           const logoContainer = document.getElementById('loader-logo-container');
-          if (logoContainer && logoUrl) {
-            logoContainer.innerHTML = `<img src="${logoUrl}" class="w-full h-full object-cover rounded-full">`;
-            logoContainer.style.backgroundColor = 'white';
+          if (logoContainer) {
+            if (logoUrl) {
+              logoContainer.innerHTML = `<img src="${logoUrl}" class="w-full h-full object-cover rounded-full">`;
+              logoContainer.style.backgroundColor = 'white';
+            } else {
+              logoContainer.innerHTML = `<span class="text-5xl">🛒</span>`;
+            }
           }
         }
         isConfigsLoaded = true;
@@ -650,6 +718,7 @@
         if (docSnap.exists()) {
           const cfgData = { ...docSnap.data(), __backendId: docSnap.id };
           publicData.configs = [cfgData];
+          localStorage.setItem('tos_cached_config', JSON.stringify(cfgData));
           applyTheme(cfgData.themePrimary, cfgData.themeSecondary);
           updateBrowserTab();
           applyDynamicStyles();
@@ -936,8 +1005,8 @@
         <div class="relative w-full aspect-[5/3] md:aspect-[20/10] rounded-[32px] overflow-hidden shadow-md mb-4 bg-slate-200 border border-slate-100">
           ${banners.map((b, i) => `
             <picture class="absolute inset-0 w-full h-full banner-slide transition-opacity duration-1000" style="opacity: ${i===0?1:0};">
-              <source media="(min-width: 768px)" srcset="${b.bannerPcUrl || b.bannerUrl || 'https://via.placeholder.com/1000x500'}">
-              <img src="${b.bannerUrl || 'https://via.placeholder.com/500x300'}" alt="Banner" style="width: 100%; height: 100%; object-fit: cover;">
+              <source media="(min-width: 768px)" srcset="${b.bannerPcUrl || b.bannerUrl || ''}">
+              <img src="${b.bannerUrl || ''}" alt="Banner" style="width: 100%; height: 100%; object-fit: cover;">
             </picture>
           `).join('')}
         </div>`;
@@ -961,7 +1030,6 @@
       clearInterval(bannerInterval); 
       const slides = document.querySelectorAll('.banner-slide');
       if (slides.length > 1) { 
-        // บังคับค่าเริ่มต้นความสว่างของภาพเพื่อป้องกันแบนเนอร์กะพริบหรือหาย
         slides.forEach((slide, i) => {
           slide.style.opacity = (i === 0) ? '1' : '0';
         });
@@ -1025,7 +1093,7 @@
           ${m.menuIconUrl ? `<img src="${m.menuIconUrl}" class="w-16 h-16 mx-auto rounded-3xl object-cover mb-3 border border-slate-100 shadow-sm">` : `<div class="w-16 h-16 bg-blue-50 text-primary rounded-3xl flex items-center justify-center mx-auto mb-3"><i data-lucide="file-text"></i></div>`}
           <h3 class="text-lg font-bold text-slate-800">${m.menuLabel}</h3>
         </div>
-        <div class="text-slate-600 text-sm whitespace-pre-wrap leading-relaxed text-left max-h-[50vh] overflow-y-auto px-1">${m.menuContent || 'No details available'}</div>
+        <div class="text-slate-600 text-sm whitespace-pre-wrap leading-relaxed text-left max-h-[50vh] overflow-y-auto px-1">${m.menuContent || ''}</div>
         <button onclick="closeModal()" class="mt-6 w-full py-3 bg-slate-100 text-slate-700 font-bold rounded-2xl hover:bg-slate-200 transition">${t('close')}</button>
       `); 
     }
@@ -1055,7 +1123,6 @@
         </div>`);
     }
 
-    // ฟังก์ชันจัดการระบบเปลี่ยนภาษาผ่านกล่องหน้าต่าง Modal ตามความต้องการของยูเซอร์
     window.showLanguageSelector = () => {
       showModal(`
         <div class="text-center">
@@ -1089,15 +1156,25 @@
       const creditVal = u.credit || 0;
       const usernameVal = u.username || 'User';
       
-      // DOM Rendering Guard: อัปเดตเฉพาะตัวเลขเพื่อรักษาแบนเนอร์ไม่ให้กะพริบหรือหาย
-      if ($('home-container')) {
+      const banners = getBanners(); 
+      const gallery = getGallery(); 
+      const menus = getMenuIcons();
+
+      // ตรวจสอบสถานะการเรนเดอร์ร่วมกับค่าข้อมูลแบบไม่พร้อมกันเพื่อแก้บั๊กแบนเนอร์หายเมื่อโหลดใหม่
+      if ($('home-container') && 
+          renderedBannersCount === banners.length && 
+          renderedGalleryCount === gallery.length && 
+          renderedMenuCount === menus.length) {
         if ($('home-credit-display')) { 
           $('home-credit-display').innerText = '฿' + creditVal.toLocaleString(); 
         }
         return; 
       }
 
-      const gallery = getGallery(); const menus = getMenuIcons();
+      renderedBannersCount = banners.length;
+      renderedGalleryCount = gallery.length;
+      renderedMenuCount = menus.length;
+
       let menuIconsHtml = ''; 
       if (menus.length > 0) {
         menuIconsHtml = `
@@ -1119,7 +1196,7 @@
           <div class="grid grid-cols-2 gap-4">
             ${gallery.map(g => `
               <div class="w-full aspect-square rounded-[24px] overflow-hidden shadow-sm border border-slate-100 bg-white p-1.5 flex items-center justify-center">
-                <img src="${g.galleryUrl}" class="w-full h-full object-cover rounded-[18px]" onerror="this.src='https://via.placeholder.com/400x400'">
+                <img src="${g.galleryUrl}" class="w-full h-full object-cover rounded-[18px]" onerror="this.src=''">
               </div>
             `).join('')}
           </div>
@@ -1170,8 +1247,10 @@
       const todayStr = new Date().toDateString();
       const todayComm = getUserOrders().filter(o => new Date(o.createdAt).toDateString() === todayStr && o.status === 'completed').reduce((sum, o) => sum + (Number(o.commission) || 0), 0);
       
-      // DOM Rendering Guard: ป้องกันไม่ให้แบนเนอร์กะพริบหรือโหลดซ้ำเวลาเกิดอัปเดตงานด้านหลัง
-      if ($('products-container')) { 
+      const banners = getBanners();
+
+      // ตรวจสอบการโหลดข้อมูลแบบไม่พร้อมกันเพื่อแก้บั๊กแบนเนอร์ในหน้ารายการสินค้าหายเมื่อโหลดใหม่
+      if ($('products-container') && renderedProductsBannersCount === banners.length) { 
         if ($('prod-done')) $('prod-done').innerText = `${done} / ${total}`; 
         if ($('prod-pct')) $('prod-pct').style.width = `${pct}%`; 
         if ($('prod-credit-display')) $('prod-credit-display').innerText = '฿' + creditVal.toLocaleString(); 
@@ -1179,6 +1258,8 @@
         return; 
       }
       
+      renderedProductsBannersCount = banners.length;
+
       let levelText = 'VIP ' + userLevel; 
       if(userLevel === 'fixturn') levelText = currentLang === 'th' ? 'ซ่อมยอดเทิร์น' : 'Turnover Repair'; 
       if(userLevel === 'allowwd') levelText = currentLang === 'th' ? 'ปลดล็อกแล้ว' : 'Unblocked';
@@ -1309,7 +1390,6 @@
       
       let p = typeof productIdOrObj === 'object' ? productIdOrObj : publicData.products.find(d => d.__backendId === productIdOrObj); 
       
-      // เพิ่มความครอบคลุมเพื่อตรวจสอบคอลเลกชันของออเดอร์พิเศษ
       if(!p && typeof productIdOrObj === 'string') {
         p = userSpecialAssignData.find(d => d.__backendId === productIdOrObj);
       }
@@ -1370,7 +1450,6 @@
       const btn = $('btn-confirm-final'); if(!btn || btn.disabled) return;
       btn.disabled = true; btn.innerHTML = t('processing');
       
-      // เพิ่มตรวจสอบในระดับสินค้าล็อกคิว ป้องกันปัญหาธุรกรรมล้มเหลว
       let p = publicData.products.find(d => d.__backendId === id) || userSpecialAssignData.find(d => d.__backendId === id) || userOrdersData.find(d => d.__backendId === id); 
       if(!p) return;
 
@@ -1594,7 +1673,6 @@
         <div id="profile-container" class="p-4 space-y-5 fade-in relative">
           <div class="bg-white p-6 rounded-[32px] shadow-sm border border-slate-100 text-center relative overflow-hidden">
             
-            <!-- Language Selection Dropdown Button -->
             <div class="absolute top-4 right-4 z-10">
               <button onclick="showLanguageSelector()" class="px-3.5 py-1.5 bg-slate-50 hover:bg-slate-100 text-slate-700 font-bold text-sm rounded-xl border border-slate-200 transition flex items-center gap-1.5 shadow-sm active:scale-95">
                 <i data-lucide="languages" class="w-4 h-4 text-primary"></i>
