@@ -199,7 +199,6 @@
     let isConfigsLoaded = false;
     let currentLang = localStorage.getItem('tos_lang') || 'th';
 
-    // ตัวแปรเก็บประวัติจำลองสถานะการโหลดข้อมูลเพื่อแก้บั๊กภาพไม่เรนเดอร์ตอนเปลี่ยนหน้า
     let renderedBannersCount = -1;
     let renderedGalleryCount = -1;
     let renderedMenuCount = -1;
@@ -428,7 +427,6 @@
       userDoc: null, userOrders: null, userWithdrawals: null, userSpecialAssigns: null
     };
 
-    // ระบบประมวลผลชุดตกแต่งแบบทันทีป้องกันการ Flickering ของหน้าจอเมื่อโหลดใหม่
     (function initCachedStyles() {
       const cached = localStorage.getItem('tos_cached_config');
       if (cached) {
@@ -1160,7 +1158,6 @@
       const gallery = getGallery(); 
       const menus = getMenuIcons();
 
-      // ตรวจสอบสถานะการเรนเดอร์ร่วมกับค่าข้อมูลแบบไม่พร้อมกันเพื่อแก้บั๊กแบนเนอร์หายเมื่อโหลดใหม่
       if ($('home-container') && 
           renderedBannersCount === banners.length && 
           renderedGalleryCount === gallery.length && 
@@ -1249,7 +1246,6 @@
       
       const banners = getBanners();
 
-      // ตรวจสอบการโหลดข้อมูลแบบไม่พร้อมกันเพื่อแก้บั๊กแบนเนอร์ในหน้ารายการสินค้าหายเมื่อโหลดใหม่
       if ($('products-container') && renderedProductsBannersCount === banners.length) { 
         if ($('prod-done')) $('prod-done').innerText = `${done} / ${total}`; 
         if ($('prod-pct')) $('prod-pct').style.width = `${pct}%`; 
@@ -1284,7 +1280,8 @@
               <div class="w-full bg-slate-100 rounded-full h-3 mb-6 overflow-hidden p-0.5">
                 <div id="prod-pct" class="bg-primary h-2 rounded-full transition-all duration-500" style="width: ${pct}%"></div>
               </div>
-              <button id="btn-start-run" onclick="startRun(this)" class="w-full py-4 bg-slate-900 hover:bg-black text-white font-bold rounded-2xl shadow-lg active:scale-[0.98] transition duration-200 text-base flex justify-center items-center gap-2">
+              <!-- ปุ่มเริ่มจับคู่ปรับเปลี่ยนสีไปตามสีหลักของระบบ -->
+              <button id="btn-start-run" onclick="startRun(this)" class="w-full py-4 bg-primary hover:opacity-90 text-white font-bold rounded-2xl shadow-lg active:scale-[0.98] transition duration-200 text-base flex justify-center items-center gap-2">
                 <i data-lucide="play-circle"></i> ${t('startMatch')}
               </button>
             </div>
@@ -1680,8 +1677,9 @@
               </button>
             </div>
 
+            <!-- หน้าโปรไฟล์ไอคอนรูปคนจะเปลี่ยนตามโลโก้บริษัท หากไม่ตั้งไว้จะแสดงผลเป็นรูปคนเริ่มต้น -->
             <div class="w-20 h-20 rounded-[28px] mx-auto overflow-hidden mt-6 flex items-center justify-center bg-slate-50 border border-slate-100">
-              ${logoUrl ? `<img src="${logoUrl}" class="app-logo-img w-full h-full object-cover rounded-[28px] cursor-pointer" onclick="handleLogoClick()">` : `<div class="w-20 h-20 bg-blue-50 text-primary rounded-[28px] flex items-center justify-center cursor-pointer" onclick="handleLogoClick()"><i data-lucide="user" class="w-10 h-10"></i></div>`}
+              ${logoUrl ? `<img src="${logoUrl}" class="app-logo-img w-full h-full object-cover rounded-[28px] cursor-pointer" onclick="handleLogoClick()">` : `<div class="w-20 h-20 bg-blue-50 text-primary rounded-[28px] flex items-center justify-center cursor-pointer" onclick="handleLogoClick()"><i data-lucide="user" class="w-10 h-10 text-primary"></i></div>`}
             </div>
             <h3 class="font-black text-xl text-slate-800 mt-3">${usernameVal}</h3>
             <p class="text-slate-400 text-sm mt-1 font-semibold">📞 ${u.phone}</p>
@@ -1825,7 +1823,7 @@
     window.showLoginForm = showLoginForm;
     window.doLogout = doLogout;
     window.switchTab = switchTab;
-    window.showSupportModal = showSupportModal;
+    window.showSupportModal = SupportModal;
     window.showTopupModal = showTopupModal;
     window.showWithdrawModal = showWithdrawModal;
     window.showEditBank = showEditBank;
