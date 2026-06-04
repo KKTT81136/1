@@ -430,7 +430,7 @@
       document.body.style.setProperty('--color-primary', p);
       document.body.style.setProperty('--color-secondary', s);
 
-      // ใช้ Dynamic Style Injector เพื่อป้องกันปัญหาการ Repaint ของ Tailwind CSS
+      // ใช้ Dynamic Style Injector เพื่อป้องกันปัญหาการบังคับวาดใหม่ (Repaint) ของหน้าเว็บ
       let styleEl = document.getElementById('dynamic-theme-style');
       if (!styleEl) {
         styleEl = document.createElement('style');
@@ -564,6 +564,9 @@
       if (!cfg) return;
 
       applyTheme(cfg.themePrimary, cfg.themeSecondary);
+      
+      // บังคับอัปเดตชื่อแถบเว็บไซต์และภาพไอคอนของระบบทุกครั้งที่มีการเปลี่ยนมุมมองข้อมูล
+      updateBrowserTab();
 
       const loginWrapper = document.getElementById('form-card-wrapper');
       if (loginWrapper) {
@@ -958,7 +961,7 @@
       clearInterval(bannerInterval); 
       const slides = document.querySelectorAll('.banner-slide');
       if (slides.length > 1) { 
-        // ตั้งค่า Opacity เริ่มต้นให้ถูกต้องเพื่อป้องกันภาพสไลด์หายหลังการวาดหน้าจอใหม่
+        // บังคับค่าเริ่มต้นความสว่างของภาพเพื่อป้องกันแบนเนอร์กะพริบหรือหาย
         slides.forEach((slide, i) => {
           slide.style.opacity = (i === 0) ? '1' : '0';
         });
@@ -1052,6 +1055,28 @@
         </div>`);
     }
 
+    // ฟังก์ชันจัดการระบบเปลี่ยนภาษาผ่านกล่องหน้าต่าง Modal ตามความต้องการของยูเซอร์
+    window.showLanguageSelector = () => {
+      showModal(`
+        <div class="text-center">
+          <h3 class="font-bold text-base mb-4 text-slate-800">${currentLang === 'th' ? 'เลือกภาษา / Select Language' : 'Select Language'}</h3>
+          <div class="space-y-2.5">
+            <button onclick="selectLanguage('th')" class="w-full py-3.5 px-4 rounded-2xl border ${currentLang === 'th' ? 'border-primary bg-blue-50 text-primary' : 'border-slate-200 hover:bg-slate-50'} font-bold text-sm transition">ภาษาไทย (Thai)</button>
+            <button onclick="selectLanguage('en')" class="w-full py-3.5 px-4 rounded-2xl border ${currentLang === 'en' ? 'border-primary bg-blue-50 text-primary' : 'border-slate-200 hover:bg-slate-50'} font-bold text-sm transition font-sans">English (English)</button>
+          </div>
+          <button onclick="closeModal()" class="mt-4 w-full py-3 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold rounded-2xl transition text-xs">${t('close')}</button>
+        </div>
+      `);
+    };
+
+    window.selectLanguage = (lang) => {
+      currentLang = lang;
+      localStorage.setItem('tos_lang', lang);
+      lastRenderedTab = '';
+      closeModal();
+      renderDashboard();
+    };
+
     function renderHome(c) {
       const u = currentUser;
       if (!u || !u.id) {
@@ -1064,7 +1089,14 @@
       const creditVal = u.credit || 0;
       const usernameVal = u.username || 'User';
       
-      // นำเงื่อนไข Early Return ออกเพื่อแก้ไขปัญหารูปแบนเนอร์หายหลังการอัปเดต snapshot
+      // DOM Rendering Guard: อัปเดตเฉพาะตัวเลขเพื่อรักษาแบนเนอร์ไม่ให้กะพริบหรือหาย
+      if ($('home-container')) {
+        if ($('home-credit-display')) { 
+          $('home-credit-display').innerText = '฿' + creditVal.toLocaleString(); 
+        }
+        return; 
+      }
+
       const gallery = getGallery(); const menus = getMenuIcons();
       let menuIconsHtml = ''; 
       if (menus.length > 0) {
@@ -1138,7 +1170,15 @@
       const todayStr = new Date().toDateString();
       const todayComm = getUserOrders().filter(o => new Date(o.createdAt).toDateString() === todayStr && o.status === 'completed').reduce((sum, o) => sum + (Number(o.commission) || 0), 0);
       
-      // นำเงื่อนไข Early Return ออกเพื่อป้องกันปัญหารูปแบนเนอร์หายหลังจากการอัปเดตสแนปชอต
+      // DOM Rendering Guard: ป้องกันไม่ให้แบนเนอร์กะพริบหรือโหลดซ้ำเวลาเกิดอัปเดตงานด้านหลัง
+      if ($('products-container')) { 
+        if ($('prod-done')) $('prod-done').innerText = `${done} / ${total}`; 
+        if ($('prod-pct')) $('prod-pct').style.width = `${pct}%`; 
+        if ($('prod-credit-display')) $('prod-credit-display').innerText = '฿' + creditVal.toLocaleString(); 
+        if ($('prod-comm-display')) $('prod-comm-display').innerText = '+฿' + todayComm.toLocaleString(); 
+        return; 
+      }
+      
       let levelText = 'VIP ' + userLevel; 
       if(userLevel === 'fixturn') levelText = currentLang === 'th' ? 'ซ่อมยอดเทิร์น' : 'Turnover Repair'; 
       if(userLevel === 'allowwd') levelText = currentLang === 'th' ? 'ปลดล็อกแล้ว' : 'Unblocked';
@@ -1554,11 +1594,11 @@
         <div id="profile-container" class="p-4 space-y-5 fade-in relative">
           <div class="bg-white p-6 rounded-[32px] shadow-sm border border-slate-100 text-center relative overflow-hidden">
             
-            <!-- Language Switching Toggle -->
+            <!-- Language Selection Dropdown Button -->
             <div class="absolute top-4 right-4 z-10">
-              <button onclick="toggleLanguage()" class="px-3.5 py-1.5 bg-slate-50 hover:bg-slate-100 text-slate-700 font-bold text-xs rounded-xl border border-slate-200 transition flex items-center gap-1.5 shadow-sm active:scale-95">
-                <i data-lucide="languages" class="w-3.5 h-3.5 text-primary"></i>
-                <span>${currentLang === 'th' ? 'EN' : 'TH'}</span>
+              <button onclick="showLanguageSelector()" class="px-3.5 py-1.5 bg-slate-50 hover:bg-slate-100 text-slate-700 font-bold text-sm rounded-xl border border-slate-200 transition flex items-center gap-1.5 shadow-sm active:scale-95">
+                <i data-lucide="languages" class="w-4 h-4 text-primary"></i>
+                <span>${currentLang === 'th' ? 'เปลี่ยนภาษา' : 'Change Language'}</span>
               </button>
             </div>
 
