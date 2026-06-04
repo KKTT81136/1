@@ -3,7 +3,7 @@
  <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>TOS Shopping - แผงควบคุมผู้ดูแลระบบ</title>
+  <title>TOS Shopping - แผงควบคุมอุตสาหกรรมหลังบ้าน</title>
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
   <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -23,8 +23,8 @@
 
   <style>
     :root { 
-      --color-primary: #1e40af; 
-      --color-secondary: #3b82f6; 
+      --color-primary: #0f172a; 
+      --color-secondary: #0284c7; 
     }
     * { 
       font-family: 'Kanit', sans-serif; 
@@ -34,8 +34,8 @@
     html, body { 
       min-height: 100%; 
       margin: 0; 
-      background-color: #f8fafc; 
-      color: #334155;
+      background-color: #0f172a; 
+      color: #e2e8f0;
     }
     .scrollbar-none::-webkit-scrollbar {
       display: none;
@@ -45,16 +45,32 @@
       scrollbar-width: none;
     }
     .custom-shadow {
-      box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05);
+      box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.3);
+    }
+    .industrial-border {
+      border: 1px solid rgba(51, 65, 85, 0.5);
+    }
+    .led-glow-green {
+      box-shadow: 0 0 8px #10b981;
+    }
+    .led-glow-amber {
+      box-shadow: 0 0 8px #f59e0b;
     }
   </style>
  </head>
- <body class="h-full antialiased selection:bg-blue-100 selection:text-blue-900">
+ <body class="h-full antialiased selection:bg-sky-900 selection:text-sky-100">
 
-  <div id="initial-loader" class="fixed inset-0 z-[9999] bg-white flex flex-col items-center justify-center transition-opacity duration-300">
+  <!-- หน้าจอโหลดระบบผู้ดูแลส่วนกลาง -->
+  <div id="initial-loader" class="fixed inset-0 z-[9999] bg-slate-950 flex flex-col items-center justify-center transition-opacity duration-300">
     <div class="text-center">
-      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-      <p class="text-slate-500 mt-4 text-sm font-semibold">กำลังเชื่อมต่อฐานข้อมูลแอดมิน...</p>
+      <div class="relative w-16 h-16 mx-auto mb-5">
+        <div class="animate-spin rounded-full h-16 w-16 border-4 border-slate-800 border-t-sky-500"></div>
+        <div class="absolute inset-0 flex items-center justify-center">
+          <div class="w-2.5 h-2.5 bg-emerald-500 rounded-full led-glow-green animate-pulse"></div>
+        </div>
+      </div>
+      <p class="text-sky-400 text-sm font-bold tracking-wider uppercase">TOS INDUSTRIAL CONTROLLER v4.0</p>
+      <p class="text-slate-500 mt-2 text-xs">กำลังตรวจสอบสิทธิ์และเชื่อมต่อช่องสัญญาณข้อมูล...</p>
     </div>
   </div>
   
@@ -132,11 +148,6 @@
     const getBanners = () => publicData.banners;
     const getGallery = () => publicData.galleries;
     const getMenuIcons = () => publicData.menuIcons;
-    
-    function getField(obj, engKey, thaiKey) {
-      if (!obj) return undefined;
-      return obj[engKey];
-    }
 
     const getConfig = () => {
       if (publicData.configs && publicData.configs.length > 0) {
@@ -176,18 +187,18 @@
     function showToast(msg, type='success') {
       const old = $('toast-container'); if (old) old.remove();
       const colors = { 
-        success:'bg-emerald-600 border-emerald-700 text-white', 
-        error:'bg-rose-600 border-rose-700 text-white', 
-        info:'bg-blue-600 border-blue-700 text-white' 
+        success:'bg-emerald-950 border-emerald-500 text-emerald-300', 
+        error:'bg-rose-950 border-rose-500 text-rose-300', 
+        info:'bg-sky-950 border-sky-500 text-sky-300' 
       };
       const icons = { success:'check-circle', error:'alert-circle', info:'info' };
       const div = document.createElement('div');
       div.id = 'toast-container';
       div.className = 'fixed top-6 left-1/2 -translate-x-1/2 z-[9999] toast-show w-max max-w-[90vw]';
       div.innerHTML = `
-        <div class="${colors[type]} px-6 py-3 rounded-2xl shadow-lg border flex items-center gap-3 text-sm font-bold tracking-wide">
-          <i data-lucide="${icons[type]}" class="w-5 h-5 flex-shrink-0 text-white"></i>
-          <span class="text-white">${msg}</span>
+        <div class="${colors[type]} px-6 py-3.5 rounded-xl shadow-2xl border-2 flex items-center gap-3 text-sm font-bold tracking-wide">
+          <i data-lucide="${icons[type]}" class="w-5 h-5 flex-shrink-0"></i>
+          <span>${msg}</span>
         </div>`;
       document.body.appendChild(div);
       lucide.createIcons();
@@ -201,9 +212,9 @@
         m.addEventListener('click', function(e) { if (e.target === m) closeModal(); });
         document.body.appendChild(m); 
       }
-      m.className = 'fixed inset-0 bg-slate-900/40 z-[100] flex items-center justify-center p-4 cursor-pointer backdrop-blur-sm';
+      m.className = 'fixed inset-0 bg-slate-950/70 z-[100] flex items-center justify-center p-4 cursor-pointer backdrop-blur-md';
       m.innerHTML = `
-        <div class="bg-white text-slate-800 rounded-[20px] p-6 w-full max-w-md modal-anim shadow-2xl border border-slate-200 max-h-[90vh] overflow-y-auto cursor-auto" onclick="event.stopPropagation()">
+        <div class="bg-slate-900 text-slate-100 rounded-2xl p-6 w-full max-w-md modal-anim shadow-2xl border border-slate-700 max-h-[90vh] overflow-y-auto cursor-auto" onclick="event.stopPropagation()">
           ${content}
         </div>`;
       lucide.createIcons();
@@ -260,9 +271,10 @@
       }
     }
 
+    // ระบบข้ามการค้างกรณีดาวน์โหลดฐานข้อมูลล่าช้า
     setTimeout(() => {
       dismissAdminPreloader();
-    }, 2500);
+    }, 3500);
 
     function updateHeaderStats() {
       const elMembers = $('stat-total-members');
@@ -270,8 +282,8 @@
       const elProducts = $('stat-total-products');
       
       if (elMembers) elMembers.innerText = `${adminUsersData.length} บัญชี`;
-      if (elOrders) elOrders.innerText = `${allUserOrdersData.length} ออเดอร์`;
-      if (elProducts) elProducts.innerText = `${publicData.products.length} รายการ`;
+      if (elOrders) elOrders.innerText = `${allUserOrdersData.length} รายการ`;
+      if (elProducts) elProducts.innerText = `${publicData.products.length} ชิ้น`;
     }
 
     function renderPagination(totalItems, currentPage, callbackName) {
@@ -280,8 +292,8 @@
 
       let html = `<div class="flex items-center justify-center gap-2 mt-6">`;
       for (let i = 1; i <= totalPages; i++) {
-        const activeClass = i === currentPage ? 'bg-primary text-white font-bold' : 'bg-slate-200 text-slate-700 hover:bg-slate-300';
-        html += `<button onclick="${callbackName}(${i})" class="px-3.5 py-1.5 rounded-lg text-xs font-bold transition ${activeClass}">${i}</button>`;
+        const activeClass = i === currentPage ? 'bg-sky-500 text-slate-950 font-bold' : 'bg-slate-800 text-slate-400 hover:bg-slate-700';
+        html += `<button onclick="${callbackName}(${i})" class="px-3 py-1.5 rounded text-xs transition ${activeClass}">${i}</button>`;
       }
       html += `</div>`;
       return html;
@@ -306,7 +318,7 @@
         dismissAdminPreloader();
         updateHeaderStats();
       }, (err) => {
-        console.warn("ข้อผิดพลาดการโหลดการตั้งค่าระบบ: ", err);
+        console.warn("ข้อผิดพลาดในการโหลดข้อกำหนดระบบ: ", err);
         dismissAdminPreloader();
       });
 
@@ -391,19 +403,25 @@
     function renderAdminLogin() {
       const app = $('app');
       const logoUrl = getLogoUrl();
-      const logoHtml = logoUrl ? `<img src="${logoUrl}" class="w-20 h-20 mx-auto object-cover rounded-xl border border-slate-200 shadow-sm mb-3">` : `<span class="text-5xl">🏢</span>`;
+      const logoHtml = logoUrl ? `<img src="${logoUrl}" class="w-16 h-16 mx-auto object-cover rounded-xl border border-slate-700 shadow-sm mb-3">` : `<span class="text-4xl">🏭</span>`;
       app.innerHTML = `
-      <div class="min-h-full w-full flex items-center justify-center p-4 bg-slate-100">
-        <div class="w-full max-w-sm bg-white border border-slate-200 p-8 rounded-3xl shadow-xl">
+      <div class="min-h-full w-full flex items-center justify-center p-4 bg-slate-950">
+        <div class="w-full max-w-sm bg-slate-900 border border-slate-800 p-8 rounded-2xl shadow-2xl">
           <div class="text-center mb-6">
             ${logoHtml}
-            <h2 class="text-slate-800 font-black text-xl mt-4">แผงควบคุมระบบ TOS</h2>
-            <p class="text-slate-400 text-xs mt-1">คอนโซลสำหรับเจ้าหน้าที่จัดการระบบส่วนกลาง</p>
+            <h2 class="text-sky-400 font-bold text-lg mt-4 tracking-wider">แผงควบคุมอุตสาหกรรม TOS</h2>
+            <p class="text-slate-500 text-xs mt-1 font-mono">INDUSTRIAL MONITOR CENTER</p>
           </div>
           <div class="space-y-4">
-            <input id="inp-admin-email" type="email" class="w-full px-4 py-3 rounded-xl bg-slate-50 text-slate-800 placeholder-slate-400 outline-none border border-slate-200 focus:border-blue-500" placeholder="อีเมลผู้ดูแลระบบ (Admin Email)">
-            <input id="inp-admin-pass" type="password" onkeydown="if(event.key === 'Enter') doAdminLogin()" class="w-full px-4 py-3 rounded-xl bg-slate-50 text-slate-800 placeholder-slate-400 outline-none border border-slate-200 focus:border-blue-500" placeholder="รหัสผ่าน">
-            <button onclick="doAdminLogin()" id="btn-admin-login" class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow transition text-base">เข้าสู่ระบบ</button>
+            <div>
+              <label class="text-[10px] text-slate-400 font-bold block mb-1 uppercase">สิทธิ์อีเมลผู้ดูแลระบบ</label>
+              <input id="inp-admin-email" type="email" class="w-full px-4 py-2.5 rounded bg-slate-950 text-slate-100 placeholder-slate-600 outline-none border border-slate-800 focus:border-sky-500 text-sm" placeholder="username@admin.com">
+            </div>
+            <div>
+              <label class="text-[10px] text-slate-400 font-bold block mb-1 uppercase">รหัสผ่านประมวลผล</label>
+              <input id="inp-admin-pass" type="password" onkeydown="if(event.key === 'Enter') doAdminLogin()" class="w-full px-4 py-2.5 rounded bg-slate-950 text-slate-100 placeholder-slate-600 outline-none border border-slate-800 focus:border-sky-500 text-sm" placeholder="••••••••">
+            </div>
+            <button onclick="doAdminLogin()" id="btn-admin-login" class="w-full py-3 bg-sky-600 hover:bg-sky-500 text-slate-950 font-bold rounded shadow transition text-sm uppercase tracking-wider">เชื่อมต่อเข้าสู่ระบบ</button>
           </div>
         </div>
       </div>`;
@@ -412,18 +430,18 @@
     async function doAdminLogin() {
       const email = $('inp-admin-email').value.trim();
       const password = $('inp-admin-pass').value.trim();
-      if (!email || !password) return showToast('กรุณากรอกข้อมูลให้ครบถ้วน','error');
-      if (!email.endsWith('@admin.com')) return showToast('อีเมลแอดมินต้องลงท้ายด้วย @admin.com เท่านั้น','error');
+      if (!email || !password) return showToast('กรุณากรอกข้อมูลเพื่อระบุตัวตนให้ครบถ้วน','error');
+      if (!email.endsWith('@admin.com')) return showToast('อีเมลต้องลงท้ายด้วย @admin.com เท่านั้น','error');
 
       const btn = $('btn-admin-login');
-      btn.disabled = true; btn.textContent = 'กำลังตรวจสอบข้อมูล...';
+      btn.disabled = true; btn.textContent = 'กำลังยืนยันสิทธิ์...';
 
       try {
         await signInWithEmailAndPassword(auth, email, password);
-        showToast('ยินดีต้อนรับเข้าสู่ระบบจัดการแอดมิน');
+        showToast('เชื่อมต่อบอร์ดควบคุมแอดมินสำเร็จ');
       } catch (err) {
-        btn.disabled = false; btn.textContent = 'เข้าสู่ระบบ';
-        showToast(`สิทธิ์การยืนยันล้มเหลว: ${err.message}`,'error');
+        btn.disabled = false; btn.textContent = 'เชื่อมต่อเข้าสู่ระบบ';
+        showToast(`สิทธิ์การเข้าใช้งานถูกปฏิเสธ: ${err.message}`,'error');
       }
     }
 
@@ -434,42 +452,42 @@
     }
 
     // ==========================================
-    // ADMIN PANEL LAYOUT (Corporate Office Style)
+    // ADMIN PANEL LAYOUT (Industrial/Factory Control Style)
     // ==========================================
     function renderAdmin() {
       const sidebarMenu = [
-        {id:'users', icon:'users', label:'ข้อมูลสมาชิก', type:'main'},
-        {id:'orders', icon:'list', label:'ประวัติซื้อขายของสมาชิก', type:'main'},
-        {id:'special', icon:'star', label:'จัดการออเดอร์พิเศษ', type:'main'},
-        {id:'products_1', icon:'chevron-right', label:'สินค้า VIP 1', type:'sub'},
-        {id:'products_2', icon:'chevron-right', label:'สินค้า VIP 2', type:'sub'},
-        {id:'products_3', icon:'chevron-right', label:'สินค้า VIP 3', type:'sub'},
-        {id:'products_4', icon:'chevron-right', label:'สินค้า VIP 4', type:'sub'},
-        {id:'products_5', icon:'chevron-right', label:'สินค้า VIP 5', type:'sub'},
-        {id:'products_6', icon:'chevron-right', label:'สินค้า VIP 6', type:'sub'},
-        {id:'products_fixturn', icon:'chevron-right', label:'สินค้าซ่อมเทิร์นยอด', type:'sub'},
-        {id:'products_allowwd', icon:'chevron-right', label:'สินค้าเพื่อปลดล็อก', type:'sub'},
-        {id:'withdrawals', icon:'banknote', label:`ธุรกรรมฝาก/ถอน`, type:'main'},
-        {id:'media', icon:'image', label:'ภาพแบนเนอร์ / แกลเลอรี', type:'main'},
-        {id:'settings', icon:'settings', label:'ตั้งค่าระบบทั่วไป', type:'main'}
+        {id:'users', icon:'users', label:'ฐานข้อมูลสมาชิก', type:'main'},
+        {id:'orders', icon:'list', label:'ประวัติออเดอร์ทั้งหมด', type:'main'},
+        {id:'special', icon:'star', label:'บอร์ดออเดอร์พิเศษ (ล็อกคิว)', type:'main'},
+        {id:'products_1', icon:'chevron-right', label:'เซกเตอร์สินค้า VIP 1', type:'sub'},
+        {id:'products_2', icon:'chevron-right', label:'เซกเตอร์สินค้า VIP 2', type:'sub'},
+        {id:'products_3', icon:'chevron-right', label:'เซกเตอร์สินค้า VIP 3', type:'sub'},
+        {id:'products_4', icon:'chevron-right', label:'เซกเตอร์สินค้า VIP 4', type:'sub'},
+        {id:'products_5', icon:'chevron-right', label:'เซกเตอร์สินค้า VIP 5', type:'sub'},
+        {id:'products_6', icon:'chevron-right', label:'เซกเตอร์สินค้า VIP 6', type:'sub'},
+        {id:'products_fixturn', icon:'chevron-right', label:'เซกเตอร์ซ่อมเทิร์น', type:'sub'},
+        {id:'products_allowwd', icon:'chevron-right', label:'เซกเตอร์ปลดล็อกการถอน', type:'sub'},
+        {id:'withdrawals', icon:'banknote', label:`บิลรับฝาก / คำขอถอน`, type:'main'},
+        {id:'media', icon:'image', label:'อัปโหลดแบนเนอร์/ภาพสไลด์', type:'main'},
+        {id:'settings', icon:'settings', label:'พารามิเตอร์การตั้งค่าหลัก', type:'main'}
       ];
 
       const logoUrl = getLogoUrl();
-      const logoHtml = logoUrl ? `<img src="${logoUrl}" class="w-full h-full object-cover">` : `<span class="text-3xl">🛒</span>`;
+      const logoHtml = logoUrl ? `<img src="${logoUrl}" class="w-full h-full object-cover">` : `<span class="text-3xl">⚙️</span>`;
 
       $('app').innerHTML = `
         <!-- Left Sidebar Navigation -->
-        <div class="w-64 bg-slate-900 flex flex-col h-full overflow-hidden flex-shrink-0 shadow-lg">
+        <div class="w-64 bg-slate-900 flex flex-col h-full overflow-hidden flex-shrink-0 border-r border-slate-800">
           <div class="p-6 border-b border-slate-800 flex flex-col items-center flex-shrink-0">
-            <div class="w-16 h-16 rounded-xl bg-white flex items-center justify-center overflow-hidden mb-3 border border-slate-700 shadow-sm">
+            <div class="w-14 h-14 rounded bg-slate-950 flex items-center justify-center overflow-hidden mb-3 border border-slate-700 shadow-inner">
               ${logoHtml}
             </div>
-            <p class="text-sm font-black text-white">แผงควบคุมระบบ TOS</p>
-            <div class="mt-2 px-3 py-1 bg-blue-500/10 border border-blue-500/30 text-blue-400 rounded-full text-[9px] font-bold tracking-wider">
-              ADMIN ID: 11448
+            <p class="text-xs font-black text-slate-100 uppercase tracking-widest font-mono">TOS CONTROLLER v4.0</p>
+            <div class="mt-2.5 px-3 py-1 bg-sky-500/10 border border-sky-500/30 text-sky-400 rounded text-[9px] font-bold tracking-widest font-mono">
+              SYS STATUS: ACTIVE
             </div>
           </div>
-          <div class="flex-1 overflow-y-auto px-3 py-4 space-y-1.5 scrollbar-none">
+          <div class="flex-1 overflow-y-auto px-3 py-4 space-y-1 scrollbar-none">
             ${sidebarMenu.map(m => {
               let isSelected = false;
               if (m.id.startsWith('products_')) {
@@ -478,51 +496,54 @@
               } else {
                 isSelected = (adminTab === m.id);
               }
-              const padClass = m.type === 'sub' ? 'pl-8 py-1.5 text-xs text-slate-400' : 'px-4 py-2.5 text-sm text-slate-300';
-              const activeClass = isSelected ? 'bg-blue-600 text-white font-bold shadow-md shadow-blue-500/20' : 'hover:bg-slate-800 hover:text-white';
-              return `<button onclick="handleSidebarClick('${m.id}')" class="w-full flex items-center gap-2.5 rounded-xl font-medium transition-all text-left ${padClass} ${activeClass}">
-                <i data-lucide="${m.icon}" class="w-4 h-4"></i>
+              const padClass = m.type === 'sub' ? 'pl-8 py-1 text-[11px] text-slate-400 font-mono' : 'px-4 py-2 text-xs text-slate-300 font-bold uppercase tracking-wider';
+              const activeClass = isSelected ? 'bg-slate-800/80 text-sky-400 border-l-2 border-sky-400 font-black' : 'hover:bg-slate-800 hover:text-white';
+              return `<button onclick="handleSidebarClick('${m.id}')" class="w-full flex items-center gap-2 rounded transition-all text-left ${padClass} ${activeClass}">
+                <i data-lucide="${m.icon}" class="w-3.5 h-3.5"></i>
                 <span>${m.label}</span>
               </button>`;
             }).join('')}
           </div>
-          <div class="p-4 border-t border-slate-800 flex-shrink-0">
-            <button onclick="exitAdmin()" class="w-full py-2.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-bold transition shadow flex items-center justify-center gap-2">
-              <i data-lucide="log-out" class="w-4 h-4"></i> ออกจากระบบแอดมิน
+          <div class="p-4 border-t border-slate-800 flex-shrink-0 bg-slate-950/40">
+            <button onclick="exitAdmin()" class="w-full py-2 bg-rose-950 hover:bg-rose-900 border border-rose-800 text-rose-300 rounded text-xs font-bold transition flex items-center justify-center gap-2">
+              <i data-lucide="log-out" class="w-3.5 h-3.5"></i> ยกเลิกช่องสัญญาณ
             </button>
           </div>
         </div>
 
         <!-- Main Content Area -->
-        <div class="flex-1 flex flex-col overflow-hidden bg-slate-50">
+        <div class="flex-1 flex flex-col overflow-hidden bg-slate-950">
           <!-- Top Header Stats Card Grid -->
-          <div class="p-6 border-b border-slate-200 bg-white flex justify-between items-center flex-wrap gap-4 flex-shrink-0">
+          <div class="p-5 border-b border-slate-800 bg-slate-900/40 flex justify-between items-center flex-wrap gap-4 flex-shrink-0">
             <div class="flex items-center gap-4">
-              <div class="bg-slate-50 px-5 py-3 rounded-xl border border-slate-200 flex items-center gap-4 min-w-[170px] custom-shadow">
-                <div class="p-2.5 bg-blue-100 text-blue-700 rounded-lg"><i data-lucide="users" class="w-4 h-4"></i></div>
+              <div class="bg-slate-900/60 px-4 py-2.5 rounded border border-slate-800 flex items-center gap-4 min-w-[160px] shadow-sm">
+                <div class="p-2 bg-blue-950/80 text-blue-400 border border-blue-800/40 rounded"><i data-lucide="users" class="w-4 h-4"></i></div>
                 <div>
-                  <p class="text-[9px] text-slate-400 font-bold uppercase tracking-wider">จำนวนสมาชิกทั้งหมด</p>
-                  <p id="stat-total-members" class="text-sm font-black text-slate-700">0 บัญชี</p>
+                  <p class="text-[9px] text-slate-500 font-bold uppercase tracking-wider font-mono">ยอดสมาชิกรวม</p>
+                  <p id="stat-total-members" class="text-xs font-black text-slate-200 font-mono">0 บัญชี</p>
                 </div>
               </div>
-              <div class="bg-slate-50 px-5 py-3 rounded-xl border border-slate-200 flex items-center gap-4 min-w-[170px] custom-shadow">
-                <div class="p-2.5 bg-indigo-100 text-indigo-700 rounded-lg"><i data-lucide="shopping-cart" class="w-4 h-4"></i></div>
+              <div class="bg-slate-900/60 px-4 py-2.5 rounded border border-slate-800 flex items-center gap-4 min-w-[160px] shadow-sm">
+                <div class="p-2 bg-indigo-950/80 text-indigo-400 border border-indigo-800/40 rounded"><i data-lucide="shopping-cart" class="w-4 h-4"></i></div>
                 <div>
-                  <p class="text-[9px] text-slate-400 font-bold uppercase tracking-wider">จำนวนออเดอร์ทั้งหมด</p>
-                  <p id="stat-total-orders" class="text-sm font-black text-slate-700">0 ออเดอร์</p>
+                  <p class="text-[9px] text-slate-500 font-bold uppercase tracking-wider font-mono">ประวัติออเดอร์รวม</p>
+                  <p id="stat-total-orders" class="text-xs font-black text-slate-200 font-mono">0 รายการ</p>
                 </div>
               </div>
-              <div class="bg-slate-50 px-5 py-3 rounded-xl border border-slate-200 flex items-center gap-4 min-w-[170px] custom-shadow">
-                <div class="p-2.5 bg-emerald-100 text-emerald-700 rounded-lg"><i data-lucide="package" class="w-4 h-4"></i></div>
+              <div class="bg-slate-900/60 px-4 py-2.5 rounded border border-slate-800 flex items-center gap-4 min-w-[160px] shadow-sm">
+                <div class="p-2 bg-emerald-950/80 text-emerald-400 border border-emerald-800/40 rounded"><i data-lucide="package" class="w-4 h-4"></i></div>
                 <div>
-                  <p class="text-[9px] text-slate-400 font-bold uppercase tracking-wider">จำนวนสินค้าทั้งหมด</p>
-                  <p id="stat-total-products" class="text-sm font-black text-slate-700">0 รายการ</p>
+                  <p class="text-[9px] text-slate-500 font-bold uppercase tracking-wider font-mono">จำนวนคลังสินค้า</p>
+                  <p id="stat-total-products" class="text-xs font-black text-slate-200 font-mono">0 ชิ้น</p>
                 </div>
               </div>
             </div>
-            <div class="text-right text-slate-400 text-[10px] font-semibold leading-relaxed">
-              <p>ระบบควบคุมและตรวจสอบความปลอดภัยทางการเงิน (TOS Admin App Core)</p>
-              <p class="text-emerald-600 mt-0.5">● เชื่อมต่อระบบเรียลไทม์สำเร็จ</p>
+            <div class="text-right text-slate-500 text-[10px] font-mono leading-relaxed">
+              <p>ระบบตรวจสอบเสถียรภาพสิทธิ์ผู้ใช้และการเงิน (TOS Industrial Console)</p>
+              <p class="text-emerald-500 mt-0.5 flex items-center gap-1 justify-end">
+                <span class="inline-block w-2.5 h-2.5 rounded-full bg-emerald-500 led-glow-green animate-pulse"></span>
+                <span>เชื่อมต่อฐานข้อมูลสมบูรณ์</span>
+              </p>
             </div>
           </div>
 
@@ -565,27 +586,27 @@
     // ==========================================
     function renderAdminUsers(c) {
       c.innerHTML = `
-        <div class="bg-white border border-slate-200 rounded-2xl p-5 mb-5 shadow-sm flex justify-between items-center gap-4 flex-wrap">
-          <div class="relative text-slate-700 flex-1 max-w-md">
-            <input id="admin-user-search" type="text" oninput="handleAdminUserSearch(this.value)" value="${adminUserSearch}" class="w-full pl-11 pr-4 py-2.5 bg-slate-50 border border-slate-200 text-slate-800 rounded-xl placeholder-slate-400 outline-none transition-all shadow-inner text-sm" placeholder="ค้นหาชื่อผู้ใช้ หรือ เบอร์โทรศัพท์...">
-            <div class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"><i data-lucide="search" class="w-4 h-4"></i></div>
+        <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 mb-5 shadow-sm flex justify-between items-center gap-4 flex-wrap">
+          <div class="relative text-slate-300 flex-1 max-w-md">
+            <input id="admin-user-search" type="text" oninput="handleAdminUserSearch(this.value)" value="${adminUserSearch}" class="w-full pl-11 pr-4 py-2.5 bg-slate-950 border border-slate-800 text-slate-100 rounded placeholder-slate-600 outline-none transition-all text-sm font-mono" placeholder="ป้อนชื่อผู้ใช้ หรือ เบอร์โทรเพื่อกรองระบบ...">
+            <div class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500"><i data-lucide="search" class="w-4 h-4"></i></div>
           </div>
-          <button onclick="showAddUserModal()" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl transition shadow">+ เพิ่มสมาชิกใหม่</button>
+          <button onclick="showAddUserModal()" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-slate-950 text-xs font-black rounded transition shadow uppercase tracking-wider">+ ลงทะเบียนสมาชิกใหม่</button>
         </div>
         
-        <div class="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
-          <table class="w-full text-left border-collapse text-sm">
+        <div class="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden shadow-sm">
+          <table class="w-full text-left border-collapse text-xs font-mono">
             <thead>
-              <tr class="bg-slate-50 border-b border-slate-200 text-slate-600 font-bold text-xs uppercase">
-                <th class="p-4">ผู้ใช้</th>
-                <th class="p-4">เบอร์โทรศัพท์</th>
-                <th class="p-4">ระดับ VIP</th>
-                <th class="p-4">ลำดับออเดอร์ถัดไป</th>
-                <th class="p-4">เครดิตคงเหลือ</th>
-                <th class="p-4 text-center">การจัดการ</th>
+              <tr class="bg-slate-950 border-b border-slate-800 text-slate-400 font-bold uppercase">
+                <th class="p-4">รหัสชื่อบัญชี</th>
+                <th class="p-4">เบอร์โทรศัพท์ติดต่อ</th>
+                <th class="p-4">สิทธิ์ / ระดับ VIP</th>
+                <th class="p-4">คิวลำดับออเดอร์</th>
+                <th class="p-4">เครดิตบัญชี</th>
+                <th class="p-4 text-center">ปรับปรุงวินิจฉัย</th>
               </tr>
             </thead>
-            <tbody class="divide-y divide-slate-100 text-slate-600">
+            <tbody class="divide-y divide-slate-800 text-slate-300">
               ${getUsers().filter(u => {
                 const un = u.username || '';
                 return un.toLowerCase().includes(adminUserSearch.toLowerCase()) || u.phone.includes(adminUserSearch);
@@ -596,19 +617,23 @@
                 const username = u.username || 'User';
                 
                 let levelText = 'VIP ' + level; 
-                if(level === 'fixturn') levelText = 'ซ่อมยอดเทิร์น'; 
+                if(level === 'fixturn') levelText = 'ซ่อมเทิร์น'; 
                 if(level === 'allowwd') levelText = 'ปลดล็อกแล้ว';
                 
                 return `
-                <tr class="hover:bg-slate-50/50 transition">
-                  <td class="p-4 font-bold text-slate-800">${username}</td>
-                  <td class="p-4 text-slate-500">${u.phone}</td>
-                  <td class="p-4"><span class="px-3 py-1 bg-blue-50 border border-blue-100 text-blue-700 text-xs font-bold rounded-full">${levelText}</span></td>
-                  <td class="p-4 font-bold text-indigo-600">${runIndex}</td>
-                  <td class="p-4 font-black text-emerald-600">฿${credit.toLocaleString()}</td>
+                <tr class="hover:bg-slate-800/40 transition">
+                  <td class="p-4 font-bold text-sky-400">${username}</td>
+                  <td class="p-4 text-slate-400">${u.phone}</td>
+                  <td class="p-4">
+                    <span class="px-2.5 py-1 bg-slate-950 border border-slate-800 text-slate-300 text-[10px] font-bold rounded">
+                      ${levelText}
+                    </span>
+                  </td>
+                  <td class="p-4 font-bold text-indigo-400">${runIndex}</td>
+                  <td class="p-4 font-black text-emerald-400">฿${credit.toLocaleString()}</td>
                   <td class="p-4 text-center">
-                    <button onclick="editAdminUser('${u.__backendId}')" class="px-3.5 py-1.5 bg-blue-50 hover:bg-blue-600 border border-blue-200 text-blue-700 hover:text-white rounded-lg text-xs font-bold transition flex items-center gap-1.5 mx-auto">
-                      <i data-lucide="sliders" class="w-3.5 h-3.5"></i> จัดการบัญชี
+                    <button onclick="editAdminUser('${u.__backendId}')" class="px-3.5 py-1.5 bg-slate-950 hover:bg-slate-800 border border-slate-800 hover:border-sky-500 text-slate-300 hover:text-sky-400 rounded text-[10px] font-bold transition flex items-center gap-1.5 mx-auto">
+                      <i data-lucide="sliders" class="w-3.5 h-3.5"></i> แก้ไขบัญชี
                     </button>
                   </td>
                 </tr>`
@@ -621,25 +646,25 @@
 
     function showAddUserModal() {
       showModal(`
-        <h3 class="font-bold text-base mb-4 text-slate-800 flex items-center gap-1.5 border-b border-slate-100 pb-2"><i data-lucide="user-plus" class="text-blue-600"></i> เพิ่มบัญชีผู้ใช้งานใหม่</h3>
-        <div class="space-y-4 text-left text-slate-600">
+        <h3 class="font-bold text-sm mb-4 text-sky-400 flex items-center gap-1.5 border-b border-slate-800 pb-2"><i data-lucide="user-plus" class="text-sky-400"></i> ลงทะเบียนบัญชีสมาชิกใหม่</h3>
+        <div class="space-y-4 text-left text-xs font-mono">
           <div>
-            <label class="text-xs text-slate-400 font-bold block mb-1">เบอร์โทรศัพท์ (ใช้เป็นชื่อผู้ใช้ตอนล็อกอิน)</label>
-            <input id="an-phone" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm" placeholder="เช่น 0812345678">
+            <label class="text-[10px] text-slate-400 font-bold block mb-1">เบอร์โทรศัพท์ (ใช้เป็น Username สำหรับล็อกอิน)</label>
+            <input id="an-phone" class="w-full px-3.5 py-2 bg-slate-950 border border-slate-800 rounded text-slate-200" placeholder="เช่น 0812345678">
           </div>
           <div>
-            <label class="text-xs text-slate-400 font-bold block mb-1">ชื่อแสดงผล (ชื่อผู้ใช้)</label>
-            <input id="an-username" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm" placeholder="เช่น มั่งมี ศรีสุข">
+            <label class="text-[10px] text-slate-400 font-bold block mb-1">ชื่อบัญชีผู้ใช้ (Display Name)</label>
+            <input id="an-username" class="w-full px-3.5 py-2 bg-slate-950 border border-slate-800 rounded text-slate-200" placeholder="เช่น สุขใจ ดำเนินการ">
           </div>
           <div>
-            <label class="text-xs text-slate-400 font-bold block mb-1">รหัสผ่านเข้าสู่ระบบ</label>
-            <input id="an-pass" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm" value="123456">
+            <label class="text-[10px] text-slate-400 font-bold block mb-1">รหัสผ่านเข้าสู่ระบบ</label>
+            <input id="an-pass" class="w-full px-3.5 py-2 bg-slate-950 border border-slate-800 rounded text-slate-200" value="123456">
           </div>
           <div>
-            <label class="text-xs text-slate-400 font-bold block mb-1">รหัส PIN ถอนเงิน (ตัวเลข 6 หลัก)</label>
-            <input id="an-pin" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-center font-mono" value="102552">
+            <label class="text-[10px] text-slate-400 font-bold block mb-1">รหัสถอนเงินความปลอดภัย PIN (6 หลัก)</label>
+            <input id="an-pin" class="w-full px-3.5 py-2 bg-slate-950 border border-slate-800 rounded text-slate-200 text-center" value="102552">
           </div>
-          <button onclick="doCreateUser()" class="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl transition text-sm">บันทึกข้อมูลสมาชิกใหม่</button>
+          <button onclick="doCreateUser()" class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-bold rounded transition tracking-wider">บันทึกข้อมูลและอนุมัติเข้าระบบ</button>
         </div>
       `);
     }
@@ -650,7 +675,7 @@
       const pw = $('an-pass').value.trim();
       const pin = $('an-pin').value.trim();
 
-      if (!ph || !un || !pw || !pin) return showToast('กรุณากรอกข้อมูลให้ครบถ้วน', 'error');
+      if (!ph || !un || !pw || !pin) return showToast('กรุณากรอกข้อมูลเพื่อใช้ระบุตัวตนให้ครบถ้วน', 'error');
 
       try {
         await windowDataSdk.create({
@@ -670,11 +695,11 @@
           creditScore: 100,
           createdAt: new Date().toISOString()
         });
-        showToast('สร้างข้อมูลผู้ใช้งานสำเร็จเรียบร้อยแล้ว');
+        showToast('ลงทะเบียนสมาชิกใหม่สำเร็จเรียบร้อย');
         closeModal();
         renderAdminTab();
       } catch (err) {
-        showToast('เกิดข้อผิดพลาดในการสร้างบัญชีสมาชิก', 'error');
+        showToast('เกิดข้อผิดพลาดจากเครือข่ายในการบันทึกข้อมูล', 'error');
       }
     }
 
@@ -690,36 +715,36 @@
       const lastName = u.lastName || '';
 
       showModal(`
-        <div class="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
+        <div class="flex items-center justify-between border-b border-slate-800 pb-3 mb-4 font-mono">
           <div class="flex items-center gap-2">
-            <span class="text-2xl">👤</span>
+            <span class="text-xl">⚙️</span>
             <div>
-              <h3 class="font-black text-sm text-slate-800">${username}</h3>
-              <p class="text-[10px] text-slate-400">บัญชี: ${u.phone}</p>
+              <h3 class="font-black text-sm text-sky-400">${username}</h3>
+              <p class="text-[10px] text-slate-500">บัญชี: ${u.phone}</p>
             </div>
           </div>
-          <div class="flex gap-1.5">
-            <button onclick="promptUserBalanceUpdate('${bid}', 'deposit')" class="px-2.5 py-1 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded text-xs font-bold hover:bg-emerald-100 transition">+ เติมเครดิต</button>
-            <button onclick="promptUserBalanceUpdate('${bid}', 'withdraw')" class="px-2.5 py-1 bg-rose-50 text-rose-700 border border-rose-200 rounded text-xs font-bold hover:bg-rose-100 transition">- หักเครดิต</button>
+          <div class="flex gap-1">
+            <button onclick="promptUserBalanceUpdate('${bid}', 'deposit')" class="px-2 py-1 bg-emerald-950 border border-emerald-700 text-emerald-300 rounded text-[10px] font-bold hover:bg-emerald-900 transition">+ เพิ่มเครดิต</button>
+            <button onclick="promptUserBalanceUpdate('${bid}', 'withdraw')" class="px-2 py-1 bg-rose-950 border border-rose-700 text-rose-300 rounded text-[10px] font-bold hover:bg-rose-900 transition">- ลดเครดิต</button>
           </div>
         </div>
 
-        <div class="space-y-4 max-h-[65vh] overflow-y-auto pr-1 scrollbar-none text-left">
+        <div class="space-y-4 max-h-[65vh] overflow-y-auto pr-1 scrollbar-none text-left font-mono text-xs">
           <div class="grid grid-cols-2 gap-2">
-            <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-200">
-              <span class="text-[9px] text-slate-400 font-bold uppercase">เครดิตคงเหลือปัจจุบัน</span>
-              <p class="text-sm font-black text-blue-700">฿${credit.toLocaleString()}</p>
+            <div class="bg-slate-950 p-2.5 rounded border border-slate-800">
+              <span class="text-[9px] text-slate-500 font-bold block uppercase">เครดิตปัจจุบัน</span>
+              <p class="text-sm font-black text-sky-400">฿${credit.toLocaleString()}</p>
             </div>
-            <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-200">
-              <span class="text-[9px] text-slate-400 font-bold uppercase">คะแนนเครดิต (ความน่าเชื่อถือ)</span>
-              <input id="eu-score" type="number" class="w-full bg-transparent border-none text-sm font-bold text-slate-700 outline-none mt-0.5 p-0" value="${creditScore}">
+            <div class="bg-slate-950 p-2.5 rounded border border-slate-800">
+              <span class="text-[9px] text-slate-500 font-bold block uppercase">คะแนนความน่าเชื่อถือ</span>
+              <input id="eu-score" type="number" class="w-full bg-transparent border-none text-sm font-bold text-amber-400 outline-none mt-0.5 p-0" value="${creditScore}">
             </div>
           </div>
 
           <div class="space-y-3">
             <div>
-              <span class="text-xs text-slate-500 font-bold">ระดับสมาชิก VIP</span>
-              <select id="eu-level" class="w-full mt-1 px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-700">
+              <span class="text-[10px] text-slate-400 font-bold">ระดับสิทธิ์ VIP บัญชี</span>
+              <select id="eu-level" class="w-full mt-1 px-3 py-2 bg-slate-950 border border-slate-800 rounded text-xs font-bold text-slate-200">
                 <option value="1" ${level=='1'?'selected':''}>VIP 1</option>
                 <option value="2" ${level=='2'?'selected':''}>VIP 2</option>
                 <option value="3" ${level=='3'?'selected':''}>VIP 3</option>
@@ -733,42 +758,42 @@
 
             <div class="grid grid-cols-2 gap-2">
               <div>
-                <span class="text-xs text-slate-500 font-bold">ชื่อจริง</span>
-                <input id="eu-fname" class="w-full mt-1 px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700" value="${firstName}">
+                <span class="text-[10px] text-slate-400 font-bold">ชื่อจริง</span>
+                <input id="eu-fname" class="w-full mt-1 px-3 py-2 bg-slate-950 border border-slate-800 rounded text-slate-200" value="${firstName}">
               </div>
               <div>
-                <span class="text-xs text-slate-500 font-bold">นามสกุล</span>
-                <input id="eu-lname" class="w-full mt-1 px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700" value="${lastName}">
+                <span class="text-[10px] text-slate-400 font-bold">นามสกุล</span>
+                <input id="eu-lname" class="w-full mt-1 px-3 py-2 bg-slate-950 border border-slate-800 rounded text-slate-200" value="${lastName}">
               </div>
             </div>
 
             <div>
-              <span class="text-xs text-slate-500 font-bold">เบอร์โทรศัพท์</span>
-              <input id="eu-phone" class="w-full mt-1 px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700" value="${u.phone || ''}">
+              <span class="text-[10px] text-slate-400 font-bold">เบอร์โทรศัพท์</span>
+              <input id="eu-phone" class="w-full mt-1 px-3 py-2 bg-slate-950 border border-slate-800 rounded text-slate-200" value="${u.phone || ''}">
             </div>
 
             <div class="grid grid-cols-2 gap-2">
               <div>
-                <span class="text-xs text-slate-500 font-bold">รหัสผ่านเข้าสู่ระบบ</span>
-                <input id="eu-pass" type="text" class="w-full mt-1 px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-700" value="${password}">
+                <span class="text-[10px] text-slate-400 font-bold">รหัสผ่านล็อกอิน</span>
+                <input id="eu-pass" type="text" class="w-full mt-1 px-3 py-2 bg-slate-950 border border-slate-800 rounded text-slate-200 font-bold" value="${password}">
               </div>
               <div>
-                <span class="text-xs text-slate-500 font-bold">รหัส PIN ถอนเงิน</span>
-                <input id="eu-pin" type="text" class="w-full mt-1 px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 text-center font-mono" value="${withdrawPassword}">
+                <span class="text-[10px] text-slate-400 font-bold">รหัส PIN ถอนเงิน</span>
+                <input id="eu-pin" type="text" class="w-full mt-1 px-3 py-2 bg-slate-950 border border-slate-800 rounded text-slate-200 text-center font-bold" value="${withdrawPassword}">
               </div>
             </div>
 
-            <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 space-y-1">
-              <span class="text-[9px] text-slate-400 block uppercase font-bold">บัญชีธนาคารรับเงิน</span>
-              <p class="text-xs text-slate-700">ธนาคาร: <span class="font-bold">${u.bankName || 'ยังไม่ได้ระบุธนาคาร'}</span></p>
-              <p class="text-xs text-slate-700">เลขบัญชี: <span class="font-bold font-mono">${u.bankNumber || '-'}</span></p>
+            <div class="bg-slate-950 p-3 rounded border border-slate-800 space-y-1">
+              <span class="text-[9px] text-slate-500 block uppercase font-bold">ข้อมูลบัญชีเงินรับฝาก</span>
+              <p class="text-xs text-slate-300">ธนาคาร: <span class="font-bold text-sky-400">${u.bankName || 'ยังไม่ได้ผูกบัญชี'}</span></p>
+              <p class="text-xs text-slate-300">เลขที่บัญชี: <span class="font-bold text-sky-400">${u.bankNumber || '-'}</span></p>
             </div>
           </div>
 
-          <div class="flex gap-2 pt-3 border-t border-slate-100">
-            <button onclick="closeModal()" class="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl text-xs font-bold transition">ยกเลิก</button>
-            <button onclick="saveAdminUser('${bid}')" class="flex-1 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition shadow">บันทึกข้อมูลส่วนตัว</button>
-            <button onclick="deleteAdminUser('${bid}')" class="p-2.5 bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 rounded-xl transition" title="ลบบัญชีถาวร"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+          <div class="flex gap-2 pt-3 border-t border-slate-800">
+            <button onclick="closeModal()" class="flex-1 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded text-xs font-bold transition">ยกเลิก</button>
+            <button onclick="saveAdminUser('${bid}')" class="flex-1 py-2.5 bg-sky-600 hover:bg-sky-500 text-slate-950 rounded text-xs font-bold transition">บันทึกข้อมูลส่วนตัว</button>
+            <button onclick="deleteAdminUser('${bid}')" class="p-2.5 bg-rose-950 hover:bg-rose-900 border border-rose-800 text-rose-300 rounded transition" title="ลบข้อมูลบัญชีถาวร"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
           </div>
         </div>
       `);
@@ -813,11 +838,11 @@
             createdAt: new Date().toISOString()
           });
         });
-        showToast('ปรับปรุงยอดเครดิตสำเร็จเรียบร้อยแล้ว');
+        showToast('แก้ไขข้อมูลการปรับปรุงเครดิตบัญชีเรียบร้อย');
         closeModal();
         renderAdminTab();
       } catch (err) {
-        showToast('ไม่สามารถปรับปรุงยอดเครดิตได้', 'error');
+        showToast('ล้มเหลวในการปรับปรุงเครดิตสมาชิก', 'error');
       }
     }
 
@@ -838,24 +863,24 @@
           };
           transaction.update(userDocRef, updatePayload);
         });
-        showToast('บันทึกปรับปรุงแก้ไขข้อมูลบัญชีสมาชิกเรียบร้อย');
+        showToast('อัปเดตข้อมูลบัญชีผู้ใช้งานสำเร็จ');
         closeModal();
         renderAdminTab();
       } catch (err) {
-        showToast('ไม่สามารถบันทึกข้อมูลสมาชิกไปยังฐานข้อมูลได้', 'error');
+        showToast('เกิดข้อผิดพลาดในการเขียนข้อมูลของระบบ', 'error');
       }
     }
 
     async function deleteAdminUser(bid) { 
       const u = adminUsersData.find(d => d.__backendId === bid); if(!u) return;
-      if(confirm('🚨 คุณแน่ใจหรือไม่ที่จะลบบัญชีผู้ใช้รายนี้? ข้อมูลการทำธุรกรรมและสิทธิ์เข้าสู่ระบบทั้งหมดจะถูกลบออกอย่างถาวรและไม่สามารถกู้คืนได้')) { 
+      if(confirm('🚨 คุณแน่ใจหรือไม่ที่จะลบบัญชีผู้ใช้รายนี้? ข้อมูลธุรกรรมและสิทธิ์ทั้งหมดจะสูญหายอย่างถาวรและไม่สามารถกู้คืนได้')) { 
         try {
           await deleteDoc(doc(db, "users", bid));
           closeModal(); 
-          showToast('ลบบัญชีสมาชิกออกจากระบบสำเร็จเรียบร้อยแล้ว');
+          showToast('บัญชีสมาชิกดังกล่าวถูกทำลายเรียบร้อยแล้ว');
           renderAdminTab();
         } catch (e) {
-          showToast('ไม่สามารถลบบัญชีสมาชิกได้: ' + e.message, 'error');
+          showToast('ล้มเหลวในการส่งคำขอทำลายบัญชี: ' + e.message, 'error');
         }
       } 
     }
@@ -868,18 +893,18 @@
       const products = allProds.slice((adminProductPage - 1) * ITEMS_PER_PAGE, adminProductPage * ITEMS_PER_PAGE);
       
       c.innerHTML = `
-        <div class="bg-white border border-slate-200 rounded-2xl p-5 mb-5 shadow-sm flex justify-between items-center gap-4 flex-wrap">
-          <p class="text-sm font-bold text-slate-800 uppercase">รายการสินค้าภายในระบบของกลุ่มระดับสมาชิก: VIP ${adminProductTab}</p>
-          <button onclick="showAddProduct()" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl transition shadow">+ เพิ่มสินค้าใหม่</button>
+        <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 mb-5 shadow-sm flex justify-between items-center gap-4 flex-wrap">
+          <p class="text-xs font-bold text-slate-200 uppercase font-mono tracking-wider">คลังข้อมูลสินค้าของระดับสมาชิก: VIP ${adminProductTab}</p>
+          <button onclick="showAddProduct()" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-slate-950 text-xs font-bold rounded transition shadow">+ เพิ่มสินค้าเข้าระบบ</button>
         </div>
         <div class="space-y-3 pt-2">
-          ${products.length === 0 ? '<p class="text-slate-400 text-center py-8 text-xs font-semibold">ไม่มีรายการสินค้าที่ตั้งค่าไว้ในระดับสมาชิกนี้</p>' : products.map(p => `
-            <div class="bg-white p-4 rounded-xl border border-slate-200 flex items-center justify-between shadow-sm">
+          ${products.length === 0 ? '<p class="text-slate-500 text-center py-8 text-xs font-mono font-semibold">ไม่มีรายการสินค้าที่ระบุไว้ในระดับ VIP นี้</p>' : products.map(p => `
+            <div class="bg-slate-900 p-4 rounded-xl border border-slate-800 flex items-center justify-between shadow-sm font-mono text-xs">
               <div class="flex-1 min-w-0 pr-3 text-left">
-                <p class="font-bold text-slate-800 text-sm">ออเดอร์ลำดับที่ ${p.productOrder||1}: ${p.productName}</p>
-                <p class="text-xs text-slate-500 mt-1 font-semibold">ราคาทุนสินค้า: ฿${p.productPrice} | กำไรค่าคอมมิชชัน: <span class="text-emerald-600">฿${p.commission}</span></p>
+                <p class="font-bold text-slate-200 text-sm">ลำดับขั้นตอนการจับคู่ที่ ${p.productOrder||1}: ${p.productName}</p>
+                <p class="text-xs text-slate-500 mt-1 font-semibold">ราคาทุนอ้างอิง: ฿${p.productPrice} | ค่าคอมมิชชันภารกิจ: <span class="text-emerald-400">฿${p.commission}</span></p>
               </div>
-              <button onclick="editAdminProduct('${p.__backendId}')" class="p-2.5 bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white border border-blue-100 rounded-xl transition"><i data-lucide="edit" class="w-4 h-4"></i></button>
+              <button onclick="editAdminProduct('${p.__backendId}')" class="p-2 bg-slate-950 hover:bg-slate-800 border border-slate-800 rounded transition text-sky-400"><i data-lucide="edit" class="w-4 h-4"></i></button>
             </div>`).join('')}
         </div>
         ${renderPagination(allProds.length, adminProductPage, 'changeAdminProductPage')}`;
@@ -887,31 +912,31 @@
 
     function showAddProduct() { 
       showModal(`
-        <h3 class="font-bold text-base mb-4 text-slate-800 border-b border-slate-100 pb-2">เพิ่มข้อมูลสินค้าใหม่ (VIP ${adminProductTab})</h3>
-        <div class="space-y-3.5 text-left text-slate-600">
+        <h3 class="font-bold text-sm mb-4 text-sky-400 border-b border-slate-800 pb-2 font-mono">เพิ่มรายการสินค้า (VIP ${adminProductTab})</h3>
+        <div class="space-y-3.5 text-left text-xs font-mono">
           <div>
-            <label class="text-xs text-slate-400 font-bold block mb-1">คิวลำดับการกดจับคู่สินค้า (ออเดอร์ลำดับที่)</label>
-            <input id="ap-order" type="number" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm" placeholder="เช่น 1, 2, 3">
+            <label class="text-[10px] text-slate-400 font-bold block mb-1">คิวลำดับการกดจับคู่สินค้า (ออเดอร์ลำดับที่)</label>
+            <input id="ap-order" type="number" class="w-full px-4 py-2 bg-slate-950 border border-slate-800 text-slate-200 rounded text-xs" placeholder="เช่น 1, 2, 3">
           </div>
           <div>
-            <label class="text-xs text-slate-400 font-bold block mb-1">ชื่อสินค้า</label>
-            <input id="ap-name" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm" placeholder="ระบุชื่อสินค้าเพื่อแสดงฝั่งผู้ใช้">
+            <label class="text-[10px] text-slate-400 font-bold block mb-1">ชื่อข้อมูลสินค้า</label>
+            <input id="ap-name" class="w-full px-4 py-2 bg-slate-950 border border-slate-800 text-slate-200 rounded text-xs" placeholder="ระบุชื่อสินค้าทางบัญชี">
           </div>
           <div class="grid grid-cols-2 gap-2">
             <div>
-              <label class="text-xs text-slate-400 font-bold block mb-1">ราคาทุนสินค้า (฿)</label>
-              <input id="ap-price" type="number" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm" placeholder="ทุน">
+              <label class="text-[10px] text-slate-400 font-bold block mb-1">ราคาทุนระบบ (฿)</label>
+              <input id="ap-price" type="number" class="w-full px-4 py-2 bg-slate-950 border border-slate-800 text-slate-200 rounded text-xs" placeholder="ทุน">
             </div>
             <div>
-              <label class="text-xs text-slate-400 font-bold block mb-1">กำไรค่าคอมมิชชัน (฿)</label>
-              <input id="ap-comm" type="number" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm" placeholder="กำไร">
+              <label class="text-[10px] text-slate-400 font-bold block mb-1">ผลคอมมิชชันภารกิจ (฿)</label>
+              <input id="ap-comm" type="number" class="w-full px-4 py-2 bg-slate-950 border border-slate-800 text-slate-200 rounded text-xs" placeholder="กำไร">
             </div>
           </div>
           <div>
-            <label class="text-xs text-slate-400 font-bold block mb-1">ลิงก์ที่อยู่รูปภาพสินค้า</label>
-            <input id="ap-img" type="text" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm" placeholder="วาง URL ภาพสินค้า">
+            <label class="text-[10px] text-slate-400 font-bold block mb-1">ลิงก์ URL รูปภาพสินค้า</label>
+            <input id="ap-img" type="text" class="w-full px-4 py-2 bg-slate-950 border border-slate-800 text-slate-200 rounded text-xs" placeholder="วางลิงก์รูปภาพ">
           </div>
-          <button onclick="doAddProduct()" class="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm rounded-xl transition mt-2">บันทึกข้อมูลสินค้าใหม่</button>
+          <button onclick="doAddProduct()" class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-bold rounded transition mt-2">บันทึกข้อมูลสินค้า</button>
         </div>
       `); 
     }
@@ -928,17 +953,50 @@
           vipLevel: adminProductTab, 
           productImage:$('ap-img').value.trim() 
         }); 
-        showToast('เพิ่มสินค้าเข้าระบบฐานข้อมูลสำเร็จเรียบร้อยแล้ว');
+        showToast('เพิ่มสินค้าเข้าสารบบสำเร็จ');
         closeModal(); 
         renderAdminTab(); 
       } catch (err) {
-        showToast('เกิดข้อผิดพลาดในการลงทะเบียนสินค้า: ' + err.message, 'error');
+        showToast('เกิดข้อผิดพลาดในการนำส่งข้อมูล: ' + err.message, 'error');
       }
     }
     
-    function editAdminProduct(bid) { const p = publicData.products.find(d => d.__backendId === bid); showModal(`<h3 class="font-bold text-base mb-4 text-slate-800 border-b border-slate-100 pb-2">แก้ไขรายละเอียดสินค้า</h3><div class="space-y-3.5 text-left text-slate-600"><div><label class="text-xs text-slate-400 font-bold">คิวลำดับการกดจับคู่สินค้า (ออเดอร์ลำดับที่)</label><input id="ep-order" type="number" class="w-full mt-1 px-4 py-2.5 bg-slate-50 border border-slate-200 text-slate-700 rounded-xl text-sm" value="${p.productOrder||1}"></div><div><label class="text-xs text-slate-400 font-bold">ชื่อสินค้า</label><input id="ep-name" class="w-full mt-1 px-4 py-2.5 bg-slate-50 border border-slate-200 text-slate-700 rounded-xl text-sm" value="${p.productName}"></div><div class="grid grid-cols-2 gap-2"><div><label class="text-xs text-slate-400 font-bold">ราคาทุนสินค้า</label><input id="ep-price" type="number" class="w-full mt-1 px-4 py-2.5 bg-slate-50 border border-slate-200 text-slate-700 rounded-xl text-sm" value="${p.productPrice}"></div><div><label class="text-xs text-slate-400 font-bold">กำไรค่าคอมมิชชัน</label><input id="ep-comm" type="number" class="w-full mt-1 px-4 py-2.5 bg-slate-50 border border-slate-200 text-slate-700 rounded-xl text-sm" value="${p.commission}"></div></div><div><label class="text-xs text-slate-400 font-bold">ลิงก์ที่อยู่รูปภาพสินค้า</label><input id="ep-img" type="text" class="w-full mt-1 px-4 py-2.5 bg-slate-50 border border-slate-200 text-slate-700 rounded-xl text-sm" value="${p.productImage||''}"></div><div class="flex gap-2 pt-2"><button onclick="doEditProduct('${bid}')" class="flex-1 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl text-xs transition">อัปเดตข้อมูลสินค้า</button><button onclick="deleteProduct('${bid}')" class="px-4 bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 rounded-xl transition"><i data-lucide="trash-2"></i></button></div></div>`); }
+    function editAdminProduct(bid) { 
+      const p = publicData.products.find(d => d.__backendId === bid); 
+      showModal(`
+        <h3 class="font-bold text-sm mb-4 text-sky-400 border-b border-slate-800 pb-2 font-mono">ปรับปรุงรายละเอียดระบบสินค้า</h3>
+        <div class="space-y-3.5 text-left text-xs font-mono">
+          <div>
+            <label class="text-[10px] text-slate-400 font-bold">คิวลำดับการกดจับคู่สินค้า (ออเดอร์ลำดับที่)</label>
+            <input id="ep-order" type="number" class="w-full mt-1 px-4 py-2 bg-slate-950 border border-slate-800 text-slate-200 rounded" value="${p.productOrder||1}">
+          </div>
+          <div>
+            <label class="text-[10px] text-slate-400 font-bold">ชื่อสินค้า</label>
+            <input id="ep-name" class="w-full mt-1 px-4 py-2 bg-slate-950 border border-slate-800 text-slate-200 rounded" value="${p.productName}">
+          </div>
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="text-[10px] text-slate-400 font-bold">ราคาทุนระบบ</label>
+              <input id="ep-price" type="number" class="w-full mt-1 px-4 py-2 bg-slate-950 border border-slate-800 text-slate-200 rounded" value="${p.productPrice}">
+            </div>
+            <div>
+              <label class="text-[10px] text-slate-400 font-bold">ผลคอมมิชชันภารกิจ</label>
+              <input id="ep-comm" type="number" class="w-full mt-1 px-4 py-2 bg-slate-950 border border-slate-800 text-slate-200 rounded" value="${p.commission}">
+            </div>
+          </div>
+          <div>
+            <label class="text-[10px] text-slate-400 font-bold">ที่อยู่ URL รูปภาพสินค้า</label>
+            <input id="ep-img" type="text" class="w-full mt-1 px-4 py-2 bg-slate-950 border border-slate-800 text-slate-200 rounded" value="${p.productImage||''}">
+          </div>
+          <div class="flex gap-2 pt-2">
+            <button onclick="doEditProduct('${bid}')" class="flex-1 py-2.5 bg-sky-600 hover:bg-sky-500 text-slate-950 font-bold rounded text-xs transition">บันทึกพารามิเตอร์</button>
+            <button onclick="deleteProduct('${bid}')" class="px-4 bg-rose-950 hover:bg-rose-900 border border-rose-800 text-rose-300 rounded transition"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+          </div>
+        </div>`); 
+    }
+    
     async function doEditProduct(bid) { const p = publicData.products.find(d => d.__backendId === bid); await windowDataSdk.update({...p, productName:$('ep-name').value, productPrice:parseFloat($('ep-price').value)||0, productOrder:parseInt($('ep-order').value)||1, commission:parseFloat($('ep-comm').value)||0, productImage:$('ep-img').value.trim() }); closeModal(); renderAdminTab(); }
-    async function deleteProduct(bid) { if(confirm('คุณแน่ใจหรือไม่ที่จะลบสินค้าชิ้นนี้ออกจากระบบ?')) { await windowDataSdk.delete(publicData.products.find(d => d.__backendId === bid)); closeModal(); renderAdminTab(); } }
+    async function deleteProduct(bid) { if(confirm('คุณแน่ใจที่จะลบข้อมูลสินค้าชิ้นนี้?')) { await windowDataSdk.delete(publicData.products.find(d => d.__backendId === bid)); closeModal(); renderAdminTab(); } }
 
     // ==========================================
     // TABS: 3. SPECIAL ASSIGNMENTS
@@ -950,34 +1008,34 @@
       const templates = getSpecialTemplates(); const assignments = getSpecialAssignments();
       const paginated = assignments.slice((adminSpecialPage - 1) * ITEMS_PER_PAGE, adminSpecialPage * ITEMS_PER_PAGE);
       c.innerHTML = `
-        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm mb-6 text-left">
-          <h3 class="font-bold text-sm mb-3 text-blue-600 flex items-center gap-2 border-b border-slate-100 pb-2"><i data-lucide="star" class="w-4 h-4"></i> แม่แบบสุ่มสินค้ารายการออเดอร์พิเศษ</h3>
-          <button onclick="showCreateSpecialTemplate()" class="w-full py-2.5 bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 rounded-xl text-xs font-bold transition mb-4">+ สร้างแม่แบบออเดอร์พิเศษใหม่</button>
+        <div class="bg-slate-900 p-5 rounded-xl border border-slate-800 shadow-sm mb-6 text-left font-mono text-xs">
+          <h3 class="font-bold text-sm mb-3 text-sky-400 flex items-center gap-2 border-b border-slate-800 pb-2"><i data-lucide="star" class="w-4 h-4"></i> แผงเก็บคลังเทมเพลตออเดอร์พิเศษ</h3>
+          <button onclick="showCreateSpecialTemplate()" class="w-full py-2 bg-slate-950 hover:bg-slate-800 text-slate-300 border border-slate-800 rounded text-xs font-bold transition mb-4">+ สร้างเทมเพลตสินค้าออเดอร์พิเศษ</button>
           <div class="flex overflow-x-auto gap-3 pb-2 scrollbar-none">
             ${templates.map(t => `
-              <div class="w-44 flex-shrink-0 bg-slate-50 border border-slate-200 rounded-xl p-3.5 relative shadow-inner">
-                <button onclick="deleteSpecialTemplate('${t.__backendId}')" class="absolute top-2 right-2 p-1 bg-rose-50 text-rose-600 rounded-lg hover:bg-rose-500 hover:text-white transition"><i data-lucide="x" class="w-3 h-3"></i></button>
-                <p class="text-xs text-slate-800 font-bold truncate mb-3 pr-6">${t.productName}</p>
-                <button onclick="assignSpecialOrder('${t.__backendId}')" class="w-full py-1.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-lg transition">ล็อกเป้าหมายให้ผู้ใช้</button>
+              <div class="w-44 flex-shrink-0 bg-slate-950 border border-slate-800 rounded p-3 relative shadow-inner">
+                <button onclick="deleteSpecialTemplate('${t.__backendId}')" class="absolute top-2 right-2 p-1 bg-rose-950 hover:bg-rose-900 text-rose-300 rounded"><i data-lucide="x" class="w-3 h-3"></i></button>
+                <p class="text-[10px] text-slate-200 font-bold truncate mb-3 pr-6">${t.productName}</p>
+                <button onclick="assignSpecialOrder('${t.__backendId}')" class="w-full py-1 bg-sky-600 hover:bg-sky-500 text-slate-950 font-bold text-[10px] rounded transition">ล็อกคิวสมาชิก</button>
               </div>`).join('')}
           </div>
         </div>
-        <h3 class="font-bold text-sm mb-3 text-slate-800 flex items-center gap-1.5 text-left"><i data-lucide="list-ordered" class="w-4 h-4 text-blue-600"></i> รายการล็อกออเดอร์พิเศษที่กำลังใช้งาน</h3>
+        <h3 class="font-bold text-xs mb-3 text-slate-300 flex items-center gap-1.5 text-left font-mono uppercase tracking-wider"><i data-lucide="list-ordered" class="w-4 h-4 text-sky-400"></i> ลิสต์รายการผู้ใช้ที่ติดสถานะล็อกออเดอร์พิเศษ</h3>
         <div class="space-y-3">
           ${paginated.map(s => { 
             const u = adminUsersData.find(user => user.id === s.targetUser); 
-            const username = u ? u.username : 'ไม่ระบุผู้ใช้';
+            const username = u ? u.username : 'บัญชีถูกลบแล้ว';
             return `
-            <div class="bg-white p-4 rounded-xl border border-blue-200 flex items-center justify-between shadow-sm">
+            <div class="bg-slate-900 p-4 rounded-xl border border-slate-800 flex items-center justify-between shadow-sm font-mono text-xs">
               <div class="flex-1 min-w-0 pr-3 text-left">
-                <p class="font-black text-blue-700 text-xs uppercase tracking-wide">จะทำงานเมื่อกดออเดอร์ลำดับที่: ${s.targetIndex}</p>
-                <p class="font-bold text-slate-800 text-sm truncate mt-1">${s.productName}</p>
-                <p class="text-xs text-slate-500 mt-1">ราคาทุนสินค้า: <span class="text-slate-800 font-semibold">฿${(s.productPrice||0).toLocaleString()}</span> | กำไรคอมมิชชัน: <span class="text-emerald-600 font-semibold">฿${(s.commission||0).toLocaleString()}</span></p>
-                <p class="text-xs text-slate-500 mt-0.5">ผู้ใช้เป้าหมาย: <span class="text-slate-800 font-semibold">${username}</span></p>
+                <p class="font-black text-amber-500 text-[10px] uppercase tracking-wider">ทำงานทันทีเมื่อถึงภารกิจคิวที่: ${s.targetIndex}</p>
+                <p class="font-bold text-slate-200 text-sm truncate mt-1">${s.productName}</p>
+                <p class="text-xs text-slate-400 mt-1">ตั้งค่าราคาทุน: <span class="text-slate-200 font-semibold">฿${(s.productPrice||0).toLocaleString()}</span> | ตั้งค่ากำไร: <span class="text-emerald-400 font-semibold">฿${(s.commission||0).toLocaleString()}</span></p>
+                <p class="text-xs text-slate-400 mt-0.5">สมาชิกปลายทาง: <span class="text-sky-400 font-semibold">${username}</span></p>
               </div>
               <div class="flex gap-1.5">
-                <button onclick="editAssignedSpecial('${s.__backendId}')" class="p-2 bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white rounded-xl transition"><i data-lucide="edit" class="w-4 h-4"></i></button>
-                <button onclick="deleteAssignedSpecial('${s.__backendId}')" class="p-2 bg-rose-50 text-rose-600 hover:bg-rose-600 hover:text-white rounded-xl transition"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                <button onclick="editAssignedSpecial('${s.__backendId}')" class="p-2 bg-slate-950 hover:bg-slate-800 text-sky-400 border border-slate-800 rounded transition"><i data-lucide="edit" class="w-4 h-4"></i></button>
+                <button onclick="deleteAssignedSpecial('${s.__backendId}')" class="p-2 bg-rose-950 hover:bg-rose-900 text-rose-300 border border-rose-800 rounded transition"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
               </div>
             </div>`
           }).join('')}
@@ -986,7 +1044,7 @@
       lucide.createIcons();
     }
 
-    function showCreateSpecialTemplate() { showModal(`<h3 class="font-bold text-base mb-4 text-slate-800 border-b border-slate-100 pb-2">สร้างแม่แบบสินค้าออเดอร์พิเศษ</h3><div class="space-y-3.5 text-left text-slate-600"><div><label class="text-xs text-slate-400 font-bold">ชื่อออเดอร์สินค้า</label><input id="st-n" class="w-full mt-1 px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm" placeholder="ระบุชื่อสินค้า"></div><div class="grid grid-cols-2 gap-2"><div><label class="text-xs text-slate-400 font-bold">ราคาทุนสินค้า (บาท)</label><input id="st-p" type="number" class="w-full mt-1 px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm" placeholder="ทุน"></div><div><label class="text-xs text-slate-400 font-bold">กำไรค่าคอมมิชชัน (บาท)</label><input id="st-c" type="number" class="w-full mt-1 px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm" placeholder="กำไร"></div></div><div><label class="text-xs text-slate-400 font-bold">ลิงก์ที่อยู่รูปภาพสินค้า</label><input id="st-i" type="text" class="w-full mt-1 px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm" placeholder="ที่อยู่ URL ภาพ"></div><button onclick="doCreateST()" class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold transition flex-shrink-0 text-sm">บันทึกแม่แบบออเดอร์พิเศษ</button></div>`); }
+    function showCreateSpecialTemplate() { showModal(`<h3 class="font-bold text-sm mb-4 text-sky-400 border-b border-slate-800 pb-2 font-mono">สร้างเทมเพลตสินค้าออเดอร์พิเศษ</h3><div class="space-y-3.5 text-left text-xs font-mono"><div><label class="text-[10px] text-slate-400 font-bold block mb-1">ชื่อสินค้าทางเทคนิค</label><input id="st-n" class="w-full px-4 py-2 bg-slate-950 border border-slate-800 text-slate-200 rounded text-xs" placeholder="ระบุชื่อเรียก"></div><div class="grid grid-cols-2 gap-2"><div><label class="text-[10px] text-slate-400 font-bold block mb-1">ราคาทุนระบบ (บาท)</label><input id="st-p" type="number" class="w-full px-4 py-2 bg-slate-950 border border-slate-800 text-slate-200 rounded text-xs" placeholder="ทุน"></div><div><label class="text-[10px] text-slate-400 font-bold block mb-1">กำไรคอมมิชชัน (บาท)</label><input id="st-c" type="number" class="w-full px-4 py-2 bg-slate-950 border border-slate-800 text-slate-200 rounded text-xs" placeholder="กำไร"></div></div><div><label class="text-[10px] text-slate-400 font-bold block mb-1">ลิงก์ภาพสินค้า URL</label><input id="st-i" type="text" class="w-full px-4 py-2 bg-slate-950 border border-slate-800 text-slate-200 rounded text-xs" placeholder="วางลิงก์รูปภาพ"></div><button onclick="doCreateST()" class="w-full py-2.5 bg-sky-600 hover:bg-sky-500 text-slate-950 font-bold rounded transition text-xs">บันทึกข้อมูลเทมเพลต</button></div>`); }
     
     async function doCreateST() { 
       try {
@@ -998,42 +1056,42 @@
           commission:parseFloat($('st-c').value)||0, 
           productImage:$('st-i').value.trim() 
         }); 
-        showToast('บันทึกแม่แบบออเดอร์พิเศษใหม่สำเร็จ');
+        showToast('เพิ่มเทมเพลตออเดอร์พิเศษเข้าระบบเรียบร้อย');
         closeModal(); 
         renderAdminTab(); 
       } catch (err) {
-        showToast('ล้มเหลวในการบันทึกแม่แบบ: ' + err.message, 'error');
+        showToast('ระบบส่งข้อมูลล้มเหลว: ' + err.message, 'error');
       }
     }
     
-    async function deleteSpecialTemplate(bid) { if(confirm('คุณแน่ใจหรือไม่ที่จะลบแม่แบบออเดอร์พิเศษนี้?')) { await windowDataSdk.delete(adminSpecialTemplatesData.find(d => d.__backendId === bid)); renderAdminTab(); } }
+    async function deleteSpecialTemplate(bid) { if(confirm('คุณแน่ใจที่จะถอนเทมเพลตนี้ออกจากสารบบ?')) { await windowDataSdk.delete(adminSpecialTemplatesData.find(d => d.__backendId === bid)); renderAdminTab(); } }
 
     function assignSpecialOrder(templateBid) {
       const t = adminSpecialTemplatesData.find(d => d.__backendId === templateBid); if(!t) return;
-      showModal suicide(`
-        <h3 class="font-bold text-base mb-4 text-blue-600 border-b border-slate-100 pb-2">ตั้งค่าออเดอร์พิเศษเจาะจงเป้าหมายสมาชิก</h3>
-        <div class="space-y-3.5 max-h-[75vh] overflow-y-auto px-1 text-left text-slate-600">
+      showModal(`
+        <h3 class="font-bold text-sm mb-4 text-sky-400 border-b border-slate-800 pb-2 font-mono">ตั้งคิวออเดอร์พิเศษเจาะจงเป้าหมายบัญชี</h3>
+        <div class="space-y-3.5 max-h-[75vh] overflow-y-auto px-1 text-left text-xs font-mono">
           <div>
-            <label class="text-xs text-slate-400 font-bold block mb-1">ชื่อสินค้า</label>
-            <input id="sa-name" type="text" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold" value="${t.productName}">
+            <label class="text-[10px] text-slate-400 block mb-1">ชื่อสินค้าทางเทคนิค</label>
+            <input id="sa-name" type="text" class="w-full px-3.5 py-2 bg-slate-950 border border-slate-800 rounded text-slate-200 font-bold" value="${t.productName}">
           </div>
           <div class="grid grid-cols-2 gap-2">
             <div>
-              <label class="text-xs text-slate-400 font-bold block mb-1">ราคาทุนสินค้า (฿)</label>
-              <input id="sa-price" type="number" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-mono font-bold" value="${t.productPrice}">
+              <label class="text-[10px] text-slate-400 block mb-1">ราคาทุนระบบ (฿)</label>
+              <input id="sa-price" type="number" class="w-full px-3.5 py-2 bg-slate-950 border border-slate-800 rounded text-slate-200 font-mono font-bold" value="${t.productPrice}">
             </div>
             <div>
-              <label class="text-xs text-slate-400 font-bold block mb-1">กำไรค่าคอมมิชชัน (฿)</label>
-              <input id="sa-comm" type="number" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-mono font-bold" value="${t.commission}">
+              <label class="text-[10px] text-slate-400 block mb-1">กำไรคอมมิชชัน (฿)</label>
+              <input id="sa-comm" type="number" class="w-full px-3.5 py-2 bg-slate-950 border border-slate-800 rounded text-slate-200 font-mono font-bold" value="${t.commission}">
             </div>
           </div>
           <div>
-            <label class="text-xs text-slate-400 font-bold block mb-1">🔍 ค้นหาบัญชีผู้ใช้ด้วยเบอร์โทรหรือชื่อ</label>
-            <input id="sa-user-search" type="text" oninput="filterAssignUsers(this.value)" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm placeholder-slate-400" placeholder="พิมพ์ชื่อผู้ใช้ หรือเบอร์โทรเพื่อกรอง...">
+            <label class="text-[10px] text-slate-400 block mb-1">🔍 กรองค้นหาสมาชิกปลายทาง</label>
+            <input id="sa-user-search" type="text" oninput="filterAssignUsers(this.value)" class="w-full px-3.5 py-2 bg-slate-950 border border-slate-800 rounded text-slate-400 placeholder-slate-600" placeholder="พิมพ์ชื่อผู้ใช้ หรือเบอร์โทรเพื่อคัดกรอง...">
           </div>
           <div>
-            <label class="text-xs text-slate-400 font-bold block mb-1">เลือกบัญชีสมาชิกเป้าหมาย</label>
-            <select id="sa-user" class="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-sm font-semibold bg-slate-50 text-slate-700">
+            <label class="text-[10px] text-slate-400 block mb-1">เลือกเป้าหมายบัญชีผู้รับ</label>
+            <select id="sa-user" class="w-full px-3.5 py-2 border border-slate-800 rounded bg-slate-950 text-slate-200 font-bold">
               ${adminUsersData.map(u => {
                 const username = u.username || 'User';
                 return `<option value="${u.id}">${username} (${u.phone})</option>`;
@@ -1041,10 +1099,10 @@
             </select>
           </div>
           <div>
-            <label class="text-xs text-slate-400 font-bold block mb-1">ต้องการให้ออเดอร์พิเศษนี้แสดงเมื่อกดทำภารกิจในลำดับที่เท่าไร?</label>
-            <input id="sa-idx" type="number" class="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold text-center text-blue-600" value="1">
+            <label class="text-[10px] text-slate-400 block mb-1">ออเดอร์พิเศษนี้จะทำงานในการกดจับคู่คิวลำดับที่เท่าไร?</label>
+            <input id="sa-idx" type="number" class="w-full px-3.5 py-2 bg-slate-950 border border-slate-800 rounded text-amber-500 font-black text-center" value="1">
           </div>
-          <button onclick="doAssignSWithEdit('${t.productImage||''}')" class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl transition mt-2 text-sm">บันทึกและส่งภารกิจออเดอร์พิเศษ</button>
+          <button onclick="doAssignSWithEdit('${t.productImage||''}')" class="w-full py-2.5 bg-sky-600 hover:bg-sky-500 text-slate-950 font-bold rounded transition mt-2">ติดตั้งออเดอร์ล็อกคิว</button>
         </div>`);
     }
 
@@ -1070,7 +1128,7 @@
       const targetUser = $('sa-user').value;
       const targetIndex = parseInt($('sa-idx').value) || 1;
       if (!name) return showToast('กรุณาระบุชื่อสินค้า', 'error');
-      if (!targetUser) return showToast('กรุณาเลือกสมาชิกผู้รับเป้าหมาย', 'error');
+      if (!targetUser) return showToast('กรุณาเลือกบัญชีผู้ใช้ปลายทาง', 'error');
       
       try {
         await windowDataSdk.create({
@@ -1078,40 +1136,40 @@
           productPrice: price, commission: comm, productImage: imgUrl,
           targetUser: targetUser, targetIndex: targetIndex, createdAt: new Date().toISOString()
         });
-        showToast('ล็อกและกำหนดคิวออเดอร์พิเศษให้กับสมาชิกสำเร็จ');
+        showToast('ติดตั้งส่งข้อมูลออเดอร์ล็อกคิวให้บัญชีสมาชิกสำเร็จ');
         closeModal();
         renderAdminTab();
       } catch (err) {
-        showToast('การเขียนฐานข้อมูลผิดพลาด: ' + err.message, 'error');
+        showToast('ระบบเครือข่ายผิดพลาด: ' + err.message, 'error');
       }
     }
 
     function editAssignedSpecial(bid) {
       const s = adminSpecialAssignData.find(d => d.__backendId === bid); if(!s) return;
       showModal(`
-        <h3 class="font-bold text-base mb-4 text-blue-600 border-b border-slate-100 pb-2">แก้ไขรายการออเดอร์พิเศษที่ล็อกไว้</h3>
-        <div class="space-y-3.5 max-h-[75vh] overflow-y-auto px-1 text-left text-slate-600">
+        <h3 class="font-bold text-sm mb-4 text-sky-400 border-b border-slate-800 pb-2 font-mono">ปรับปรุงคิวออเดอร์พิเศษสำหรับล็อกสมาชิก</h3>
+        <div class="space-y-3.5 max-h-[75vh] overflow-y-auto px-1 text-left text-xs font-mono">
           <div>
-            <label class="text-xs text-slate-400 font-bold block mb-1">ชื่อสินค้า</label>
-            <input id="sa-edit-name" type="text" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold" value="${s.productName}">
+            <label class="text-[10px] text-slate-400 block mb-1">ชื่อสินค้าทางเทคนิค</label>
+            <input id="sa-edit-name" type="text" class="w-full px-3.5 py-2 bg-slate-950 border border-slate-800 rounded text-slate-200 font-bold" value="${s.productName}">
           </div>
           <div class="grid grid-cols-2 gap-2">
             <div>
-              <label class="text-xs text-slate-400 font-bold block mb-1">ราคาทุนสินค้า (฿)</label>
-              <input id="sa-edit-price" type="number" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-mono font-bold" value="${s.productPrice}">
+              <label class="text-[10px] text-slate-400 block mb-1">ราคาทุนระบบ (฿)</label>
+              <input id="sa-edit-price" type="number" class="w-full px-3.5 py-2 bg-slate-950 border border-slate-800 rounded text-slate-200 font-mono font-bold" value="${s.productPrice}">
             </div>
             <div>
-              <label class="text-xs text-slate-400 font-bold block mb-1">กำไรค่าคอมมิชชัน (฿)</label>
-              <input id="sa-edit-comm" type="number" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-mono font-bold" value="${s.commission}">
+              <label class="text-[10px] text-slate-400 block mb-1">กำไรคอมมิชชัน (฿)</label>
+              <input id="sa-edit-comm" type="number" class="w-full px-3.5 py-2 bg-slate-950 border border-slate-800 rounded text-slate-200 font-mono font-bold" value="${s.commission}">
             </div>
           </div>
           <div>
-            <label class="text-xs text-slate-400 font-bold block mb-1">🔍 ค้นหาบัญชีผู้ใช้ด้วยเบอร์โทรหรือชื่อ</label>
-            <input id="sa-edit-user-search" type="text" oninput="filterEditAssignUsers(this.value)" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm placeholder-slate-400" placeholder="พิมพ์ชื่อผู้ใช้ หรือเบอร์โทรเพื่อกรอง...">
+            <label class="text-[10px] text-slate-400 block mb-1">🔍 ค้นหาสมาชิกปลายทาง</label>
+            <input id="sa-edit-user-search" type="text" oninput="filterEditAssignUsers(this.value)" class="w-full px-3.5 py-2 bg-slate-950 border border-slate-800 text-slate-400 placeholder-slate-600" placeholder="พิมพ์คีย์เวิร์ดเพื่อค้นหา...">
           </div>
           <div>
-            <label class="text-xs text-slate-400 font-bold block mb-1">สมาชิกเป้าหมาย</label>
-            <select id="sa-edit-user" class="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-sm font-semibold text-slate-700 bg-slate-50">
+            <label class="text-[10px] text-slate-400 block mb-1">เลือกเป้าหมายบัญชีผู้รับ</label>
+            <select id="sa-edit-user" class="w-full px-3.5 py-2 border border-slate-800 rounded bg-slate-950 text-slate-200 font-bold">
               ${adminUsersData.map(u => {
                 const username = u.username || 'User';
                 return `<option value="${u.id}" ${u.id === s.targetUser ? 'selected' : ''}>${username} (${u.phone})</option>`;
@@ -1119,10 +1177,10 @@
             </select>
           </div>
           <div>
-            <label class="text-xs text-slate-400 font-bold block mb-1">ทำงานเมื่อจับคู่ออเดอร์ลำดับที่เท่าไร</label>
-            <input id="sa-edit-idx" type="number" class="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold text-center text-blue-600" value="${s.targetIndex}">
+            <label class="text-[10px] text-slate-400 block mb-1">แสดงผลที่ภารกิจลำดับขั้นตอนกดที่</label>
+            <input id="sa-edit-idx" type="number" class="w-full px-3.5 py-2 bg-slate-950 border border-slate-800 rounded text-amber-500 font-black text-center" value="${s.targetIndex}">
           </div>
-          <button onclick="doUpdateAssignedS('${bid}', '${s.productImage||''}')" class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl transition mt-2 text-sm">บันทึกข้อมูลการตั้งค่า</button>
+          <button onclick="doUpdateAssignedS('${bid}', '${s.productImage||''}')" class="w-full py-2.5 bg-sky-600 hover:bg-sky-500 text-slate-950 font-bold rounded transition mt-2">บันทึกอัปเดตข้อมูล</button>
         </div>`);
     }
 
@@ -1149,7 +1207,7 @@
       const targetUser = $('sa-edit-user').value;
       const targetIndex = parseInt($('sa-edit-idx').value) || 1;
       if (!name) return showToast('กรุณาระบุชื่อสินค้า', 'error');
-      if (!targetUser) return showToast('กรุณาระบุสมาชิกเป้าหมาย', 'error');
+      if (!targetUser) return showToast('กรุณาระบุสมาชิกรับงานปลายทาง', 'error');
       
       await windowDataSdk.update({
         ...s, productName: name, productPrice: price, commission: comm,
@@ -1157,10 +1215,10 @@
       });
       closeModal();
       renderAdminTab();
-      showToast('แก้ไขและอัปเดตข้อมูลคิวออเดอร์พิเศษสำเร็จ');
+      showToast('ปรับปรุงอัปเดตออเดอร์พิเศษสำเร็จ');
     }
 
-    async function deleteAssignedSpecial(bid) { if(confirm('คุณแน่ใจหรือไม่ที่จะลบรายการสุ่มออเดอร์พิเศษนี้?')) { await windowDataSdk.delete(adminSpecialAssignData.find(d => d.__backendId === bid)); renderAdminTab(); } }
+    async function deleteAssignedSpecial(bid) { if(confirm('คุณแน่ใจที่จะลบรายการสุ่มออเดอร์พิเศษนี้?')) { await windowDataSdk.delete(adminSpecialAssignData.find(d => d.__backendId === bid)); renderAdminTab(); } }
 
     // ==========================================
     // TABS: 4. WITHDRAWALS
@@ -1168,48 +1226,48 @@
     function renderAdminWithdrawals(c) {
       const wds = adminWithdrawalsData;
       if (wds.length === 0) {
-        c.innerHTML = '<div class="bg-white p-8 rounded-2xl text-center border border-slate-200 shadow-sm"><p class="text-slate-400 font-medium text-sm">ไม่พบรายการธุรกรรมใดๆ ในระบบ</p></div>';
+        c.innerHTML = '<div class="bg-white/5 p-8 rounded-xl text-center border border-slate-800 shadow-sm"><p class="text-slate-500 font-mono text-xs">ไม่พบคำขออนุมัติฝากหรือถอนเงินในขณะนี้</p></div>';
       } else {
         c.innerHTML = `
-          <div class="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
-            <table class="w-full text-left border-collapse text-sm">
+          <div class="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden shadow-sm">
+            <table class="w-full text-left border-collapse text-xs font-mono">
               <thead>
-                <tr class="bg-slate-50 border-b border-slate-200 text-slate-600 font-bold text-xs uppercase">
-                  <th class="p-4">วันเวลา</th>
-                  <th class="p-4">ชื่อผู้ใช้</th>
+                <tr class="bg-slate-950 border-b border-slate-800 text-slate-400 font-bold uppercase">
+                  <th class="p-4">วันเวลาทำรายการ</th>
+                  <th class="p-4">ชื่อบัญชีสมาชิก</th>
                   <th class="p-4">ประเภทธุรกรรม</th>
-                  <th class="p-4">จำนวนเงิน</th>
-                  <th class="p-4">บัญชีปลายทาง</th>
-                  <th class="p-4">สถานะรายการ</th>
-                  <th class="p-4 text-center">จัดการ</th>
+                  <th class="p-4">จำนวนยอดชำระ</th>
+                  <th class="p-4">บัญชีปลายทางรับเงิน</th>
+                  <th class="p-4">สถานะส่งงาน</th>
+                  <th class="p-4 text-center">จัดการคำขอ</th>
                 </tr>
               </thead>
-              <tbody class="divide-y divide-slate-100 text-slate-300">
+              <tbody class="divide-y divide-slate-800 text-slate-300">
                 ${wds.map(w => {
-                  let statusText = 'รอดำเนินการ';
-                  let statusClass = 'text-amber-700 bg-amber-50 border-amber-200';
-                  if(w.status === 'approved') { statusText = 'อนุมัติสำเร็จ'; statusClass = 'text-emerald-700 bg-emerald-50 border-emerald-200'; }
-                  if(w.status === 'rejected') { statusText = 'ปฏิเสธรายการ'; statusClass = 'text-rose-700 bg-rose-50 border-rose-200'; }
-                  if(w.status === 'deposit') { statusText = 'เติมเครดิตสำเร็จ'; statusClass = 'text-blue-700 bg-blue-50 border-blue-200'; }
+                  let statusText = 'รอคิววินิจฉัย';
+                  let statusClass = 'text-amber-400 bg-amber-950/40 border-amber-800/40';
+                  if(w.status === 'approved') { statusText = 'อนุมัติจ่ายเสร็จสิ้น'; statusClass = 'text-emerald-400 bg-emerald-950/40 border-emerald-800/40'; }
+                  if(w.status === 'rejected') { statusText = 'ปฏิเสธคำขอคืนยอด'; statusClass = 'text-rose-400 bg-rose-950/40 border-rose-800/40'; }
+                  if(w.status === 'deposit') { statusText = 'เติมเครดิตเสร็จสิ้น'; statusClass = 'text-sky-400 bg-sky-950/40 border-sky-800/40'; }
                   
                   return `
-                  <tr class="hover:bg-slate-50/50 transition">
-                    <td class="p-4 text-xs text-slate-400">${new Date(w.createdAt).toLocaleString()}</td>
-                    <td class="p-4 font-bold text-slate-800">${w.username}</td>
-                    <td class="p-4 text-xs font-semibold text-slate-500">${w.status === 'deposit' ? 'ฝากเงิน (เติมเครดิต)' : 'ถอนเงิน'}</td>
-                    <td class="p-4 font-black ${w.status === 'deposit' ? 'text-emerald-600' : 'text-slate-800'}">฿${w.amount.toLocaleString()}</td>
-                    <td class="p-4 text-xs">
-                      <p class="font-bold text-slate-700">${w.bankName || '-'}</p>
-                      <p class="font-mono text-[11px] text-slate-400 mt-0.5">${w.bankNumber || '-'}</p>
+                  <tr class="hover:bg-slate-800/40 transition">
+                    <td class="p-4 text-slate-500">${new Date(w.createdAt).toLocaleString()}</td>
+                    <td class="p-4 font-bold text-slate-200">${w.username}</td>
+                    <td class="p-4 text-xs text-slate-400">${w.status === 'deposit' ? 'ใบฝากเครดิต' : 'ใบคำขอถอนเงิน'}</td>
+                    <td class="p-4 font-black ${w.status === 'deposit' ? 'text-emerald-400' : 'text-slate-200'}">฿${w.amount.toLocaleString()}</td>
+                    <td class="p-4 text-xs font-mono">
+                      <p class="font-bold text-slate-300">${w.bankName || '-'}</p>
+                      <p class="text-slate-500 mt-0.5">${w.bankNumber || '-'}</p>
                     </td>
-                    <td class="p-4"><span class="px-2.5 py-1 border rounded-full text-xs font-bold ${statusClass}">${statusText}</span></td>
+                    <td class="p-4"><span class="px-2.5 py-1 border rounded text-[10px] font-bold ${statusClass}">${statusText}</span></td>
                     <td class="p-4 text-center">
                       <div class="flex gap-1.5 justify-center">
                         ${w.status === 'pending' ? `
-                          <button onclick="approveWithdraw('${w.__backendId}')" class="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-xs font-bold transition">อนุมัติ</button>
-                          <button onclick="rejectWithdraw('${w.__backendId}')" class="px-2.5 py-1 bg-rose-600 hover:bg-rose-700 text-white rounded text-xs font-bold transition">ปฏิเสธ</button>
+                          <button onclick="approveWithdraw('${w.__backendId}')" class="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-500 text-slate-950 rounded text-[10px] font-bold transition">อนุมัติ</button>
+                          <button onclick="rejectWithdraw('${w.__backendId}')" class="px-2.5 py-1 bg-rose-600 hover:bg-rose-500 text-rose-300 rounded text-[10px] font-bold transition">ปฏิเสธ</button>
                         ` : ''}
-                        <button onclick="deleteWithdrawal('${w.__backendId}')" class="px-2 py-1 bg-slate-100 hover:bg-rose-50 border border-slate-200 hover:border-rose-200 text-slate-500 hover:text-rose-600 rounded text-xs font-bold transition"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
+                        <button onclick="deleteWithdrawal('${w.__backendId}')" class="px-2 py-1 bg-slate-950 hover:bg-rose-950 border border-slate-800 hover:border-rose-800 text-slate-500 hover:text-rose-400 rounded transition"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
                       </div>
                     </td>
                   </tr>`;
@@ -1238,21 +1296,21 @@
           }
           transaction.update(wdDocRef, { status: 'rejected' });
         });
-        showToast('ปฏิเสธรายการถอนเงินสำเร็จ ยอดเครดิตถูกส่งกลับคืนไปยังบัญชีผู้ใช้แล้ว');
+        showToast('ปฏิเสธการถอนเงินเรียบร้อย ยอดเครดิตคืนเข้าพอร์ตสมาชิกแล้ว');
         renderAdminTab();
       } catch (err) {
-        showToast('เกิดข้อผิดพลาดในการยกเลิกธุรกรรมถอนเงิน', 'error');
+        showToast('การส่งผ่านข้อมูลธุรกรรมล้มเหลว', 'error');
       }
     }
 
     async function deleteWithdrawal(bid) {
-      if (confirm('คุณแน่ใจหรือไม่ที่ต้องการลบบันทึกประวัติธุรกรรมนี้ออกจากระบบหลังบ้าน?')) {
+      if (confirm('คุณต้องการทำลายประวัติใบบันทึกธุรกรรมถอนเงินนี้จากหลังบ้าน?')) {
         try {
           await deleteDoc(doc(db, "withdrawals", bid));
-          showToast('ลบประวัติการทำธุรกรรมออกจากแผงควบคุมหลังบ้านเรียบร้อย');
+          showToast('ทำลายข้อมูลบิลเรียบร้อย');
           renderAdminTab();
         } catch (err) {
-          showToast('เกิดข้อผิดพลาดผิดพลาดในการลบ: ' + err.message, 'error');
+          showToast('ความผิดพลาดจากฝั่งเครื่องแม่ข่าย: ' + err.message, 'error');
         }
       }
     }
@@ -1263,32 +1321,32 @@
     function renderAdminOrders(c) {
       const orders = allUserOrdersData;
       if (orders.length === 0) {
-        c.innerHTML = '<div class="bg-white p-8 rounded-2xl text-center border border-slate-200 shadow-sm"><p class="text-slate-400 font-medium text-sm">ไม่พบบันทึกออเดอร์ภารกิจใดๆ</p></div>';
+        c.innerHTML = '<div class="bg-white/5 p-8 rounded-xl text-center border border-slate-800 shadow-sm"><p class="text-slate-500 font-mono text-xs">ระบบยังไม่มีออเดอร์ดำเนินภารกิจในขณะนี้</p></div>';
       } else {
         c.innerHTML = `
-          <div class="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
-            <table class="w-full text-left border-collapse text-sm">
+          <div class="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden shadow-sm">
+            <table class="w-full text-left border-collapse text-xs font-mono">
               <thead>
-                <tr class="bg-slate-50 border-b border-slate-200 text-slate-600 font-bold text-xs uppercase">
-                  <th class="p-4">วันเวลา</th>
-                  <th class="p-4">ผู้ทำรายการ</th>
-                  <th class="p-4">ข้อมูลออเดอร์สินค้า</th>
-                  <th class="p-4">ยอดราคาสินค้า</th>
-                  <th class="p-4">ค่าคอมมิชชัน</th>
-                  <th class="p-4">สถานะสำเร็จ</th>
+                <tr class="bg-slate-950 border-b border-slate-800 text-slate-400 font-bold uppercase">
+                  <th class="p-4">วันเวลาทำรายการ</th>
+                  <th class="p-4">รหัสชื่อบัญชี</th>
+                  <th class="p-4">ข้อมูลรายการสินค้า</th>
+                  <th class="p-4">ยอดทุนสินค้า</th>
+                  <th class="p-4">ยอดค่าคอมมิชชัน</th>
+                  <th class="p-4">สถานะส่งงาน</th>
                 </tr>
               </thead>
-              <tbody class="divide-y divide-slate-100 text-slate-600">
+              <tbody class="divide-y divide-slate-800 text-slate-300">
                 ${orders.map(o => `
-                  <tr class="hover:bg-slate-50/50 transition">
-                    <td class="p-4 text-xs text-slate-400">${new Date(o.createdAt).toLocaleString()}</td>
-                    <td class="p-4 font-bold text-slate-800">${o.username}</td>
-                    <td class="p-4 text-xs truncate max-w-[200px]" title="${o.productName}">${o.productName}</td>
-                    <td class="p-4 font-bold text-slate-700">฿${o.productPrice.toLocaleString()}</td>
-                    <td class="p-4 font-black text-emerald-600">+฿${o.commission.toLocaleString()}</td>
+                  <tr class="hover:bg-slate-800/40 transition">
+                    <td class="p-4 text-slate-500">${new Date(o.createdAt).toLocaleString()}</td>
+                    <td class="p-4 font-bold text-slate-200">${o.username}</td>
+                    <td class="p-4 text-slate-300 truncate max-w-[200px]" title="${o.productName}">${o.productName}</td>
+                    <td class="p-4 font-bold text-slate-300">฿${o.productPrice.toLocaleString()}</td>
+                    <td class="p-4 font-black text-emerald-400">+฿${o.commission.toLocaleString()}</td>
                     <td class="p-4">
-                      <span class="px-2.5 py-1 rounded-full text-xs font-bold ${o.status === 'completed' ? 'text-emerald-700 bg-emerald-50 border border-emerald-100' : 'text-amber-700 bg-amber-50 border border-amber-100'}">
-                        ${o.status === 'completed' ? 'ชำระเงินสำเร็จ' : 'ติดออเดอร์ค้างชำระ'}
+                      <span class="px-2 py-0.5 rounded text-[10px] font-bold ${o.status === 'completed' ? 'text-emerald-400 bg-emerald-950/30 border border-emerald-800/40' : 'text-amber-400 bg-amber-950/30 border border-amber-800/40'}">
+                        ${o.status === 'completed' ? 'ส่งมอบเสร็จสิ้น' : 'ติดยอดค้างชำระ'}
                       </span>
                     </td>
                   </tr>`).join('')}
@@ -1304,37 +1362,37 @@
     // ==========================================
     function renderAdminMedia(c) {
       c.innerHTML = `
-        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm mb-6 text-left">
-          <h3 class="font-bold text-sm mb-3 text-blue-700 flex items-center gap-1.5 border-b border-slate-100 pb-2"><i data-lucide="image" class="w-4.5 h-4.5"></i> ระบบจัดการภาพสไลด์แบนเนอร์หน้าหลัก</h3>
-          <button onclick="showAddBanner()" class="w-full py-2.5 bg-blue-50 text-blue-700 border border-blue-200 rounded-xl text-xs font-bold hover:bg-blue-100 transition mb-4">+ เพิ่มรูปแบนเนอร์สไลด์ใหม่</button>
+        <div class="bg-slate-900 p-5 rounded-xl border border-slate-800 shadow-sm mb-6 text-left font-mono text-xs">
+          <h3 class="font-bold text-sm mb-3 text-sky-400 flex items-center gap-1.5 border-b border-slate-800 pb-2"><i data-lucide="image" class="w-4 h-4"></i> ระบบจัดการภาพสไลด์แบนเนอร์ส่วนหน้าเว็บ</h3>
+          <button onclick="showAddBanner()" class="w-full py-2 bg-slate-950 hover:bg-slate-800 text-slate-300 border border-slate-800 rounded text-xs font-bold transition mb-4">+ เพิ่มรูปภาพแบนเนอร์สไลด์</button>
           <div class="space-y-3">
             ${getBanners().map(b => `
-              <div class="flex items-center gap-3 bg-slate-50 p-3 rounded-xl border border-slate-200">
+              <div class="flex items-center gap-3 bg-slate-950 p-3 rounded border border-slate-800">
                 <div class="flex flex-col gap-1 flex-shrink-0">
-                  <img src="${b.bannerUrl}" class="w-20 h-12 object-cover rounded-lg border border-slate-200" title="แบนเนอร์สไลด์หน้าจอมือถือ">
-                  ${b.bannerPcUrl ? `<img src="${b.bannerPcUrl}" class="w-20 h-10 object-cover rounded-lg border border-slate-200" title="แบนเนอร์สไลด์หน้าจอคอมพิวเตอร์">` : `<div class="w-20 h-10 bg-slate-100 flex items-center justify-center rounded-lg text-[9px] text-slate-400 border border-slate-200 font-semibold">ไม่มีภาพสำหรับ PC</div>`}
+                  <img src="${b.bannerUrl}" class="w-20 h-12 object-cover rounded border border-slate-800" title="ภาพย่อแบนเนอร์มือถือ">
+                  ${b.bannerPcUrl ? `<img src="${b.bannerPcUrl}" class="w-20 h-10 object-cover rounded border border-slate-800" title="ภาพย่อแบนเนอร์ PC">` : `<div class="w-20 h-10 bg-slate-900 flex items-center justify-center rounded text-[8px] text-slate-600 border border-slate-800 font-bold">ไม่มีภาพ PC</div>`}
                 </div>
                 <div class="flex-1 min-w-0">
-                  <p class="text-xs text-slate-700 truncate font-semibold">มือถือ: ${b.bannerUrl}</p>
-                  <p class="text-[11px] text-slate-400 truncate font-mono mt-0.5">PC: ${b.bannerPcUrl || 'ไม่ได้ระบุภาพ'}</p>
+                  <p class="text-xs text-slate-300 truncate font-semibold">Mobile: ${b.bannerUrl}</p>
+                  <p class="text-[10px] text-slate-500 truncate font-mono mt-0.5">PC: ${b.bannerPcUrl || 'ไม่ระบุพารามิเตอร์'}</p>
                 </div>
                 <div class="flex gap-1.5">
-                  <button onclick="editBanner('${b.__backendId}')" class="p-2 text-blue-600 hover:bg-slate-100 rounded-lg transition"><i data-lucide="edit" class="w-4 h-4"></i></button>
-                  <button onclick="deleteBanner('${b.__backendId}')" class="p-2 text-rose-600 hover:bg-slate-50 rounded-lg transition"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                  <button onclick="editBanner('${b.__backendId}')" class="p-2 text-sky-400 hover:bg-slate-800 rounded transition"><i data-lucide="edit" class="w-4 h-4"></i></button>
+                  <button onclick="deleteBanner('${b.__backendId}')" class="p-2 text-rose-400 hover:bg-slate-800 rounded transition"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
                 </div>
               </div>`).join('')}
           </div>
         </div>
-        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm text-left">
-          <h3 class="font-bold text-sm mb-3 text-purple-700 flex items-center gap-1.5 border-b border-slate-100 pb-2"><i data-lucide="grid" class="w-4.5 h-4.5"></i> แกลเลอรีรูปภาพประดับส่วนล่าง</h3>
-          <button onclick="showAddGallery()" class="w-full py-2.5 bg-purple-50 text-purple-700 border border-purple-200 rounded-xl text-xs font-bold hover:bg-purple-100 transition mb-4">+ เพิ่มรูปแกลเลอรีประดับ</button>
+        <div class="bg-slate-900 p-5 rounded-xl border border-slate-800 shadow-sm text-left font-mono text-xs">
+          <h3 class="font-bold text-sm mb-3 text-purple-400 flex items-center gap-1.5 border-b border-slate-800 pb-2"><i data-lucide="grid" class="w-4.5 h-4.5"></i> คลังแกลเลอรีรูปภาพประดับด้านล่าง</h3>
+          <button onclick="showAddGallery()" class="w-full py-2 bg-slate-950 hover:bg-slate-800 text-slate-300 border border-slate-800 rounded text-xs font-bold transition mb-4">+ เพิ่มรูปภาพแกลเลอรี</button>
           <div class="grid grid-cols-2 gap-3">
             ${getGallery().map(g => `
-              <div class="relative h-28 rounded-xl overflow-hidden bg-slate-50 border border-slate-200 shadow-sm group">
+              <div class="relative h-28 rounded overflow-hidden bg-slate-950 border border-slate-800 shadow group">
                 <img src="${g.galleryUrl}" class="w-full h-full object-cover">
-                <div class="absolute top-1.5 right-1.5 flex gap-1 bg-white/90 p-1.5 rounded-lg border border-slate-200 shadow-sm">
-                  <button onclick="editGallery('${g.__backendId}')" class="p-1 text-blue-600 hover:text-blue-800 transition"><i data-lucide="edit" class="w-3.5 h-3.5"></i></button>
-                  <button onclick="deleteGallery('${g.__backendId}')" class="p-1 text-rose-600 hover:text-rose-800 transition"><i data-lucide="x" class="w-3.5 h-3.5"></i></button>
+                <div class="absolute top-1.5 right-1.5 flex gap-1 bg-slate-950/90 p-1 rounded border border-slate-800 shadow">
+                  <button onclick="editGallery('${g.__backendId}')" class="p-1 text-sky-400 hover:text-sky-300 transition"><i data-lucide="edit" class="w-3.5 h-3.5"></i></button>
+                  <button onclick="deleteGallery('${g.__backendId}')" class="p-1 text-rose-400 hover:text-rose-300 transition"><i data-lucide="x" class="w-3.5 h-3.5"></i></button>
                 </div>
               </div>`).join('')}
           </div>
@@ -1343,24 +1401,24 @@
 
     function showAddBanner() { 
       showModal(`
-        <h3 class="font-bold text-base mb-4 text-slate-800 border-b border-slate-100 pb-2">เพิ่มรูปแบนเนอร์สไลด์</h3>
-        <div class="space-y-3.5 text-left text-slate-600">
+        <h3 class="font-bold text-sm mb-4 text-sky-400 border-b border-slate-800 pb-2 font-mono">เพิ่มรูปภาพแบนเนอร์สไลด์</h3>
+        <div class="space-y-3.5 text-left text-xs font-mono">
           <div>
-            <label class="text-xs text-slate-400 font-bold block mb-1">ที่อยู่อิมเมจ URL สำหรับขนาดหน้าจอมือถือ (อัตราส่วน 5:3)</label>
-            <input id="ab-url" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm" placeholder="https://domain.com/mobile-image.jpg">
+            <label class="text-[10px] text-slate-400 font-bold block mb-1">ภาพสำหรับเวอร์ชันแสดงผลบนโทรศัพท์มือถือ (สัดส่วน 5:3)</label>
+            <input id="ab-url" class="w-full px-4 py-2 bg-slate-950 border border-slate-800 text-slate-200 rounded text-xs" placeholder="https://domain.com/mobile-image.jpg">
           </div>
           <div>
-            <label class="text-xs text-slate-400 font-bold block mb-1">ที่อยู่อิมเมจ URL สำหรับขนาดหน้าจอคอมพิวเตอร์ (อัตราส่วน 20:10)</label>
-            <input id="ab-pc-url" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm" placeholder="https://domain.com/pc-image.jpg">
+            <label class="text-[10px] text-slate-400 font-bold block mb-1">ภาพสำหรับเวอร์ชันแสดงผลบนหน้าจอ PC (สัดส่วน 20:10)</label>
+            <input id="ab-pc-url" class="w-full px-4 py-2 bg-slate-950 border border-slate-800 text-slate-200 rounded text-xs" placeholder="https://domain.com/pc-image.jpg">
           </div>
-          <button onclick="doAddBanner()" class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl transition text-sm">บันทึกรูปแบนเนอร์</button>
+          <button onclick="doAddBanner()" class="w-full py-2.5 bg-sky-600 hover:bg-sky-500 text-slate-950 font-bold rounded transition mt-2">นำส่งข้อมูลรูปแบนเนอร์</button>
         </div>
       `); 
     }
     async function doAddBanner() { 
       const url = $('ab-url').value.trim();
       const pcUrl = $('ab-pc-url').value.trim();
-      if(!url) return showToast('กรุณาระบุลิงก์รูปภาพของเวอร์ชันโทรศัพท์ด้วย', 'error');
+      if(!url) return showToast('กรุณาระบุที่อยู่รูปภาพเวอร์ชันแสดงผลบนโทรศัพท์มือถือ', 'error');
       await windowDataSdk.create({ 
         type: 'banner', id: genId(), bannerUrl: url, bannerPcUrl: pcUrl
       }); 
@@ -1370,17 +1428,17 @@
     function editBanner(bid) { 
       const b = publicData.banners.find(d => d.__backendId === bid); 
       showModal(`
-        <h3 class="font-bold text-base mb-4 text-slate-800 border-b border-slate-100 pb-2">แก้ไขรูปภาพแบนเนอร์สไลด์</h3>
-        <div class="space-y-3.5 text-left text-slate-600">
+        <h3 class="font-bold text-sm mb-4 text-sky-400 border-b border-slate-800 pb-2 font-mono">ปรับปรุงรายละเอียดพารามิเตอร์รูปภาพแบนเนอร์</h3>
+        <div class="space-y-3.5 text-left text-xs font-mono">
           <div>
-            <label class="text-xs text-slate-400 font-bold block mb-1">ที่อยู่อิมเมจ URL เวอร์ชันมือถือ</label>
-            <input id="eb-url" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm" value="${b.bannerUrl || ''}">
+            <label class="text-[10px] text-slate-400 font-bold block mb-1">รูปเวอร์ชันมือถือ</label>
+            <input id="eb-url" class="w-full px-4 py-2 bg-slate-950 border border-slate-800 text-slate-200 rounded" value="${b.bannerUrl || ''}">
           </div>
           <div>
-            <label class="text-xs text-slate-400 font-bold block mb-1">ที่อยู่อิมเมจ URL เวอร์ชันคอมพิวเตอร์ (PC)</label>
-            <input id="eb-pc-url" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm" value="${b.bannerPcUrl || ''}">
+            <label class="text-[10px] text-slate-400 font-bold block mb-1">รูปเวอร์ชัน PC</label>
+            <input id="eb-pc-url" class="w-full px-4 py-2 bg-slate-950 border border-slate-800 text-slate-200 rounded" value="${b.bannerPcUrl || ''}">
           </div>
-          <button onclick="doEditBanner('${bid}')" class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl transition text-sm">อัปเดตข้อมูลแบนเนอร์</button>
+          <button onclick="doEditBanner('${bid}')" class="w-full py-2.5 bg-sky-600 hover:bg-sky-500 text-slate-950 font-bold rounded transition">อัปเดตข้อมูลแบนเนอร์</button>
         </div>
       `); 
     }
@@ -1388,19 +1446,19 @@
       const b = publicData.banners.find(d => d.__backendId === bid); 
       const url = $('eb-url').value.trim();
       const pcUrl = $('eb-pc-url').value.trim();
-      if(!url) return showToast('กรุณาระบุลิงก์รูปภาพของเวอร์ชันมือถือ', 'error');
+      if(!url) return showToast('กรุณาระบุที่อยู่รูปภาพมือถือ', 'error');
       await windowDataSdk.update({
         ...b, bannerUrl: url, bannerPcUrl: pcUrl
       }); 
       closeModal(); 
       renderAdminTab(); 
     }
-    async function deleteBanner(bid) { if(confirm('คุณแน่ใจหรือไม่ที่จะลบรูปภาพแบนเนอร์นี้?')) { await windowDataSdk.delete(publicData.banners.find(d => d.__backendId === bid)); renderAdminTab(); } }
-    function showAddGallery() { showModal(`<h3 class="font-bold text-base mb-4 border-b pb-2">เพิ่มรูปแกลเลอรีประดับ</h3><input id="ag-url" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl mb-4 text-sm" placeholder="วางลิงก์รูปภาพของคุณที่นี่"><button onclick="doAddGallery()" class="w-full py-3 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-xl transition text-sm">บันทึกรูปภาพ</button>`); }
+    async function deleteBanner(bid) { if(confirm('คุณต้องการลบรูปภาพแบนเนอร์สไลด์ชิ้นนี้?')) { await windowDataSdk.delete(publicData.banners.find(d => d.__backendId === bid)); renderAdminTab(); } }
+    function showAddGallery() { showModal(`<h3 class="font-bold text-sm mb-4 border-b border-slate-800 pb-2 font-mono">เพิ่มรูปแกลเลอรีประดับ</h3><input id="ag-url" class="w-full px-4 py-2 bg-slate-950 border border-slate-800 rounded mb-4 text-xs font-mono" placeholder="ระบุลิงก์รูปภาพของคุณที่นี่"><button onclick="doAddGallery()" class="w-full py-2 bg-purple-600 hover:bg-purple-500 text-slate-950 font-bold rounded transition">บันทึกรูปภาพ</button>`); }
     async function doAddGallery() { await windowDataSdk.create({ type:'gallery', id:genId(), galleryUrl:$('ag-url').value.trim() }); closeModal(); renderAdminTab(); }
-    function editGallery(bid) { const g = publicData.galleries.find(d => d.__backendId === bid); showModal(`<h3 class="font-bold text-base mb-4 border-b pb-2">แก้ไขข้อมูลลิงก์ภาพแกลเลอรี</h3><input id="eg-url" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 text-slate-700 rounded-xl mb-4 text-sm" value="${g.galleryUrl}"><button onclick="doEditGallery('${bid}')" class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl transition text-sm">อัปเดตข้อมูล</button>`); }
+    function editGallery(bid) { const g = publicData.galleries.find(d => d.__backendId === bid); showModal(`<h3 class="font-bold text-sm mb-4 border-b border-slate-800 pb-2 font-mono">แก้ไขที่อยู่รูปภาพแกลเลอรีประดับ</h3><input id="eg-url" class="w-full px-4 py-2 bg-slate-950 border border-slate-800 text-slate-200 rounded mb-4 text-xs" value="${g.galleryUrl}"><button onclick="doEditGallery('${bid}')" class="w-full py-2 bg-sky-600 hover:bg-sky-500 text-slate-950 font-bold rounded transition">อัปเดตข้อมูล</button>`); }
     async function doEditGallery(bid) { const g = publicData.galleries.find(d => d.__backendId === bid); await windowDataSdk.update({...g, galleryUrl: $('eg-url').value.trim()}); closeModal(); renderAdminTab(); }
-    async function deleteGallery(bid) { if(confirm('คุณแน่ใจที่จะลบรูปประดับแกลเลอรีนี้ออกจากระบบหรือไม่?')) { await windowDataSdk.delete(publicData.galleries.find(d => d.__backendId === bid)); renderAdminTab(); } }
+    async function deleteGallery(bid) { if(confirm('คุณต้องการทำลายรูปภาพนี้จากฐานข้อมูลแกลเลอรีหลังบ้าน?')) { await windowDataSdk.delete(publicData.galleries.find(d => d.__backendId === bid)); renderAdminTab(); } }
 
     // ==========================================
     // TABS: 7. SYSTEM SETTINGS
@@ -1414,119 +1472,119 @@
       const banks = cfg.supportedBanks || 'KBank,SCB,BBL,KTB,Krungsri,GSB,TrueMoney';
       
       c.innerHTML = `
-        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm mb-6 text-left">
-          <h3 class="font-bold text-sm mb-4 text-blue-600 flex items-center gap-2 border-b border-slate-100 pb-2"><i data-lucide="globe" class="w-4 h-4"></i> การตั้งค่าหัวข้อเบราว์เซอร์หน้าจอและไอคอนหน้าเว็บ</h3>
+        <div class="bg-slate-900 p-5 rounded-xl border border-slate-800 shadow-sm mb-6 text-left font-mono text-xs">
+          <h3 class="font-bold text-sm mb-4 text-sky-400 flex items-center gap-2 border-b border-slate-800 pb-2"><i data-lucide="globe" class="w-4 h-4"></i> ระบบปรับตั้งชื่อเว็บไซต์แอปพลิเคชัน (Browser Configuration)</h3>
           <div class="space-y-3">
             <div>
-              <label class="text-xs text-slate-400 font-semibold block mb-1">หัวข้อแถบเบราว์เซอร์ด้านบน (Title Name)</label>
-              <input id="cfg-tab-title" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-700 text-xs" placeholder="เช่น TOS Shopping" value="${getTabTitle()}">
+              <label class="text-[10px] text-slate-400 font-semibold block mb-1">ชื่อแถบหัวเรื่องหลักประจำเว็บไซต์ (Browser Tab Name)</label>
+              <input id="cfg-tab-title" class="w-full px-4 py-2 bg-slate-950 border border-slate-800 rounded text-slate-200 text-xs" placeholder="เช่น TOS Shopping" value="${getTabTitle()}">
             </div>
             <div>
-              <label class="text-xs text-slate-400 font-semibold block mb-1">ลิงก์ไฟล์ไอคอนขนาดเล็กประจำเว็บไซต์ (Favicon URL)</label>
-              <input id="cfg-tab-favicon" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-700 text-xs" placeholder="วางลิงก์รูปไอคอนเว็บไซต์" value="${getTabFavicon()}">
+              <label class="text-[10px] text-slate-400 font-semibold block mb-1">ลิงก์ไอคอนเล็กสำหรับหน้าเบราว์เซอร์หน้าจอสมาชิก (Favicon URL)</label>
+              <input id="cfg-tab-favicon" class="w-full px-4 py-2 bg-slate-950 border border-slate-800 rounded text-slate-200 text-xs" placeholder="ระบุที่อยู่ URL สำหรับรูปไอคอน" value="${getTabFavicon()}">
             </div>
-            <button onclick="saveAdminSettings('tab_config')" class="w-full py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl transition">บันทึกการตั้งค่าหน้าเบราว์เซอร์</button>
+            <button onclick="saveAdminSettings('tab_config')" class="w-full py-2 bg-sky-600 hover:bg-sky-500 text-slate-950 font-bold text-xs rounded transition">บันทึกข้อมูลหน้าเบราว์เซอร์</button>
           </div>
         </div>
 
-        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm mb-6 text-left">
-          <h3 class="font-bold text-sm mb-4 text-blue-600 flex items-center gap-2 border-b border-slate-100 pb-2"><i data-lucide="palette" class="w-4 h-4"></i> ระบบกำหนดโทนสีของแอปพลิเคชัน (ธีมระบบหลัก)</h3>
+        <div class="bg-slate-900 p-5 rounded-xl border border-slate-800 shadow-sm mb-6 text-left font-mono text-xs">
+          <h3 class="font-bold text-sm mb-4 text-sky-400 flex items-center gap-2 border-b border-slate-800 pb-2"><i data-lucide="palette" class="w-4 h-4"></i> ระบบเลือกโทนเฉดสีแอปพลิเคชันหน้าบ้านสมาชิก</h3>
           <div class="grid grid-cols-2 gap-4 mb-4">
             <div>
-              <label class="text-xs text-slate-400 mb-1 block font-semibold">รหัสสีโทนหลัก (Primary Color)</label>
+              <label class="text-[10px] text-slate-400 mb-1 block font-semibold">รหัสเฉดสีหลักของแอปพลิเคชัน (Primary UI Color)</label>
               <div class="flex gap-2">
-                <input type="color" id="cfg-theme-p-picker" class="w-10 h-10 bg-transparent cursor-pointer rounded-lg border border-slate-200 p-1" value="${tP}" oninput="$('cfg-theme-p-text').value=this.value">
-                <input type="text" id="cfg-theme-p-text" class="flex-1 px-3 py-1.5 text-xs border border-slate-200 rounded-xl bg-slate-50 text-slate-700 font-mono" value="${tP}">
+                <input type="color" id="cfg-theme-p-picker" class="w-10 h-10 bg-transparent cursor-pointer rounded border border-slate-700 p-1" value="${tP}" oninput="$('cfg-theme-p-text').value=this.value">
+                <input type="text" id="cfg-theme-p-text" class="flex-1 px-3 py-1.5 text-xs border border-slate-800 rounded bg-slate-950 text-slate-300 font-mono" value="${tP}">
               </div>
             </div>
             <div>
-              <label class="text-xs text-slate-400 mb-1 block font-semibold">รหัสสีโทนรอง (Secondary Color)</label>
+              <label class="text-[10px] text-slate-400 mb-1 block font-semibold">รหัสเฉดสีรองของแอปพลิเคชัน (Secondary UI Color)</label>
               <div class="flex gap-2">
-                <input type="color" id="cfg-theme-s-picker" class="w-10 h-10 bg-transparent cursor-pointer rounded-lg border border-slate-200 p-1" value="${tS}" oninput="$('cfg-theme-s-text').value=this.value">
-                <input type="text" id="cfg-theme-s-text" class="flex-1 px-3 py-1.5 text-xs border border-slate-200 rounded-xl bg-slate-50 text-slate-700 font-mono" value="${tS}">
+                <input type="color" id="cfg-theme-s-picker" class="w-10 h-10 bg-transparent cursor-pointer rounded border border-slate-700 p-1" value="${tS}" oninput="$('cfg-theme-s-text').value=this.value">
+                <input type="text" id="cfg-theme-s-text" class="flex-1 px-3 py-1.5 text-xs border border-slate-800 rounded bg-slate-950 text-slate-300 font-mono" value="${tS}">
               </div>
             </div>
           </div>
-          <button onclick="saveAdminTheme()" class="w-full py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl transition">บันทึกและปรับปรุงโทนธีมสี</button>
+          <button onclick="saveAdminTheme()" class="w-full py-2 bg-sky-600 hover:bg-sky-500 text-slate-950 font-bold text-xs rounded transition">บันทึกและอัปเดตสีแอปพลิเคชันเรียลไทม์</button>
         </div>
 
-        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm mb-6 text-left">
-          <h3 class="font-bold text-sm mb-4 text-blue-600 flex items-center gap-2 border-b border-slate-100 pb-2"><i data-lucide="image" class="w-4 h-4"></i> การตั้งค่าภาพพื้นหลัง (วอลเปเปอร์)</h3>
+        <div class="bg-slate-900 p-5 rounded-xl border border-slate-800 shadow-sm mb-6 text-left font-mono text-xs">
+          <h3 class="font-bold text-sm mb-4 text-sky-400 flex items-center gap-2 border-b border-slate-800 pb-2"><i data-lucide="image" class="w-4 h-4"></i> ระบบเลือกจัดการวอลเปเปอร์หน้าสมาชิกระบบ</h3>
           <div class="space-y-3">
             <div>
-              <label class="text-xs text-slate-400 font-semibold block mb-1">ลิงก์ภาพวอลเปเปอร์พื้นหลังของหน้าล็อกอิน</label>
-              <input id="cfg-login-bg" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-700 text-xs" placeholder="วางลิงก์วอลเปเปอร์หน้าล็อกอิน" value="${loginBgUrl}">
+              <label class="text-[10px] text-slate-400 font-semibold block mb-1">ลิงก์ภาพวอลเปเปอร์สำหรับกรอบล็อกอินหน้าบ้าน</label>
+              <input id="cfg-login-bg" class="w-full px-4 py-2 bg-slate-950 border border-slate-800 rounded text-slate-200 text-xs" placeholder="วางลิงก์วอลเปเปอร์หน้าล็อกอิน" value="${loginBgUrl}">
             </div>
             <div>
-              <label class="text-xs text-slate-400 font-semibold block mb-1">ลิงก์ภาพวอลเปเปอร์พื้นหลังเมื่อผู้ใช้ล็อกอินเข้าสู่ระบบเรียบร้อยแล้ว</label>
-              <input id="cfg-user-bg" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-700 text-xs" placeholder="วางลิงก์วอลเปเปอร์หน้าแดชบอร์ด" value="${userBgUrl}">
+              <label class="text-[10px] text-slate-400 font-semibold block mb-1">ลิงก์ภาพวอลเปเปอร์สำหรับแดชบอร์ดด้านในของสมาชิก</label>
+              <input id="cfg-user-bg" class="w-full px-4 py-2 bg-slate-950 border border-slate-800 rounded text-slate-200 text-xs" placeholder="วางลิงก์วอลเปเปอร์สำหรับด้านในระบบ" value="${userBgUrl}">
             </div>
-            <button onclick="saveAdminSettings('bgs')" class="w-full py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl transition">บันทึกวอลเปเปอร์หน้าจอ</button>
+            <button onclick="saveAdminSettings('bgs')" class="w-full py-2 bg-sky-600 hover:bg-sky-500 text-slate-950 font-bold text-xs rounded transition">บันทึกวอลเปเปอร์สมาชิกระบบ</button>
           </div>
         </div>
 
-        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm mb-6 text-left">
-          <h3 class="font-bold text-sm mb-3 text-blue-600 flex items-center gap-2 border-b border-slate-100 pb-2"><i data-lucide="volume-2" class="w-4 h-4"></i> จัดการข้อความประกาศตัววิ่งด่วนหน้าหลัก</h3>
-          <input id="cfg-marquee" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-700 mb-3 text-xs" value="${marqueeText}">
-          <button onclick="saveAdminSettings('marquee')" class="w-full py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl transition">บันทึกข้อความประกาศตัววิ่ง</button>
+        <div class="bg-slate-900 p-5 rounded-xl border border-slate-800 shadow-sm mb-6 text-left font-mono text-xs">
+          <h3 class="font-bold text-sm mb-3 text-sky-400 flex items-center gap-2 border-b border-slate-800 pb-2"><i data-lucide="volume-2" class="w-4 h-4"></i> จัดการข้อมูลข้อความวิ่งประกาศด่วนหน้าหลัก</h3>
+          <input id="cfg-marquee" class="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded text-slate-200 mb-3 text-xs" value="${marqueeText}">
+          <button onclick="saveAdminSettings('marquee')" class="w-full py-2 bg-sky-600 hover:bg-sky-500 text-slate-950 font-bold text-xs rounded transition">บันทึกพารามิเตอร์ข้อความประกาศวิ่ง</button>
         </div>
 
-        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm mb-6 text-left">
-          <h3 class="font-bold text-sm mb-3 text-blue-600 flex items-center gap-2 border-b border-slate-100 pb-2"><i data-lucide="message-square" class="w-4 h-4"></i> จัดการข้อมูลติดต่อการบริการลูกค้าแอดมิน</h3>
+        <div class="bg-slate-900 p-5 rounded-xl border border-slate-800 shadow-sm mb-6 text-left font-mono text-xs">
+          <h3 class="font-bold text-sm mb-3 text-sky-400 flex items-center gap-2 border-b border-slate-800 pb-2"><i data-lucide="message-square" class="w-4 h-4"></i> จัดการช่องทางข้อมูลสำหรับให้สมาชิกติดต่อซัพพอร์ตแอดมิน</h3>
           <div class="space-y-3">
             <div>
-              <label class="text-xs text-slate-400 font-semibold block mb-1">ลิงก์รูปคิวอาร์โค้ดกลุ่ม/ไลน์ติดต่อซัพพอร์ต</label>
-              <input id="cfg-line-qr" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-700 text-xs" placeholder="วางลิงก์ไฟล์รูป QR CODE" value="${lineQrUrl}">
+              <label class="text-[10px] text-slate-400 font-semibold block mb-1">ที่อยู่ไฟล์ QR CODE เชื่อมต่อไปยังไลน์ซัพพอร์ต</label>
+              <input id="cfg-line-qr" class="w-full px-4 py-2 bg-slate-950 border border-slate-800 rounded text-slate-200 text-xs" placeholder="วางที่อยู่ลิงก์รูปภาพ QR CODE" value="${lineQrUrl}">
             </div>
             <div>
-              <label class="text-xs text-slate-400 font-semibold block mb-1">บัญชีไอดี LINE ของฝ่ายบริการลูกค้า (LINE ID)</label>
-              <input id="cfg-line-id" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-700 text-xs" placeholder="เช่น @tossupport" value="${lineId}">
+              <label class="text-[10px] text-slate-400 font-semibold block mb-1">ไอดีบัญชี LINE ซัพพอร์ต (LINE ID สำหรับคัดลอกคีย์)</label>
+              <input id="cfg-line-id" class="w-full px-4 py-2 bg-slate-950 border border-slate-800 rounded text-slate-200 text-xs" placeholder="เช่น @tossupport" value="${lineId}">
             </div>
-            <button onclick="saveAdminSettings('line')" class="w-full py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl transition">บันทึกข้อมูลติดต่อให้บริการ</button>
+            <button onclick="saveAdminSettings('line')" class="w-full py-2 bg-sky-600 hover:bg-sky-500 text-slate-950 font-bold text-xs rounded transition">บันทึกข้อมูลบริการซัพพอร์ต</button>
           </div>
         </div>
 
-        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm mb-6 text-left">
-          <h3 class="font-bold text-sm mb-3 text-blue-600 flex items-center gap-2 border-b border-slate-100 pb-2"><i data-lucide="banknote" class="w-4 h-4"></i> ระบบตั้งค่าช่องทางการรับฝากเงินและธนาคารที่รองรับ</h3>
+        <div class="bg-slate-900 p-5 rounded-xl border border-slate-800 shadow-sm mb-6 text-left font-mono text-xs">
+          <h3 class="font-bold text-sm mb-3 text-sky-400 flex items-center gap-2 border-b border-slate-800 pb-2"><i data-lucide="banknote" class="w-4 h-4"></i> จัดการช่องทางการฝากเงินเข้าพอร์ตและธนาคารในระบบ</h3>
           <div class="space-y-4">
             <div>
-              <label class="text-xs text-slate-400 font-semibold block mb-1">รายชื่อธนาคารที่ระบบรองรับสำหรับผู้ใช้งาน (คั่นด้วยสัญลักษณ์ลูกน้ำ ",")</label>
-              <textarea id="cfg-banks" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-700 text-xs h-20" placeholder="เช่น KBank,SCB,BBL,KTB,Krungsri">${banks}</textarea>
+              <label class="text-[10px] text-slate-400 font-semibold block mb-1">ลิสต์ชื่อธนาคารที่สมาชิกระบบสามารถใช้ได้ (แยกด้วยลูกน้ำ ",")</label>
+              <textarea id="cfg-banks" class="w-full px-4 py-2 bg-slate-950 border border-slate-800 rounded text-slate-200 text-xs h-20" placeholder="เช่น KBank,SCB,BBL,KTB,Krungsri">${banks}</textarea>
             </div>
             <div>
-              <label class="text-xs text-slate-400 font-semibold block mb-1">ลิงก์รูปคิวอาร์โค้ดบัญชีธนาคารสำหรับรับฝากเงินของระบบ</label>
-              <input id="cfg-topup-qr" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-700 text-xs" placeholder="วางลิงก์รูปรับฝากเงิน" value="${topupQrUrl}">
+              <label class="text-[10px] text-slate-400 font-semibold block mb-1">ที่อยู่อิมเมจรูป QR CODE บัญชีของระบบเพื่อรับยอดฝากเงินสลิป</label>
+              <input id="cfg-topup-qr" class="w-full px-4 py-2 bg-slate-950 border border-slate-800 rounded text-slate-200 text-xs" placeholder="วางลิงก์รูปภาพ QR CODE รับเงิน" value="${topupQrUrl}">
             </div>
             <div>
-              <label class="text-xs text-slate-400 font-semibold block mb-1">รายละเอียดข้อมูลบัญชีธนาคารทางการสำหรับการโอนเงินเข้าสู่ระบบ</label>
-              <textarea id="cfg-topup-acc" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-700 h-20 text-xs">${topupAccount}</textarea>
+              <label class="text-[10px] text-slate-400 font-semibold block mb-1">ข้อมูลรายละเอียดช่องทางบัญชีธนาคารรับเงินฝากอย่างเป็นทางการ</label>
+              <textarea id="cfg-topup-acc" class="w-full px-4 py-2 bg-slate-950 border border-slate-800 rounded text-slate-200 h-20 text-xs">${topupAccount}</textarea>
             </div>
-            <button onclick="saveAdminSettings('topup_banks')" class="w-full py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl transition">บันทึกการตั้งค่าข้อมูลการเงินระบบ</button>
+            <button onclick="saveAdminSettings('topup_banks')" class="w-full py-2 bg-sky-600 hover:bg-sky-500 text-slate-950 font-bold text-xs rounded transition">บันทึกรายละเอียดพารามิเตอร์การเงิน</button>
           </div>
         </div>
 
-        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm mb-6 text-left">
-          <h3 class="font-bold text-sm mb-3 text-blue-600 flex items-center gap-2 border-b border-slate-100 pb-2"><i data-lucide="award" class="w-4 h-4"></i> ภาพโลโก้แอปพลิเคชันทางการ</h3>
-          <input id="cfg-logo" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-700 mb-3 text-xs" value="${logoUrl}">
-          <button onclick="saveAdminSettings('logo')" class="w-full py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl transition">บันทึกรูปโลโก้แอปพลิเคชัน</button>
+        <div class="bg-slate-900 p-5 rounded-xl border border-slate-800 shadow-sm mb-6 text-left font-mono text-xs">
+          <h3 class="font-bold text-sm mb-3 text-sky-400 flex items-center gap-2 border-b border-slate-800 pb-2"><i data-lucide="award" class="w-4 h-4"></i> อัปโหลดรูปโลโก้ประจำแอปพลิเคชันอย่างเป็นทางการ</h3>
+          <input id="cfg-logo" class="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded text-slate-200 mb-3 text-xs" value="${logoUrl}">
+          <button onclick="saveAdminSettings('logo')" class="w-full py-2 bg-sky-600 hover:bg-sky-500 text-slate-950 font-bold text-xs rounded transition">บันทึกรูปโลโก้แอปพลิเคชัน</button>
         </div>
 
-        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm mb-6 text-left">
-          <h3 class="font-bold text-sm mb-3 text-blue-600 flex items-center gap-2 border-b border-slate-100 pb-2"><i data-lucide="key" class="w-4 h-4"></i> รหัสเชิญสมัครสมาชิกระบบรักษาความปลอดภัย</h3>
-          <input id="cfg-invite" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-700 mb-3 text-xs text-center font-mono tracking-widest font-bold" value="${inviteCode}">
-          <button onclick="saveAdminSettings('invite')" class="w-full py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl transition">บันทึกรหัสเชิญผู้ใช้งาน</button>
+        <div class="bg-slate-900 p-5 rounded-xl border border-slate-800 shadow-sm mb-6 text-left font-mono text-xs">
+          <h3 class="font-bold text-sm mb-3 text-sky-400 flex items-center gap-2 border-b border-slate-800 pb-2"><i data-lucide="key" class="w-4 h-4"></i> รหัสเชิญสมัครเข้าร่วมพอร์ตรักษาความปลอดภัยระบบ</h3>
+          <input id="cfg-invite" class="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded text-slate-200 mb-3 text-xs text-center font-bold tracking-widest" value="${inviteCode}">
+          <button onclick="saveAdminSettings('invite')" class="w-full py-2 bg-sky-600 hover:bg-sky-500 text-slate-950 font-bold text-xs rounded transition">บันทึกคีย์รหัสเชิญความปลอดภัย</button>
         </div>
 
-        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm mb-4 text-left">
-          <h3 class="font-bold text-sm mb-3 text-blue-600 flex items-center gap-2 border-b border-slate-100 pb-2"><i data-lucide="menu" class="w-4 h-4"></i> จัดการหัวข้อเมนูคู่มือสำหรับสมาชิกหน้าหลัก</h3>
-          <button onclick="showAddMenuIcon()" class="w-full py-2 mb-3 bg-blue-50 text-blue-700 border border-blue-200 rounded-xl text-xs font-bold hover:bg-blue-100 transition">+ สร้างหัวข้อคู่มือผู้ใช้ใหม่</button>
+        <div class="bg-slate-900 p-5 rounded-xl border border-slate-800 shadow-sm mb-4 text-left font-mono text-xs">
+          <h3 class="font-bold text-sm mb-3 text-sky-400 flex items-center gap-2 border-b border-slate-800 pb-2"><i data-lucide="menu" class="w-4 h-4"></i> ข้อมูลหัวข้อการตั้งค่าเมนูคู่มือสำหรับสมาชิกส่วนหน้าบ้าน</h3>
+          <button onclick="showAddMenuIcon()" class="w-full py-2 mb-3 bg-slate-950 hover:bg-slate-800 text-slate-300 border border-slate-800 rounded text-xs font-bold transition">+ ลงทะเบียนเพิ่มหัวข้อคู่มือใหม่</button>
           <div class="space-y-2">
             ${getMenuIcons().map(m => `
-              <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 flex items-center justify-between">
-                <div class="flex-1 text-slate-700 text-xs font-bold truncate pr-3">${m.menuLabel}</div>
-                <div class="flex gap-1.5">
-                  <button onclick="editMenuIcon('${m.__backendId}')" class="p-2 text-blue-600 hover:bg-slate-200 rounded-lg transition"><i data-lucide="edit" class="w-4 h-4"></i></button>
-                  <button onclick="deleteMenuIcon('${m.__backendId}')" class="p-2 text-rose-600 hover:bg-slate-200 rounded-lg transition"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+              <div class="bg-slate-950 p-3 rounded border border-slate-800 flex items-center justify-between">
+                <div class="flex-1 text-slate-300 text-xs font-bold truncate pr-3">${m.menuLabel}</div>
+                <div class="flex gap-1.5 font-mono">
+                  <button onclick="editMenuIcon('${m.__backendId}')" class="p-2 text-sky-400 hover:bg-slate-800 rounded transition"><i data-lucide="edit" class="w-4 h-4"></i></button>
+                  <button onclick="deleteMenuIcon('${m.__backendId}')" class="p-2 text-rose-400 hover:bg-slate-800 rounded transition"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
                 </div>
               </div>`).join('')}
           </div>
@@ -1546,7 +1604,7 @@
       publicData.configs = [updatePayload];
       applyTheme(p, s);
       await saveConfigToFirebase(updatePayload); 
-      showToast('บันทึกและปรับปรุงสีธีมแอปพลิเคชันสำเร็จแล้ว');
+      showToast('บันทึกและส่งผ่านพารามิเตอร์ธีมสีแอปสำเร็จ');
       renderAdminTab();
     }
 
@@ -1567,7 +1625,7 @@
       }
       else if (type === 'invite') { 
         const newInvite = $('cfg-invite').value.trim(); 
-        if (!newInvite) return showToast('กรุณาระบุรหัสเชิญ', 'error'); 
+        if (!newInvite) return showToast('กรุณาระบุพารามิเตอร์คีย์รหัสเชิญ', 'error'); 
         updatePayload.inviteCode = newInvite; 
       }
       else if (type === 'marquee') {
@@ -1589,15 +1647,15 @@
 
       publicData.configs = [updatePayload];
       await saveConfigToFirebase(updatePayload); 
-      showToast('บันทึกกำหนดค่าไปยังคลาวด์สำเร็จแล้ว'); 
+      showToast('บันทึกกำหนดค่าพารามิเตอร์เข้าสู่ระบบเรียบร้อย'); 
       renderAdminTab();
     }
 
-    function showAddMenuIcon() { showModal(`<h3 class="font-bold text-base mb-4 text-slate-800 border-b pb-2">สร้างหัวข้อคู่มือผู้ใช้</h3><input id="mi-label" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl mb-3 text-sm text-slate-700" placeholder="ระบุหัวข้อคู่มือ"><input id="mi-url" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl mb-3 text-sm text-slate-700" placeholder="ลิงก์ไฟล์รูปไอคอน (ถ้ามี)"><textarea id="mi-content" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl h-28 mb-4 text-slate-700 text-sm" placeholder="รายละเอียดของข้อตกลงหรือคำแนะนำ..."></textarea><button onclick="doAddMenuIcon()" class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold transition text-sm">บันทึกข้อมูลคู่มือ</button>`); }
-    function editMenuIcon(bid) { const m = publicData.menuIcons.find(d => d.__backendId === bid); showModal(`<h3 class="font-bold text-base mb-4 text-slate-800 border-b pb-2">แก้ไขรายละเอียดคู่มือ</h3><input id="mi-label" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 text-slate-700 rounded-xl mb-3 text-sm" value="${m.menuLabel}"><input id="mi-url" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 text-slate-700 rounded-xl mb-3 text-sm" value="${m.menuIconUrl||''}"><textarea id="mi-content" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 text-slate-700 rounded-xl h-28 mb-4 text-sm">${m.menuContent||''}</textarea><button onclick="doEditMenuIcon('${bid}')" class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold transition text-sm">อัปเดตข้อมูลคู่มือ</button>`); }
+    function showAddMenuIcon() { showModal(`<h3 class="font-bold text-sm mb-4 text-sky-400 border-b border-slate-800 pb-2 font-mono">ลงทะเบียนเพิ่มคู่มือผู้ใช้</h3><input id="mi-label" class="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 text-slate-200 rounded mb-3 text-xs" placeholder="ระบุหัวข้อหัวข้อย่อยคู่มือ"><input id="mi-url" class="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 text-slate-200 rounded mb-3 text-xs" placeholder="ที่อยู่ไฟล์รูปภาพไอคอน URL (ถ้ามี)"><textarea id="mi-content" class="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 text-slate-200 rounded h-28 mb-4 text-xs" placeholder="รายละเอียดเนื้อความคำแนะนำแนะนำ..."></textarea><button onclick="doAddMenuIcon()" class="w-full py-2.5 bg-sky-600 hover:bg-sky-500 text-slate-950 font-bold rounded transition">ส่งพอร์ตบันทึกข้อมูล</button>`); }
+    function editMenuIcon(bid) { const m = publicData.menuIcons.find(d => d.__backendId === bid); showModal(`<h3 class="font-bold text-sm mb-4 text-sky-400 border-b border-slate-800 pb-2 font-mono">แก้ไขรายละเอียดหัวข้อแนะนำระบบ</h3><input id="mi-label" class="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 text-slate-200 rounded mb-3 text-xs" value="${m.menuLabel}"><input id="mi-url" class="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 text-slate-200 rounded mb-3 text-xs" value="${m.menuIconUrl||''}"><textarea id="mi-content" class="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 text-slate-200 rounded h-28 mb-4 text-xs">${m.menuContent||''}</textarea><button onclick="doEditMenuIcon('${bid}')" class="w-full py-2.5 bg-sky-600 hover:bg-sky-500 text-slate-950 font-bold rounded transition text-xs">อัปเดตและบันทึกข้อมูล</button>`); }
     function doAddMenuIcon() { windowDataSdk.create({ type:'menuIcon', id:genId(), menuLabel: $('mi-label').value.trim(), menuContent: $('mi-content').value.trim(), menuIconUrl: $('mi-url').value.trim() }); closeModal(); renderAdminTab(); }
     function doEditMenuIcon(bid) { const m = publicData.menuIcons.find(d => d.__backendId === bid); windowDataSdk.update({ ...m, menuLabel: $('mi-label').value.trim(), menuContent: $('mi-content').value.trim(), menuIconUrl: $('mi-url').value.trim() }); closeModal(); renderAdminTab(); }
-    function deleteMenuIcon(bid) { if(confirm('คุณแน่ใจที่จะลบหัวข้อแนะนำคู่มือผู้ใช้นี้หรือไม่?')) { windowDataSdk.delete(publicData.menuIcons.find(d => d.__backendId === bid)); renderAdminTab(); } }
+    function deleteMenuIcon(bid) { if(confirm('คุณต้องการลบข้อตกลงแนะนำชิ้นนี้ออกอย่างถาวร?')) { windowDataSdk.delete(publicData.menuIcons.find(d => d.__backendId === bid)); renderAdminTab(); } }
 
     function handleAdminUserSearch(value) { adminUserSearch = value; renderAdminTab(); }
 
