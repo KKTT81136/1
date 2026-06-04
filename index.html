@@ -429,6 +429,29 @@
       document.documentElement.style.setProperty('--color-secondary', s);
       document.body.style.setProperty('--color-primary', p);
       document.body.style.setProperty('--color-secondary', s);
+
+      // ใช้ Dynamic Style Injector เพื่อป้องกันปัญหาการ Repaint ของ Tailwind CSS
+      let styleEl = document.getElementById('dynamic-theme-style');
+      if (!styleEl) {
+        styleEl = document.createElement('style');
+        styleEl.id = 'dynamic-theme-style';
+        document.head.appendChild(styleEl);
+      }
+      styleEl.innerHTML = `
+        :root {
+          --color-primary: ${p} !important;
+          --color-secondary: ${s} !important;
+        }
+        .text-primary { color: ${p} !important; }
+        .bg-primary { background-color: ${p} !important; }
+        .border-primary { border-color: ${p} !important; }
+        .bg-theme-gradient { 
+          background: linear-gradient(135deg, ${p}, ${s}) !important; 
+        }
+        .fill-blue-100\\/50 {
+          fill: ${p}33 !important;
+        }
+      `;
     }
 
     function updateBrowserTab() {
@@ -932,15 +955,23 @@
     }
 
     function startBannerSlide() {
-      clearInterval(bannerInterval); const slides = document.querySelectorAll('.banner-slide');
+      clearInterval(bannerInterval); 
+      const slides = document.querySelectorAll('.banner-slide');
       if (slides.length > 1) { 
+        // ตั้งค่า Opacity เริ่มต้นให้ถูกต้องเพื่อป้องกันภาพสไลด์หายหลังการวาดหน้าจอใหม่
+        slides.forEach((slide, i) => {
+          slide.style.opacity = (i === 0) ? '1' : '0';
+        });
         let idx = 0; 
         bannerInterval = setInterval(() => { 
           const activeSlides = document.querySelectorAll('.banner-slide'); 
-          if(!activeSlides.length) return; 
-          if(activeSlides[idx]) activeSlides[idx].style.opacity = 0; 
+          if(!activeSlides.length) {
+            clearInterval(bannerInterval);
+            return; 
+          }
+          if(activeSlides[idx]) activeSlides[idx].style.opacity = '0'; 
           idx = (idx + 1) % activeSlides.length; 
-          if(activeSlides[idx]) activeSlides[idx].style.opacity = 1; 
+          if(activeSlides[idx]) activeSlides[idx].style.opacity = '1'; 
         }, 4000); 
       }
     }
@@ -1033,7 +1064,7 @@
       const creditVal = u.credit || 0;
       const usernameVal = u.username || 'User';
       
-      if ($('home-credit-display')) { $('home-credit-display').innerText = '฿' + creditVal.toLocaleString(); return; }
+      // นำเงื่อนไข Early Return ออกเพื่อแก้ไขปัญหารูปแบนเนอร์หายหลังการอัปเดต snapshot
       const gallery = getGallery(); const menus = getMenuIcons();
       let menuIconsHtml = ''; 
       if (menus.length > 0) {
@@ -1107,14 +1138,7 @@
       const todayStr = new Date().toDateString();
       const todayComm = getUserOrders().filter(o => new Date(o.createdAt).toDateString() === todayStr && o.status === 'completed').reduce((sum, o) => sum + (Number(o.commission) || 0), 0);
       
-      if ($('prod-credit-display')) { 
-        $('prod-done').innerText = `${done} / ${total}`; 
-        $('prod-pct').style.width = `${pct}%`; 
-        $('prod-credit-display').innerText = '฿' + creditVal.toLocaleString(); 
-        $('prod-comm-display').innerText = '+฿' + todayComm.toLocaleString(); 
-        return; 
-      }
-      
+      // นำเงื่อนไข Early Return ออกเพื่อป้องกันปัญหารูปแบนเนอร์หายหลังจากการอัปเดตสแนปชอต
       let levelText = 'VIP ' + userLevel; 
       if(userLevel === 'fixturn') levelText = currentLang === 'th' ? 'ซ่อมยอดเทิร์น' : 'Turnover Repair'; 
       if(userLevel === 'allowwd') levelText = currentLang === 'th' ? 'ปลดล็อกแล้ว' : 'Unblocked';
@@ -1244,6 +1268,11 @@
       const usernameVal = u.username || 'User';
       
       let p = typeof productIdOrObj === 'object' ? productIdOrObj : publicData.products.find(d => d.__backendId === productIdOrObj); 
+      
+      // เพิ่มความครอบคลุมเพื่อตรวจสอบคอลเลกชันของออเดอร์พิเศษ
+      if(!p && typeof productIdOrObj === 'string') {
+        p = userSpecialAssignData.find(d => d.__backendId === productIdOrObj);
+      }
       if(!p && typeof productIdOrObj === 'string') {
         p = userOrdersData.find(d => d.__backendId === productIdOrObj);
       }
@@ -1301,7 +1330,8 @@
       const btn = $('btn-confirm-final'); if(!btn || btn.disabled) return;
       btn.disabled = true; btn.innerHTML = t('processing');
       
-      let p = publicData.products.find(d => d.__backendId === id) || userOrdersData.find(d => d.__backendId === id); 
+      // เพิ่มตรวจสอบในระดับสินค้าล็อกคิว ป้องกันปัญหาธุรกรรมล้มเหลว
+      let p = publicData.products.find(d => d.__backendId === id) || userSpecialAssignData.find(d => d.__backendId === id) || userOrdersData.find(d => d.__backendId === id); 
       if(!p) return;
 
       let userDocRef = doc(db, "users", currentUser.id);
