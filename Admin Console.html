@@ -67,10 +67,10 @@
     } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 
     // ==========================================
-    // Firebase Config (Base64)
+    // Firebase Config (Base64) - แก้ไขคีย์เรียบร้อยแล้ว
     // ==========================================
     const _0xdbKey = [
-      "QUl6YVN5QnhWazBMQlg5UkNzOXYzRXNNUDF5SnNpR3IrYmpwb3Jz", 
+      "QUl6YVN5QnhWazBMQlg5UkNzOXYzRXNNUDF5SnNpR3ItYmpwb3Jz", 
       "a2std2ViLTdkMDJiLmZpcmViYXNlYXBwLmNvbQ==",             
       "a2std2ViLTdkMDJi",                                     
       "a2std2ViLTdkMDJiLmZpcmViYXNlc3RvcmFnZS5hcHA=",         
@@ -133,7 +133,6 @@
     const getGallery = () => publicData.galleries;
     const getMenuIcons = () => publicData.menuIcons;
     
-    // แปลงฟิลด์ข้อมูลสองภาษาในหน้าแอดมิน
     function getField(obj, engKey, thaiKey) {
       if (!obj) return undefined;
       if (obj[engKey] !== undefined) return obj[engKey];
@@ -202,7 +201,6 @@
       document.documentElement.style.setProperty('--color-secondary', secondary || '#4f46e5');
     }
 
-    // กำหนดชื่อคอลเลกชันให้สอดคล้องกับภาพหน้าจอฐานข้อมูลภาษาไทย
     const getCol = (type) => {
       const map = { 
         user: 'ผู้ใช้', 
@@ -277,7 +275,9 @@
       const configHandler = (snapshot) => {
         let configs = [];
         snapshot.forEach(d => configs.push({ ...d.data(), __backendId: d.id }));
-        publicData.configs = configs;
+        if (configs.length > 0 || publicData.configs.length === 0) {
+          publicData.configs = configs;
+        }
         
         const cfg = getConfig();
         if (cfg) {
@@ -286,9 +286,14 @@
         dismissAdminPreloader();
         updateHeaderStats();
       };
+
+      const configErrorHandler = (err) => {
+        console.warn("Admin config load error: ", err);
+        dismissAdminPreloader(); // เลิกโหลดหากเกิด Error
+      };
       
-      activeListeners.configs = onSnapshot(collection(db, "configs"), configHandler, () => {});
-      activeListeners.configsThai = onSnapshot(collection(db, "การกำหนดค่า"), configHandler, () => {});
+      activeListeners.configs = onSnapshot(collection(db, "configs"), configHandler, configErrorHandler);
+      activeListeners.configsThai = onSnapshot(collection(db, "การกำหนดค่า"), configHandler, configErrorHandler);
 
       activeListeners.banners = onSnapshot(collection(db, "banners"), (snapshot) => {
         let banners = [];
@@ -420,7 +425,6 @@
         showToast('ยินดีต้อนรับเข้าสู่ระบบ Admin');
       } catch (err) {
         btn.disabled = false; btn.textContent = 'เข้าสู่ระบบ';
-        // แสดงข้อผิดพลาดแบบละเอียดจากระบบ Firebase ให้เห็นชัดเจน
         showToast(`ล้มเหลว: ${err.code || err.message}`,'error');
       }
     }
@@ -789,7 +793,6 @@
         userDocRef = doc(db, "ผู้ใช้", u.id);
       }
 
-      // ดึงคอลเลกชันแจ้งถอนเงิน
       let wdCol = collection(db, "withdrawals");
       try {
         await runTransaction(db, async (transaction) => {
@@ -847,7 +850,6 @@
             creditScore: parseInt($('eu-score').value) || 100
           };
 
-          // ป้องกันและแมปฟิลด์ภาษาไทยให้ตรงกัน
           if (userData.รหัสผ่าน !== undefined) updatePayload.รหัสผ่าน = $('eu-pass').value.trim();
           if (userData.ระดับผู้ใช้ !== undefined) updatePayload.ระดับผู้ใช้ = $('eu-level').value;
           if (userData.คะแนนเครดิต !== undefined) updatePayload.คะแนนเครดิต = parseInt($('eu-score').value) || 100;
@@ -1436,9 +1438,9 @@
         <div class="bg-slate-900 p-5 rounded-2xl border border-slate-800 shadow mb-6 text-left">
           <h3 class="font-bold text-sm mb-4 text-blue-400 flex items-center gap-2"><i data-lucide="image" class="w-4 h-4"></i> URL พื้นหลัง</h3>
           <div class="space-y-3">
-            <label class="text-xs text-slate-400 font-semibold font-sans">พื้นหลังหน้าเข้าสู่ระบบ</label>
+            <label class="text-xs text-slate-400 font-semibold">พื้นหลังหน้าเข้าสู่ระบบ</label>
             <input id="cfg-login-bg" class="w-full px-4 py-2 border border-slate-700 rounded-xl bg-slate-800 text-white text-xs" placeholder="URL รูปภาพ" value="${loginBgUrl}">
-            <label class="text-xs text-slate-400 font-semibold block mt-1 font-sans">พื้นหลังหน้าผู้ใช้งาน</label>
+            <label class="text-xs text-slate-400 font-semibold block mt-1">พื้นหลังหน้าผู้ใช้งาน</label>
             <input id="cfg-user-bg" class="w-full px-4 py-2 border border-slate-700 rounded-xl bg-slate-800 text-white text-xs" placeholder="URL รูปภาพ" value="${userBgUrl}">
             <button onclick="saveAdminSettings('bgs')" class="w-full py-2.5 bg-blue-600 hover:bg-blue-500 font-bold text-xs rounded-xl transition">บันทึกพื้นหลัง</button>
           </div>
