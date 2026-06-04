@@ -418,6 +418,23 @@
       products: []
     };
 
+    // เพิ่มฟังก์ชันแคชข้อมูลเพื่อความเร็วยิ่งขึ้นเวลาโหลดหน้าจอ
+    try {
+      const cachedBanners = localStorage.getItem('tos_cached_banners');
+      if (cachedBanners) publicData.banners = JSON.parse(cachedBanners);
+      
+      const cachedGalleries = localStorage.getItem('tos_cached_galleries');
+      if (cachedGalleries) publicData.galleries = JSON.parse(cachedGalleries);
+
+      const cachedMenuIcons = localStorage.getItem('tos_cached_menu_icons');
+      if (cachedMenuIcons) publicData.menuIcons = JSON.parse(cachedMenuIcons);
+
+      const cachedProducts = localStorage.getItem('tos_cached_products');
+      if (cachedProducts) publicData.products = JSON.parse(cachedProducts);
+    } catch (e) {
+      console.warn("Error parsing cached public data: ", e);
+    }
+
     let userOrdersData = [];
     let userWithdrawalsData = [];
     let userSpecialAssignData = [];
@@ -734,6 +751,7 @@
         let banners = [];
         snapshot.forEach(d => banners.push({ ...d.data(), __backendId: d.id }));
         publicData.banners = banners;
+        localStorage.setItem('tos_cached_banners', JSON.stringify(banners));
         refreshUI();
       }, (err) => console.warn(err));
 
@@ -741,6 +759,7 @@
         let galleries = [];
         snapshot.forEach(d => galleries.push({ ...d.data(), __backendId: d.id }));
         publicData.galleries = galleries;
+        localStorage.setItem('tos_cached_galleries', JSON.stringify(galleries));
         refreshUI();
       }, (err) => console.warn(err));
 
@@ -748,6 +767,7 @@
         let icons = [];
         snapshot.forEach(d => icons.push({ ...d.data(), __backendId: d.id }));
         publicData.menuIcons = icons.sort((a,b) => parseInt(a.menuOrder||0) - parseInt(b.menuOrder||0));
+        localStorage.setItem('tos_cached_menu_icons', JSON.stringify(publicData.menuIcons));
         refreshUI();
       }, (err) => console.warn(err));
 
@@ -755,6 +775,7 @@
         let prods = [];
         snapshot.forEach(d => prods.push({ ...d.data(), __backendId: d.id }));
         publicData.products = prods.sort((a,b) => parseInt(a.productOrder||0) - parseInt(b.productOrder||0));
+        localStorage.setItem('tos_cached_products', JSON.stringify(publicData.products));
         refreshUI();
       }, (err) => console.warn(err));
     }
@@ -1144,7 +1165,8 @@
 
     function renderHome(c) {
       const u = currentUser;
-      if (!u || !u.id) {
+      // ปรับปรุงเงื่อนไขให้ตรวจสอบความพร้อมเบอร์โทรด้วย เพื่อความสมดุลของการแสดงผล
+      if (!u || !u.id || !u.phone) {
         c.innerHTML = `
           <div class="flex items-center justify-center min-h-[50vh]">
             <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-primary"></div>
@@ -1227,7 +1249,8 @@
 
     function renderProducts(c) {
       const u = currentUser; 
-      if (!u || !u.id) {
+      // ปรับปรุงเงื่อนไขให้ตรวจสอบความพร้อมเบอร์โทรด้วย เพื่อความสมดุลของการแสดงผล
+      if (!u || !u.id || !u.phone) {
         c.innerHTML = `
           <div class="flex items-center justify-center min-h-[50vh]">
             <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-primary"></div>
@@ -1280,7 +1303,7 @@
               <div class="w-full bg-slate-100 rounded-full h-3 mb-6 overflow-hidden p-0.5">
                 <div id="prod-pct" class="bg-primary h-2 rounded-full transition-all duration-500" style="width: ${pct}%"></div>
               </div>
-              <!-- ปุ่มเริ่มจับคู่ปรับเปลี่ยนสีไปตามสีหลักของระบบ -->
+              <!-- ปุ่มเริ่มจับคู่เปลี่ยนเฉดสีตามแบรนด์และสีหลักหลังบ้านเรียบร้อยครับ -->
               <button id="btn-start-run" onclick="startRun(this)" class="w-full py-4 bg-primary hover:opacity-90 text-white font-bold rounded-2xl shadow-lg active:scale-[0.98] transition duration-200 text-base flex justify-center items-center gap-2">
                 <i data-lucide="play-circle"></i> ${t('startMatch')}
               </button>
@@ -1517,7 +1540,8 @@
 
     function renderHistory(c) {
       const u = currentUser; 
-      if (!u || !u.id) {
+      // ปรับปรุงเงื่อนไขให้ตรวจสอบความพร้อมเบอร์โทรด้วย เพื่อความสมดุลของการแสดงผล
+      if (!u || !u.id || !u.phone) {
         c.innerHTML = `
           <div class="flex items-center justify-center min-h-[50vh]">
             <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-primary"></div>
@@ -1823,7 +1847,7 @@
     window.showLoginForm = showLoginForm;
     window.doLogout = doLogout;
     window.switchTab = switchTab;
-    window.showSupportModal = SupportModal;
+    window.showSupportModal = showSupportModal; // แก้ไขจุดสะกดฟังก์ชันสลับกันตรงนี้เรียบร้อยครับ
     window.showTopupModal = showTopupModal;
     window.showWithdrawModal = showWithdrawModal;
     window.showEditBank = showEditBank;
