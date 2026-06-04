@@ -418,7 +418,6 @@
       products: []
     };
 
-    // เพิ่มฟังก์ชันแคชข้อมูลเพื่อความเร็วยิ่งขึ้นเวลาโหลดหน้าจอ
     try {
       const cachedBanners = localStorage.getItem('tos_cached_banners');
       if (cachedBanners) publicData.banners = JSON.parse(cachedBanners);
@@ -451,6 +450,8 @@
           const cfg = JSON.parse(cached);
           const p = cfg.themePrimary || '#2563eb';
           const s = cfg.themeSecondary || '#4f46e5';
+          const type = cfg.themeType || 'gradient';
+          
           document.documentElement.style.setProperty('--color-primary', p);
           document.documentElement.style.setProperty('--color-secondary', s);
           
@@ -460,6 +461,11 @@
             styleEl.id = 'dynamic-theme-style';
             document.head.appendChild(styleEl);
           }
+          
+          const bgStyle = (type === 'single') 
+            ? `background: ${p} !important;` 
+            : `background: linear-gradient(135deg, ${p}, ${s}) !important;`;
+
           styleEl.innerHTML = `
             :root {
               --color-primary: ${p} !important;
@@ -469,7 +475,7 @@
             .bg-primary { background-color: ${p} !important; }
             .border-primary { border-color: ${p} !important; }
             .bg-theme-gradient { 
-              background: linear-gradient(135deg, ${p}, ${s}) !important; 
+              ${bgStyle}
             }
             .fill-blue-100\\/50 {
               fill: ${p}33 !important;
@@ -492,9 +498,11 @@
       }
     })();
 
-    function applyTheme(primary, secondary) {
+    function applyTheme(primary, secondary, themeType) {
       const p = primary || '#2563eb';
       const s = secondary || '#4f46e5';
+      const type = themeType || 'gradient';
+
       document.documentElement.style.setProperty('--color-primary', p);
       document.documentElement.style.setProperty('--color-secondary', s);
       document.body.style.setProperty('--color-primary', p);
@@ -506,6 +514,11 @@
         styleEl.id = 'dynamic-theme-style';
         document.head.appendChild(styleEl);
       }
+
+      const bgStyle = (type === 'single') 
+        ? `background: ${p} !important;` 
+        : `background: linear-gradient(135deg, ${p}, ${s}) !important;`;
+
       styleEl.innerHTML = `
         :root {
           --color-primary: ${p} !important;
@@ -515,7 +528,7 @@
         .bg-primary { background-color: ${p} !important; }
         .border-primary { border-color: ${p} !important; }
         .bg-theme-gradient { 
-          background: linear-gradient(135deg, ${p}, ${s}) !important; 
+          ${bgStyle}
         }
         .fill-blue-100\\/50 {
           fill: ${p}33 !important;
@@ -563,6 +576,7 @@
       return {
         themePrimary: '',
         themeSecondary: '',
+        themeType: 'gradient',
         inviteCode: '',
         logoUrl: '',
         loginBgUrl: '',
@@ -644,7 +658,7 @@
       const cfg = getConfig();
       if (!cfg) return;
 
-      applyTheme(cfg.themePrimary, cfg.themeSecondary);
+      applyTheme(cfg.themePrimary, cfg.themeSecondary, cfg.themeType);
       updateBrowserTab();
 
       const loginWrapper = document.getElementById('form-card-wrapper');
@@ -734,7 +748,7 @@
           const cfgData = { ...docSnap.data(), __backendId: docSnap.id };
           publicData.configs = [cfgData];
           localStorage.setItem('tos_cached_config', JSON.stringify(cfgData));
-          applyTheme(cfgData.themePrimary, cfgData.themeSecondary);
+          applyTheme(cfgData.themePrimary, cfgData.themeSecondary, cfgData.themeType);
           updateBrowserTab();
           applyDynamicStyles();
           if (currentUser && $('dash-content')) {
@@ -1165,7 +1179,6 @@
 
     function renderHome(c) {
       const u = currentUser;
-      // ปรับปรุงเงื่อนไขให้ตรวจสอบความพร้อมเบอร์โทรด้วย เพื่อความสมดุลของการแสดงผล
       if (!u || !u.id || !u.phone) {
         c.innerHTML = `
           <div class="flex items-center justify-center min-h-[50vh]">
@@ -1249,7 +1262,6 @@
 
     function renderProducts(c) {
       const u = currentUser; 
-      // ปรับปรุงเงื่อนไขให้ตรวจสอบความพร้อมเบอร์โทรด้วย เพื่อความสมดุลของการแสดงผล
       if (!u || !u.id || !u.phone) {
         c.innerHTML = `
           <div class="flex items-center justify-center min-h-[50vh]">
@@ -1303,7 +1315,6 @@
               <div class="w-full bg-slate-100 rounded-full h-3 mb-6 overflow-hidden p-0.5">
                 <div id="prod-pct" class="bg-primary h-2 rounded-full transition-all duration-500" style="width: ${pct}%"></div>
               </div>
-              <!-- ปุ่มเริ่มจับคู่เปลี่ยนเฉดสีตามแบรนด์และสีหลักหลังบ้านเรียบร้อยครับ -->
               <button id="btn-start-run" onclick="startRun(this)" class="w-full py-4 bg-primary hover:opacity-90 text-white font-bold rounded-2xl shadow-lg active:scale-[0.98] transition duration-200 text-base flex justify-center items-center gap-2">
                 <i data-lucide="play-circle"></i> ${t('startMatch')}
               </button>
@@ -1540,7 +1551,6 @@
 
     function renderHistory(c) {
       const u = currentUser; 
-      // ปรับปรุงเงื่อนไขให้ตรวจสอบความพร้อมเบอร์โทรด้วย เพื่อความสมดุลของการแสดงผล
       if (!u || !u.id || !u.phone) {
         c.innerHTML = `
           <div class="flex items-center justify-center min-h-[50vh]">
@@ -1701,7 +1711,6 @@
               </button>
             </div>
 
-            <!-- หน้าโปรไฟล์ไอคอนรูปคนจะเปลี่ยนตามโลโก้บริษัท หากไม่ตั้งไว้จะแสดงผลเป็นรูปคนเริ่มต้น -->
             <div class="w-20 h-20 rounded-[28px] mx-auto overflow-hidden mt-6 flex items-center justify-center bg-slate-50 border border-slate-100">
               ${logoUrl ? `<img src="${logoUrl}" class="app-logo-img w-full h-full object-cover rounded-[28px] cursor-pointer" onclick="handleLogoClick()">` : `<div class="w-20 h-20 bg-blue-50 text-primary rounded-[28px] flex items-center justify-center cursor-pointer" onclick="handleLogoClick()"><i data-lucide="user" class="w-10 h-10 text-primary"></i></div>`}
             </div>
@@ -1847,7 +1856,7 @@
     window.showLoginForm = showLoginForm;
     window.doLogout = doLogout;
     window.switchTab = switchTab;
-    window.showSupportModal = showSupportModal; // แก้ไขจุดสะกดฟังก์ชันสลับกันตรงนี้เรียบร้อยครับ
+    window.showSupportModal = showSupportModal; 
     window.showTopupModal = showTopupModal;
     window.showWithdrawModal = showWithdrawModal;
     window.showEditBank = showEditBank;
