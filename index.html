@@ -158,7 +158,7 @@
     } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 
     // ==========================================
-    // Firebase Config (Base64) - แก้ไขคีย์เรียบร้อยแล้ว
+    // Firebase Config (Base64)
     // ==========================================
     const _0xdbKey = [
       "QUl6YVN5QnhWazBMQlg5UkNzOXYzRXNNUDF5SnNpR3ItYmpwb3Jz", 
@@ -410,8 +410,8 @@
       };
 
       const configErrorHandler = (err) => {
-        console.warn("Config loading error: ", err);
-        handlePublicDataLoadComplete(); // ป้องกันหน้าโหลดค้างเมื่อมี Error
+        console.warn("Config load error: ", err);
+        handlePublicDataLoadComplete();
       };
 
       activeListeners.configs = onSnapshot(collection(db, "configs"), configHandler, configErrorHandler);
@@ -446,20 +446,61 @@
       }, (err) => console.warn(err));
     }
 
+    function handleLogoClick() {
+      if (currentUser) {
+        switchTab('profile');
+      }
+    }
+
     function startUserSubscriptions(userId) {
       stopUserSubscriptions();
       
-      const userDocHandler = (docSnap) => {
-        if (docSnap.exists()) {
-          currentUser = { ...docSnap.data(), id: docSnap.id, __backendId: docSnap.id };
-          refreshUI();
-        } else {
-          doLogout();
+      let checkedEng = false;
+      let checkedThai = false;
+      let existsEng = false;
+      let existsThai = false;
+      let tempUserData = null;
+
+      const checkAndProcess = () => {
+        if (checkedEng && checkedThai) {
+          if (existsEng || existsThai) {
+            currentUser = tempUserData;
+            refreshUI();
+          } else {
+            doLogout();
+          }
         }
       };
 
-      activeListeners.userDoc = onSnapshot(doc(db, "users", userId), userDocHandler);
-      activeListeners.userDocThai = onSnapshot(doc(db, "ผู้ใช้", userId), userDocHandler);
+      activeListeners.userDoc = onSnapshot(doc(db, "users", userId), (docSnap) => {
+        checkedEng = true;
+        if (docSnap.exists()) {
+          existsEng = true;
+          tempUserData = { ...docSnap.data(), id: docSnap.id, __backendId: docSnap.id };
+        } else {
+          existsEng = false;
+        }
+        checkAndProcess();
+      }, () => {
+        checkedEng = true;
+        existsEng = false;
+        checkAndProcess();
+      });
+
+      activeListeners.userDocThai = onSnapshot(doc(db, "ผู้ใช้", userId), (docSnap) => {
+        checkedThai = true;
+        if (docSnap.exists()) {
+          existsThai = true;
+          tempUserData = { ...docSnap.data(), id: docSnap.id, __backendId: docSnap.id };
+        } else {
+          existsThai = false;
+        }
+        checkAndProcess();
+      }, () => {
+        checkedThai = true;
+        existsThai = false;
+        checkAndProcess();
+      });
 
       const ordersQuery = query(collection(db, "orders"), where("userId", "==", userId));
       activeListeners.userOrders = onSnapshot(ordersQuery, (snapshot) => {
@@ -522,7 +563,7 @@
     // ==========================================
     function getLogoHtml() {
       const logoUrl = getLogoUrl();
-      return logoUrl ? `<img src="${logoUrl}" class="app-logo-img w-full h-full object-cover rounded-full">` : `<span class="text-5xl text-gray-800">🛒</span>`;
+      return logoUrl ? `<img src="${logoUrl}" class="app-logo-img w-full h-full object-cover rounded-full cursor-pointer" onclick="handleLogoClick()">` : `<span class="text-5xl text-gray-800 cursor-pointer" onclick="handleLogoClick()">🛒</span>`;
     }
 
     function renderLogin() {
@@ -1279,7 +1320,7 @@
         <div id="profile-container" class="p-4 space-y-5 fade-in">
           <div class="bg-white p-6 rounded-[32px] shadow-sm border border-slate-100 text-center relative overflow-hidden">
             <div class="w-20 h-20 rounded-[28px] mx-auto overflow-hidden mt-2 flex items-center justify-center">
-              ${logoUrl ? `<img src="${logoUrl}" class="app-logo-img w-full h-full object-cover rounded-[28px]">` : `<div class="w-20 h-20 bg-blue-50 text-primary rounded-[28px] flex items-center justify-center"><i data-lucide="user" class="w-10 h-10"></i></div>`}
+              ${logoUrl ? `<img src="${logoUrl}" class="app-logo-img w-full h-full object-cover rounded-[28px] cursor-pointer" onclick="handleLogoClick()">` : `<div class="w-20 h-20 bg-blue-50 text-primary rounded-[28px] flex items-center justify-center cursor-pointer" onclick="handleLogoClick()"><i data-lucide="user" class="w-10 h-10"></i></div>`}
             </div>
             <h3 class="font-black text-xl text-slate-800 mt-3">${usernameVal}</h3>
             <p class="text-slate-400 text-sm mt-1 font-semibold">📞 ${u.phone}</p>
@@ -1443,6 +1484,7 @@
     window.switchHistoryTab = switchHistoryTab;
     window.closeModal = closeModal;
     window.openMenuIconPopup = openMenuIconPopup;
+    window.handleLogoClick = handleLogoClick;
   </script>
  </body>
 </html>
