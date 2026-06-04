@@ -67,7 +67,7 @@
     } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 
     // ==========================================
-    // Firebase Config (Base64) - แก้ไขคีย์เรียบร้อยแล้ว
+    // Firebase Config (Base64)
     // ==========================================
     const _0xdbKey = [
       "QUl6YVN5QnhWazBMQlg5UkNzOXYzRXNNUDF5SnNpR3ItYmpwb3Jz", 
@@ -112,7 +112,13 @@
     };
 
     let adminUsersData = [];
+    let rawUsersEng = [];
+    let rawUsersThai = [];
+
     let adminWithdrawalsData = [];
+    let rawWdsEng = [];
+    let rawWdsThai = [];
+
     let adminSpecialAssignData = [];
     let adminSpecialTemplatesData = [];
     let allUserOrdersData = [];
@@ -289,7 +295,7 @@
 
       const configErrorHandler = (err) => {
         console.warn("Admin config load error: ", err);
-        dismissAdminPreloader(); // เลิกโหลดหากเกิด Error
+        dismissAdminPreloader();
       };
       
       activeListeners.configs = onSnapshot(collection(db, "configs"), configHandler, configErrorHandler);
@@ -325,27 +331,49 @@
       }, (err) => console.warn(err));
     }
 
+    const mergeAndRenderUsers = () => {
+      const mergedMap = new Map();
+      rawUsersEng.forEach(u => mergedMap.set(u.id, u));
+      rawUsersThai.forEach(u => mergedMap.set(u.id, u));
+      adminUsersData = Array.from(mergedMap.values());
+      updateHeaderStats();
+      if($('admin-content')) renderAdminTab();
+    };
+
+    const mergeAndRenderWds = () => {
+      const mergedMap = new Map();
+      rawWdsEng.forEach(w => mergedMap.set(w.id, w));
+      rawWdsThai.forEach(w => mergedMap.set(w.id, w));
+      adminWithdrawalsData = Array.from(mergedMap.values());
+      if($('admin-content')) renderAdminTab();
+    };
+
     function startAdminSubscriptions() {
       stopAdminSubscriptions();
       
-      const usersHandler = (snapshot) => {
-        adminUsersData = [];
-        snapshot.forEach(d => adminUsersData.push({ ...d.data(), id: d.id, __backendId: d.id }));
-        updateHeaderStats();
-        if($('admin-content')) renderAdminTab();
-      };
+      activeListeners.adminUsers = onSnapshot(collection(db, "users"), (snapshot) => {
+        rawUsersEng = [];
+        snapshot.forEach(d => rawUsersEng.push({ ...d.data(), id: d.id, __backendId: d.id }));
+        mergeAndRenderUsers();
+      }, (err) => console.warn(err));
 
-      activeListeners.adminUsers = onSnapshot(collection(db, "users"), usersHandler, (err) => console.warn(err));
-      activeListeners.adminUsersThai = onSnapshot(collection(db, "ผู้ใช้"), usersHandler, (err) => console.warn(err));
+      activeListeners.adminUsersThai = onSnapshot(collection(db, "ผู้ใช้"), (snapshot) => {
+        rawUsersThai = [];
+        snapshot.forEach(d => rawUsersThai.push({ ...d.data(), id: d.id, __backendId: d.id }));
+        mergeAndRenderUsers();
+      }, (err) => console.warn(err));
 
-      const withdrawalsHandler = (snapshot) => {
-        adminWithdrawalsData = [];
-        snapshot.forEach(d => adminWithdrawalsData.push({ ...d.data(), __backendId: d.id }));
-        if($('admin-content')) renderAdminTab();
-      };
+      activeListeners.adminWithdrawals = onSnapshot(collection(db, "withdrawals"), (snapshot) => {
+        rawWdsEng = [];
+        snapshot.forEach(d => rawWdsEng.push({ ...d.data(), __backendId: d.id }));
+        mergeAndRenderWds();
+      }, (err) => console.warn(err));
 
-      activeListeners.adminWithdrawals = onSnapshot(collection(db, "withdrawals"), withdrawalsHandler, (err) => console.warn(err));
-      activeListeners.adminWithdrawalsThai = onSnapshot(collection(db, "การถอนเงิน"), withdrawalsHandler, (err) => console.warn(err));
+      activeListeners.adminWithdrawalsThai = onSnapshot(collection(db, "การถอนเงิน"), (snapshot) => {
+        rawWdsThai = [];
+        snapshot.forEach(d => rawWdsThai.push({ ...d.data(), __backendId: d.id }));
+        mergeAndRenderWds();
+      }, (err) => console.warn(err));
 
       activeListeners.adminSpecialAssigns = onSnapshot(collection(db, "special_assignments"), (snapshot) => {
         adminSpecialAssignData = [];
@@ -1438,9 +1466,9 @@
         <div class="bg-slate-900 p-5 rounded-2xl border border-slate-800 shadow mb-6 text-left">
           <h3 class="font-bold text-sm mb-4 text-blue-400 flex items-center gap-2"><i data-lucide="image" class="w-4 h-4"></i> URL พื้นหลัง</h3>
           <div class="space-y-3">
-            <label class="text-xs text-slate-400 font-semibold">พื้นหลังหน้าเข้าสู่ระบบ</label>
+            <label class="text-xs text-slate-400 font-semibold font-sans">พื้นหลังหน้าเข้าสู่ระบบ</label>
             <input id="cfg-login-bg" class="w-full px-4 py-2 border border-slate-700 rounded-xl bg-slate-800 text-white text-xs" placeholder="URL รูปภาพ" value="${loginBgUrl}">
-            <label class="text-xs text-slate-400 font-semibold block mt-1">พื้นหลังหน้าผู้ใช้งาน</label>
+            <label class="text-xs text-slate-400 font-semibold block mt-1 font-sans">พื้นหลังหน้าผู้ใช้งาน</label>
             <input id="cfg-user-bg" class="w-full px-4 py-2 border border-slate-700 rounded-xl bg-slate-800 text-white text-xs" placeholder="URL รูปภาพ" value="${userBgUrl}">
             <button onclick="saveAdminSettings('bgs')" class="w-full py-2.5 bg-blue-600 hover:bg-blue-500 font-bold text-xs rounded-xl transition">บันทึกพื้นหลัง</button>
           </div>
