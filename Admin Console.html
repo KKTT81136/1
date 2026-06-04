@@ -7,7 +7,7 @@
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
   <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <!-- นำเข้า SweetAlert2 สกินดีไซน์เรียบหรู -->
+  <!-- นำเข้า SweetAlert2 -->
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   
   <script>
@@ -186,7 +186,6 @@
       return Date.now().toString(36) + Math.random().toString(36).slice(2,8);
     }
 
-    // ปรับปรุงการใช้ SweetAlert2 ในหลังบ้านเพื่อสุนทรียภาพทางด้าน UX/UI
     function showToast(msg, type='success') {
       const Toast = Swal.mixin({
         toast: true,
@@ -226,8 +225,27 @@
     function closeModal() { const m = $('modal-overlay'); if (m) m.remove(); }
 
     function applyTheme(primary, secondary) {
-      document.documentElement.style.setProperty('--color-primary', primary || '#1e40af');
-      document.documentElement.style.setProperty('--color-secondary', secondary || '#3b82f6');
+      const p = primary || '#1e40af';
+      const s = secondary || '#3b82f6';
+      document.documentElement.style.setProperty('--color-primary', p);
+      document.documentElement.style.setProperty('--color-secondary', s);
+
+      // สร้าง Dynamic Style Block เพื่อการเปลี่ยนเฉดสีแอปในหลังบ้าน
+      let styleEl = document.getElementById('dynamic-theme-style');
+      if (!styleEl) {
+        styleEl = document.createElement('style');
+        styleEl.id = 'dynamic-theme-style';
+        document.head.appendChild(styleEl);
+      }
+      styleEl.innerHTML = `
+        :root {
+          --color-primary: ${p} !important;
+          --color-secondary: ${s} !important;
+        }
+        .text-primary { color: ${p} !important; }
+        .bg-primary { background-color: ${p} !important; }
+        .border-primary { border-color: ${p} !important; }
+      `;
     }
 
     const getCol = (type) => {
@@ -275,7 +293,6 @@
       }
     }
 
-    // ป้องกันหน้าโหลดค้างเด็ดขาด
     setTimeout(() => {
       dismissAdminPreloader();
     }, 3500);
@@ -456,7 +473,7 @@
     }
 
     // ==========================================
-    // ADMIN PANEL LAYOUT (Industrial/Factory Control Style)
+    // ADMIN PANEL LAYOUT
     // ==========================================
     function renderAdmin() {
       const sidebarMenu = [
@@ -486,7 +503,6 @@
             <div class="w-14 h-14 rounded bg-slate-950 flex items-center justify-center overflow-hidden mb-3 border border-slate-700 shadow-inner">
               ${logoHtml}
             </div>
-            <!-- ดึงคำว่า TOS CONTROLLER v4.0 ด้านล่างของโลโก้ออกเรียบร้อยแล้วตามคำสั่ง -->
             <div class="mt-1 px-3 py-1 bg-sky-500/10 border border-sky-500/30 text-sky-400 rounded text-[9px] font-bold tracking-widest font-mono">
               SYS STATUS: ACTIVE
             </div>
@@ -1491,7 +1507,7 @@
           </div>
         </div>
 
-        <!-- ดีไซน์ระบบเลือกโทนเฉดสีแอปพลิเคชันแบบสลับสีเรียลไทม์ ซิงก์ 2 ช่องทางสมบูรณ์แบบ -->
+        <!-- ระบบเลือกโทนเฉดสีแอปพลิเคชันแบบเปลี่ยนค่าเรียลไทม์ -->
         <div class="bg-slate-900 p-5 rounded-xl border border-slate-800 shadow-sm mb-6 text-left font-mono text-xs">
           <h3 class="font-bold text-sm mb-4 text-sky-400 flex items-center gap-2 border-b border-slate-800 pb-2"><i data-lucide="palette" class="w-4 h-4"></i> ระบบเลือกโทนเฉดสีแอปพลิเคชันหน้าบ้านสมาชิก</h3>
           <div class="grid grid-cols-2 gap-4 mb-4">
@@ -1597,7 +1613,6 @@
     }
 
     async function saveAdminTheme() {
-      // ดึงรหัสสีที่ป้อนในช่องกรอกข้อความเพื่อความชัวร์และแม่นยำสูงสุด
       const p = ($('cfg-theme-p-text') ? $('cfg-theme-p-text').value.trim() : '') || ($('cfg-theme-p-picker') ? $('cfg-theme-p-picker').value : '#1e40af');
       const s = ($('cfg-theme-s-text') ? $('cfg-theme-s-text').value.trim() : '') || ($('cfg-theme-s-picker') ? $('cfg-theme-s-picker').value : '#3b82f6');
       let config = getConfig() || {};
