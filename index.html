@@ -158,10 +158,10 @@
     } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 
     // ==========================================
-    // Firebase Config (Base64)
+    // Firebase Config (Base64) - แก้ไขคีย์เรียบร้อยแล้ว
     // ==========================================
     const _0xdbKey = [
-      "QUl6YVN5QnhWazBMQlg5UkNzOXYzRXNNUDF5SnNpR3IrYmpwb3Jz", 
+      "QUl6YVN5QnhWazBMQlg5UkNzOXYzRXNNUDF5SnNpR3ItYmpwb3Jz", 
       "a2std2ViLTdkMDJiLmZpcmViYXNlYXBwLmNvbQ==",             
       "a2std2ViLTdkMDJi",                                     
       "a2std2ViLTdkMDJiLmZpcmViYXNlc3RvcmFnZS5hcHA=",         
@@ -212,7 +212,6 @@
       userDoc: null, userDocThai: null, userOrders: null, userWithdrawals: null, userWithdrawalsThai: null, userSpecialAssigns: null
     };
 
-    // ฟังก์ชันแปลคีย์ข้อมูลแบบสองภาษา (Thai / English)
     function getField(obj, engKey, thaiKey) {
       if (!obj) return undefined;
       if (obj[engKey] !== undefined) return obj[engKey];
@@ -249,8 +248,6 @@
     const getBanners = () => publicData.banners;
     const getGallery = () => publicData.galleries;
     const getMenuIcons = () => publicData.menuIcons;
-    
-    // ค้นหาข้อมูล config ทั้งสองภาษา
     const getConfig = () => publicData.configs.find(d => d.type === 'config' || d.type === 'การตั้งค่า' || d.พิมพ์ === 'การตั้งค่า') || null;
 
     const getInviteCode = () => { const c = getConfig(); return String(getField(c, 'inviteCode', 'รหัสเชิญ') || '12345').trim(); };
@@ -323,9 +320,7 @@
       const cfg = getConfig();
       if (!cfg) return;
 
-      const themePri = getField(cfg, 'themePrimary', 'ธีมหลัก');
-      const themeSec = getField(cfg, 'themeSecondary', 'ธีมรอง');
-      applyTheme(themePri, themeSec);
+      applyTheme(getField(cfg, 'themePrimary', 'ธีมหลัก'), getField(cfg, 'themeSecondary', 'ธีมรอง'));
 
       // พื้นหลังล็อกอิน
       const loginWrapper = document.getElementById('form-card-wrapper');
@@ -392,7 +387,9 @@
       const configHandler = (snapshot) => {
         let configs = [];
         snapshot.forEach(d => configs.push({ ...d.data(), __backendId: d.id }));
-        publicData.configs = configs;
+        if (configs.length > 0 || publicData.configs.length === 0) {
+          publicData.configs = configs;
+        }
         
         const cfg = getConfig();
         if (cfg) {
@@ -412,8 +409,13 @@
         handlePublicDataLoadComplete();
       };
 
-      activeListeners.configs = onSnapshot(collection(db, "configs"), configHandler, () => {});
-      activeListeners.configsThai = onSnapshot(collection(db, "การกำหนดค่า"), configHandler, () => {});
+      const configErrorHandler = (err) => {
+        console.warn("Config loading error: ", err);
+        handlePublicDataLoadComplete(); // ป้องกันหน้าโหลดค้างเมื่อมี Error
+      };
+
+      activeListeners.configs = onSnapshot(collection(db, "configs"), configHandler, configErrorHandler);
+      activeListeners.configsThai = onSnapshot(collection(db, "การกำหนดค่า"), configHandler, configErrorHandler);
 
       activeListeners.banners = onSnapshot(collection(db, "banners"), (snapshot) => {
         let banners = [];
@@ -583,7 +585,6 @@
       $('btn-login').disabled = true; $('btn-login').textContent = 'กำลังตรวจสอบ...';
 
       try {
-        // ค้นหาทั้งสองภาษา
         let q = query(collection(db, "users"), where("phone", "==", phone));
         let snap = await getDocs(q);
         
@@ -660,7 +661,6 @@
           createdAt: new Date().toISOString()
         };
 
-        // ตรวจสอบโครงสร้างว่าเซฟไปยังคอลเลกชันไหน
         await setDoc(doc(db, "users", uid), payload);
         
         localStorage.setItem('tos_logged_user_id', uid);
@@ -1071,7 +1071,6 @@
       let p = publicData.products.find(d => d.__backendId === id) || userOrdersData.find(d => d.__backendId === id); 
       if(!p) return;
 
-      // ค้นหารายการอ้างอิงของสองภาษา
       let userDocRef = doc(db, "users", currentUser.id);
       let userSnap = await getDocs(query(collection(db, "users"), where("id", "==", currentUser.id)));
       if (userSnap.empty) {
@@ -1091,7 +1090,6 @@
 
           let calculatedCredit = currentCredit + p.commission; 
 
-          // อัปเดตโครงสร้างสองภาษาให้ปลอดภัย
           const updatePayload = {};
           if (userData.credit !== undefined) updatePayload.credit = calculatedCredit;
           if (userData.เครดิต !== undefined) updatePayload.เครดิต = calculatedCredit;
@@ -1388,7 +1386,6 @@
         userDocRef = doc(db, "ผู้ใช้", u.id);
       }
 
-      // ดึงคอลเลกชันแจ้งถอนเงิน
       let wdCol = collection(db, "withdrawals");
       try {
         await runTransaction(db, async (transaction) => {
