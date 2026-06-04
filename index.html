@@ -1,0 +1,1451 @@
+<!doctype html>
+<html lang="th" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+  <title>TOS Shopping</title>
+  <link rel="icon" type="image/x-icon" href="">
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <script>
+    document.addEventListener('contextmenu', event => event.preventDefault());
+    document.addEventListener('keydown', function(e) {
+      if(e.keyCode == 123) { e.preventDefault(); return false; }
+      if(e.ctrlKey && e.shiftKey && e.keyCode == 'I'.charCodeAt(0)) { e.preventDefault(); return false; } 
+      if(e.ctrlKey && e.shiftKey && e.keyCode == 'J'.charCodeAt(0)) { e.preventDefault(); return false; } 
+      if(e.ctrlKey && e.shiftKey && e.keyCode == 'C'.charCodeAt(0)) { e.preventDefault(); return false; } 
+      if(e.ctrlKey && e.keyCode == 'U'.charCodeAt(0)) { e.preventDefault(); return false; } 
+    });
+  </script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: 'var(--color-primary)',
+            secondary: 'var(--color-secondary)',
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    :root { 
+      --color-primary: #2563eb; 
+      --color-secondary: #4f46e5; 
+    }
+    * { 
+      font-family: 'Kanit', sans-serif; 
+      -webkit-font-smoothing: antialiased; 
+      user-select: none; 
+      -webkit-user-select: none; 
+      box-sizing: border-box;
+    }
+    input, textarea, select { 
+      user-select: auto; 
+      -webkit-user-select: auto; 
+      font-size: 16px !important; 
+    }
+    html, body { 
+      min-height: 100%; 
+      margin: 0; 
+      background-color: #f8fafc; 
+      touch-action: manipulation; 
+    }
+    .bg-theme-gradient { 
+      background: linear-gradient(135deg, var(--color-primary), var(--color-secondary)); 
+    }
+    .fade-in { 
+      animation: fadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards; 
+    }
+    @keyframes fadeIn { 
+      from { opacity: 0; transform: translateY(8px); } 
+      to { opacity: 1; transform: translateY(0); } 
+    }
+    @keyframes dots { 
+      0%, 80%, 100% { transform: scale(0); } 
+      40% { transform: scale(1); } 
+    }
+    .dot-anim span { 
+      display: inline-block; 
+      width: 10px; 
+      height: 10px; 
+      border-radius: 50%; 
+      background: var(--color-primary); 
+      margin: 0 4px; 
+      animation: dots 1.2s infinite ease-in-out both; 
+    }
+    .dot-anim span:nth-child(1) { animation-delay: -0.32s; } 
+    .dot-anim span:nth-child(2) { animation-delay: -0.16s; }
+    
+    @keyframes slideIn { 
+      from { transform: scale(0.95) translateY(10px); opacity: 0; } 
+      to { transform: scale(1) translateY(0); opacity: 1; } 
+    }
+    .modal-anim { 
+      animation: slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; 
+    }
+    @keyframes toastSlide { 
+      from { opacity: 0; transform: translate(-50%, -15px); } 
+      to { opacity: 1; transform: translate(-50%, 0); } 
+    }
+    .toast-show { 
+      animation: toastSlide 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards; 
+    }
+    ::-webkit-scrollbar { 
+      width: 6px; 
+    }
+    ::-webkit-scrollbar-track { 
+      background: transparent; 
+    }
+    ::-webkit-scrollbar-thumb { 
+      background: rgba(203, 213, 225, 0.8); 
+      border-radius: 99px; 
+    }
+    .banner-slide { 
+      transition: opacity 0.8s ease-in-out; 
+    }
+    .marquee-container { 
+      overflow: hidden; 
+      white-space: nowrap; 
+      width: 100%; 
+      display: block; 
+      position: relative; 
+    }
+    .marquee-text { 
+      display: inline-block; 
+      padding-left: 100%; 
+      animation: smoothMarquee 15s linear infinite; 
+      will-change: transform; 
+    }
+    @keyframes smoothMarquee { 
+      0% { transform: translate3d(0, 0, 0); } 
+      100% { transform: translate3d(-100%, 0, 0); } 
+    }
+    .nav-glass { 
+      background: rgba(255, 255, 255, 0.85); 
+      backdrop-filter: blur(12px); 
+      -webkit-backdrop-filter: blur(12px); 
+    }
+    .custom-bg { 
+      background-size: cover; 
+      background-position: center; 
+      background-repeat: no-repeat;
+    }
+  </style>
+ </head>
+ <body class="h-full text-slate-800 antialiased selection:bg-blue-200">
+
+  <div id="initial-loader" class="fixed inset-0 z-[9999] bg-white flex flex-col items-center justify-center transition-opacity duration-300">
+    <div id="loader-logo-container" class="w-28 h-28 rounded-full overflow-hidden flex items-center justify-center bg-slate-50 border border-slate-100 p-0 shadow-sm">
+      <span class="text-5xl">🛒</span>
+    </div>
+  </div>
+  
+  <div id="app" class="h-full w-full overflow-auto relative flex flex-col"></div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+    import { 
+      getFirestore, doc, setDoc, deleteDoc, collection, onSnapshot, query, where, getDocs, runTransaction 
+    } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+    import { 
+      getAuth, signInAnonymously, signOut, onAuthStateChanged 
+    } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+
+    // ==========================================
+    // Firebase Config (Base64)
+    // ==========================================
+    const _0xdbKey = [
+      "QUl6YVN5QnhWazBMQlg5UkNzOXYzRXNNUDF5SnNpR3IrYmpwb3Jz", 
+      "a2std2ViLTdkMDJiLmZpcmViYXNlYXBwLmNvbQ==",             
+      "a2std2ViLTdkMDJi",                                     
+      "a2std2ViLTdkMDJiLmZpcmViYXNlc3RvcmFnZS5hcHA=",         
+      "ODY2ODE4NTI4MjAw",                                     
+      "MTo4NjY4MTg1MjgyMDA6d2ViOmViMmRmMzhjNDhmY2UyNjVmZmU2ZmQ=", 
+      "Ry1SM0cxWDRSNzZC"                                      
+    ];
+
+    const firebaseConfig = {
+      apiKey: atob(_0xdbKey[0]),
+      authDomain: atob(_0xdbKey[1]),
+      projectId: atob(_0xdbKey[2]),
+      storageBucket: _0xdbKey[3] ? atob(_0xdbKey[3]) : "",
+      messagingSenderId: atob(_0xdbKey[4]),
+      appId: atob(_0xdbKey[5]),
+      measurementId: atob(_0xdbKey[6])
+    };
+
+    const appInstance = initializeApp(firebaseConfig);
+    const db = getFirestore(appInstance);
+    const auth = getAuth(appInstance);
+
+    // ==========================================
+    // STATE ENGINE
+    // ==========================================
+    let currentUser = null;
+    let currentTab = 'home';
+    let lastRenderedTab = ''; 
+    let historyTab = 'orders';
+    let bannerInterval = null;
+    let isOrderProcessing = false;
+    let isConfigsLoaded = false;
+
+    let publicData = {
+      configs: [],
+      banners: [],
+      galleries: [],
+      menuIcons: [],
+      products: []
+    };
+
+    let userOrdersData = [];
+    let userWithdrawalsData = [];
+    let userSpecialAssignData = [];
+
+    let activeListeners = {
+      configs: null, configsThai: null, banners: null, galleries: null, menuIcons: null, products: null,
+      userDoc: null, userDocThai: null, userOrders: null, userWithdrawals: null, userWithdrawalsThai: null, userSpecialAssigns: null
+    };
+
+    // ฟังก์ชันแปลคีย์ข้อมูลแบบสองภาษา (Thai / English)
+    function getField(obj, engKey, thaiKey) {
+      if (!obj) return undefined;
+      if (obj[engKey] !== undefined) return obj[engKey];
+      if (obj[thaiKey] !== undefined) return obj[thaiKey];
+      return undefined;
+    }
+
+    function applyTheme(primary, secondary) {
+      const p = primary || '#2563eb';
+      const s = secondary || '#4f46e5';
+      document.documentElement.style.setProperty('--color-primary', p);
+      document.documentElement.style.setProperty('--color-secondary', s);
+      document.body.style.setProperty('--color-primary', p);
+      document.body.style.setProperty('--color-secondary', s);
+    }
+
+    function updateBrowserTab() {
+      document.title = getTabTitle();
+      const favUrl = getTabFavicon();
+      if (favUrl) {
+        let link = document.querySelector("link[rel~='icon']");
+        if (!link) {
+          link = document.createElement('link');
+          link.rel = 'icon';
+          document.head.appendChild(link);
+        }
+        link.href = favUrl;
+      }
+    }
+
+    const $ = id => document.getElementById(id);
+    const getProducts = () => publicData.products;
+    const getSpecialAssignments = () => userSpecialAssignData;
+    const getBanners = () => publicData.banners;
+    const getGallery = () => publicData.galleries;
+    const getMenuIcons = () => publicData.menuIcons;
+    
+    // ค้นหาข้อมูล config ทั้งสองภาษา
+    const getConfig = () => publicData.configs.find(d => d.type === 'config' || d.type === 'การตั้งค่า' || d.พิมพ์ === 'การตั้งค่า') || null;
+
+    const getInviteCode = () => { const c = getConfig(); return String(getField(c, 'inviteCode', 'รหัสเชิญ') || '12345').trim(); };
+    const getLogoUrl = () => { const c = getConfig(); return getField(c, 'logoUrl', 'logoUrl') || ''; };
+    const getLoginBgUrl = () => { const c = getConfig(); return getField(c, 'loginBgUrl', 'loginBgUrl') || ''; };
+    const getUserBgUrl = () => { const c = getConfig(); return getField(c, 'userBgUrl', 'userBgUrl') || ''; };
+    const getMarqueeText = () => { const c = getConfig(); return getField(c, 'marqueeText', 'ข้อความวิ่ง') || 'ยินดีต้อนรับสู่ระบบ TOS Shopping รับรายได้พิเศษทุกวัน'; };
+    const getLineQrUrl = () => { const c = getConfig(); return getField(c, 'lineQrUrl', 'lineQrUrl') || ''; };
+    const getLineId = () => { const c = getConfig(); return getField(c, 'lineId', 'lineId') || ''; };
+    const getTopupQrUrl = () => { const c = getConfig(); return getField(c, 'topupQrUrl', 'topupQrUrl') || ''; };
+    const getTopupAccount = () => { const c = getConfig(); return getField(c, 'topupAccount', 'topupAccount') || ''; };
+    const getTabTitle = () => { const c = getConfig(); return getField(c, 'tabTitle', 'แท็บชื่อเรื่อง') || 'TOS Shopping'; };
+    const getTabFavicon = () => { const c = getConfig(); return getField(c, 'tabFaviconUrl', 'tabFaviconUrl') || ''; };
+
+    const getUserOrders = () => userOrdersData;
+    const getUserWithdrawals = () => userWithdrawalsData;
+
+    function genId() {
+      if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+        return crypto.randomUUID();
+      }
+      return Date.now().toString(36) + Math.random().toString(36).slice(2,8);
+    }
+
+    function showToast(msg, type='success') {
+      const old = $('toast-container'); if (old) old.remove();
+      const colors = { 
+        success:'bg-emerald-600 border-emerald-700 text-white', 
+        error:'bg-red-600 border-red-700 text-white', 
+        info:'bg-blue-600 border-blue-700 text-white' 
+      };
+      const icons = { success:'check-circle', error:'alert-circle', info:'info' };
+      const div = document.createElement('div');
+      div.id = 'toast-container';
+      div.className = 'fixed top-6 left-1/2 -translate-x-1/2 z-[9999] toast-show w-max max-w-[90vw]';
+      div.innerHTML = `
+        <div class="${colors[type]} px-6 py-3.5 rounded-2xl shadow-lg border flex items-center gap-3 text-sm font-bold tracking-wide">
+          <i data-lucide="${icons[type]}" class="w-5 h-5 flex-shrink-0 text-white"></i>
+          <span class="text-white">${msg}</span>
+        </div>`;
+      document.body.appendChild(div);
+      lucide.createIcons();
+      setTimeout(() => { if(div) div.remove(); }, 2500);
+    }
+
+    function showModal(content) {
+      let m = $('modal-overlay');
+      if (!m) { 
+        m = document.createElement('div'); m.id = 'modal-overlay'; 
+        m.addEventListener('click', function(e) { if (e.target === m) closeModal(); });
+        document.body.appendChild(m); 
+      }
+      m.className = 'fixed inset-0 bg-black/75 z-[100] flex items-center justify-center p-4 cursor-pointer';
+      m.innerHTML = `
+        <div class="bg-white rounded-[24px] p-6 w-full max-w-sm modal-anim shadow-xl border border-slate-200 max-h-[90vh] overflow-y-auto cursor-auto text-slate-900" onclick="event.stopPropagation()">
+          ${content}
+        </div>`;
+      lucide.createIcons();
+    }
+    function closeModal() { const m = $('modal-overlay'); if (m) m.remove(); isOrderProcessing = false; }
+
+    function refreshUI() {
+      if (currentUser && $('dash-content')) {
+        renderTabContent(); 
+        applyDynamicStyles();
+      }
+    }
+
+    function applyDynamicStyles() {
+      const cfg = getConfig();
+      if (!cfg) return;
+
+      const themePri = getField(cfg, 'themePrimary', 'ธีมหลัก');
+      const themeSec = getField(cfg, 'themeSecondary', 'ธีมรอง');
+      applyTheme(themePri, themeSec);
+
+      // พื้นหลังล็อกอิน
+      const loginWrapper = document.getElementById('form-card-wrapper');
+      if (loginWrapper) {
+        const bgUrl = getLoginBgUrl();
+        if (bgUrl) {
+          loginWrapper.style.backgroundImage = `url('${bgUrl}')`;
+          loginWrapper.style.backgroundSize = 'cover';
+          loginWrapper.style.backgroundPosition = 'center';
+          loginWrapper.style.backgroundRepeat = 'no-repeat';
+          loginWrapper.classList.remove('bg-theme-gradient');
+        } else {
+          loginWrapper.style.backgroundImage = '';
+          loginWrapper.classList.add('bg-theme-gradient');
+        }
+      }
+
+      // พื้นหลังแดชบอร์ดด้านในผู้ใช้
+      const dashOuter = document.getElementById('dash-outer-container');
+      if (dashOuter) {
+        const userBgUrl = getUserBgUrl();
+        if (userBgUrl) {
+          dashOuter.style.backgroundImage = `url('${userBgUrl}')`;
+          dashOuter.style.backgroundSize = 'cover';
+          dashOuter.style.backgroundPosition = 'center';
+          dashOuter.style.backgroundRepeat = 'no-repeat';
+          dashOuter.classList.remove('bg-slate-50');
+        } else {
+          dashOuter.style.backgroundImage = '';
+          dashOuter.classList.add('bg-slate-50');
+        }
+      }
+
+      // ข้อความวิ่งประกาศเตือน
+      const marqueeEl = document.getElementById('marquee-text-display');
+      if (marqueeEl) {
+        marqueeEl.innerText = getMarqueeText();
+      }
+
+      // อัปเดตรูปโลโก้
+      const logos = document.querySelectorAll('.app-logo-img');
+      logos.forEach(img => {
+        const logoUrl = getLogoUrl();
+        if (logoUrl) img.src = logoUrl;
+      });
+    }
+
+    function dismissPreloader() {
+      const loader = document.getElementById('initial-loader');
+      if (loader) {
+        loader.style.opacity = '0';
+        setTimeout(() => loader.remove(), 300);
+      }
+    }
+
+    function handlePublicDataLoadComplete() {
+      if (!isConfigsLoaded) {
+        isConfigsLoaded = true;
+        dismissPreloader();
+      }
+    }
+
+    function startPublicSubscriptions() {
+      const configHandler = (snapshot) => {
+        let configs = [];
+        snapshot.forEach(d => configs.push({ ...d.data(), __backendId: d.id }));
+        publicData.configs = configs;
+        
+        const cfg = getConfig();
+        if (cfg) {
+          applyTheme(getField(cfg, 'themePrimary', 'ธีมหลัก'), getField(cfg, 'themeSecondary', 'ธีมรอง'));
+          updateBrowserTab();
+          applyDynamicStyles();
+          
+          if (currentUser && $('dash-content')) {
+            renderTabContent();
+          } else {
+            const loginWrapper = document.getElementById('form-card-wrapper');
+            if (loginWrapper) {
+              applyDynamicStyles();
+            }
+          }
+        }
+        handlePublicDataLoadComplete();
+      };
+
+      activeListeners.configs = onSnapshot(collection(db, "configs"), configHandler, () => {});
+      activeListeners.configsThai = onSnapshot(collection(db, "การกำหนดค่า"), configHandler, () => {});
+
+      activeListeners.banners = onSnapshot(collection(db, "banners"), (snapshot) => {
+        let banners = [];
+        snapshot.forEach(d => banners.push({ ...d.data(), __backendId: d.id }));
+        publicData.banners = banners;
+        refreshUI();
+      }, (err) => console.warn(err));
+
+      activeListeners.galleries = onSnapshot(collection(db, "galleries"), (snapshot) => {
+        let galleries = [];
+        snapshot.forEach(d => galleries.push({ ...d.data(), __backendId: d.id }));
+        publicData.galleries = galleries;
+        refreshUI();
+      }, (err) => console.warn(err));
+
+      activeListeners.menuIcons = onSnapshot(collection(db, "menu_icons"), (snapshot) => {
+        let icons = [];
+        snapshot.forEach(d => icons.push({ ...d.data(), __backendId: d.id }));
+        publicData.menuIcons = icons.sort((a,b) => parseInt(a.menuOrder||0) - parseInt(b.menuOrder||0));
+        refreshUI();
+      }, (err) => console.warn(err));
+
+      activeListeners.products = onSnapshot(collection(db, "products"), (snapshot) => {
+        let prods = [];
+        snapshot.forEach(d => prods.push({ ...d.data(), __backendId: d.id }));
+        publicData.products = prods.sort((a,b) => parseInt(a.productOrder||0) - parseInt(b.productOrder||0));
+        refreshUI();
+      }, (err) => console.warn(err));
+    }
+
+    function startUserSubscriptions(userId) {
+      stopUserSubscriptions();
+      
+      const userDocHandler = (docSnap) => {
+        if (docSnap.exists()) {
+          currentUser = { ...docSnap.data(), id: docSnap.id, __backendId: docSnap.id };
+          refreshUI();
+        } else {
+          doLogout();
+        }
+      };
+
+      activeListeners.userDoc = onSnapshot(doc(db, "users", userId), userDocHandler);
+      activeListeners.userDocThai = onSnapshot(doc(db, "ผู้ใช้", userId), userDocHandler);
+
+      const ordersQuery = query(collection(db, "orders"), where("userId", "==", userId));
+      activeListeners.userOrders = onSnapshot(ordersQuery, (snapshot) => {
+        userOrdersData = [];
+        snapshot.forEach(d => userOrdersData.push({ ...d.data(), __backendId: d.id }));
+        refreshUI();
+      });
+
+      const withdrawalsHandler = (snapshot) => {
+        userWithdrawalsData = [];
+        snapshot.forEach(d => userWithdrawalsData.push({ ...d.data(), __backendId: d.id }));
+        refreshUI();
+      };
+      
+      const withdrawalsQuery = query(collection(db, "withdrawals"), where("userId", "==", userId));
+      activeListeners.userWithdrawals = onSnapshot(withdrawalsQuery, withdrawalsHandler);
+
+      const withdrawalsQueryThai = query(collection(db, "การถอนเงิน"), where("userId", "==", userId));
+      activeListeners.userWithdrawalsThai = onSnapshot(withdrawalsQueryThai, withdrawalsHandler);
+
+      const specialQuery = query(collection(db, "special_assignments"), where("targetUser", "==", userId));
+      activeListeners.userSpecialAssigns = onSnapshot(specialQuery, (snapshot) => {
+        userSpecialAssignData = [];
+        snapshot.forEach(d => userSpecialAssignData.push({ ...d.data(), __backendId: d.id }));
+        refreshUI();
+      });
+    }
+
+    function stopUserSubscriptions() {
+      if (activeListeners.userDoc) { activeListeners.userDoc(); activeListeners.userDoc = null; }
+      if (activeListeners.userDocThai) { activeListeners.userDocThai(); activeListeners.userDocThai = null; }
+      if (activeListeners.userOrders) { activeListeners.userOrders(); activeListeners.userOrders = null; }
+      if (activeListeners.userWithdrawals) { activeListeners.userWithdrawals(); activeListeners.userWithdrawals = null; }
+      if (activeListeners.userWithdrawalsThai) { activeListeners.userWithdrawalsThai(); activeListeners.userWithdrawalsThai = null; }
+      if (activeListeners.userSpecialAssigns) { activeListeners.userSpecialAssigns(); activeListeners.userSpecialAssigns = null; }
+    }
+
+    async function checkCustomLoginState() {
+      try {
+        await signInAnonymously(auth); 
+        const cachedUserId = localStorage.getItem('tos_logged_user_id');
+        if (cachedUserId) {
+          startUserSubscriptions(cachedUserId);
+          currentTab = sessionStorage.getItem('tos_current_tab') || 'home'; 
+          renderDashboard();
+        } else {
+          renderLogin();
+        }
+      } catch (err) {
+        console.warn("Auth initial error: ", err);
+        renderLogin();
+      }
+    }
+
+    checkCustomLoginState();
+    startPublicSubscriptions();
+
+    // ==========================================
+    // LOGIN / REGISTER
+    // ==========================================
+    function getLogoHtml() {
+      const logoUrl = getLogoUrl();
+      return logoUrl ? `<img src="${logoUrl}" class="app-logo-img w-full h-full object-cover rounded-full">` : `<span class="text-5xl text-gray-800">🛒</span>`;
+    }
+
+    function renderLogin() {
+      const app = $('app');
+      const bgUrl = getLoginBgUrl();
+      const bgStyle = bgUrl ? `background-image: url('${bgUrl}'); background-size: cover; background-position: center;` : '';
+
+      app.innerHTML = `
+      <div id="form-card-wrapper" class="min-h-full w-full flex flex-col items-center justify-center p-4 relative ${bgUrl ? '' : 'bg-theme-gradient'}" style="${bgStyle}">
+        <div class="w-full max-w-sm relative z-10 py-4">
+          <div class="text-center mb-6">
+            <div id="logo-click" class="inline-flex items-center justify-center w-32 h-32 rounded-full shadow-2xl overflow-hidden bg-transparent p-0">
+              ${getLogoHtml()}
+            </div>
+          </div>
+          <div id="form-card" class="bg-slate-950/85 rounded-[32px] p-6 shadow-2xl border border-white/10 transition-all duration-300">
+            <div id="form-content"></div>
+          </div>
+          <p class="text-center mt-6 text-white/95 text-sm font-medium" id="toggle-link"></p>
+        </div>
+      </div>`;
+      showLoginForm();
+      lucide.createIcons();
+    }
+
+    function showLoginForm() {
+      const logoBtn = $('logo-click'); 
+      if(logoBtn) { logoBtn.className = "inline-flex items-center justify-center w-32 h-32 rounded-full shadow-2xl overflow-hidden bg-transparent p-0"; }
+      $('form-content').innerHTML = `
+        <h2 class="text-white font-bold text-xl mb-6 text-center tracking-wide">เข้าสู่ระบบ</h2>
+        <div class="space-y-4">
+          <input id="inp-phone-login" type="tel" class="w-full px-4 py-3.5 rounded-2xl bg-white/15 text-white placeholder-white/60 outline-none focus:bg-white/25 transition font-medium text-base border border-white/10" placeholder="เบอร์โทรศัพท์ 10 หลัก">
+          <input id="inp-pass-login" type="password" class="w-full px-4 py-3.5 rounded-2xl bg-white/15 text-white placeholder-white/60 outline-none focus:bg-white/25 transition font-medium text-base border border-white/10" placeholder="รหัสผ่าน">
+          <button onclick="doLogin()" id="btn-login" class="w-full py-3.5 mt-2 bg-white text-primary font-bold rounded-2xl shadow-xl hover:bg-slate-50 active:scale-[0.98] transition text-base tracking-wide">ลงชื่อเข้าใช้</button>
+        </div>`;
+      $('toggle-link').innerHTML = `ยังไม่มีบัญชี? <a href="#" onclick="showRegisterForm(); return false" class="underline font-bold text-white hover:text-slate-100">สมัครสมาชิกที่นี่</a>`;
+    }
+
+    function showRegisterForm() {
+      const logoBtn = $('logo-click'); 
+      if(logoBtn) { logoBtn.className = "inline-flex items-center justify-center w-20 h-20 rounded-full shadow-xl overflow-hidden bg-transparent p-0"; }
+      $('form-content').innerHTML = `
+        <h2 class="text-white font-bold text-xl mb-4 text-center tracking-wide">สมัครสมาชิก</h2>
+        <div class="space-y-3">
+          <input id="inp-phone-reg" type="tel" class="w-full px-4 py-3 rounded-2xl bg-white/15 text-white placeholder-white/60 outline-none font-medium text-base border border-white/10" placeholder="เบอร์โทรศัพท์ (ใช้เข้าระบบ)">
+          <input id="inp-user-reg" class="w-full px-4 py-3 rounded-2xl bg-white/15 text-white placeholder-white/60 outline-none font-medium text-base border border-white/10" placeholder="ตั้งชื่อเล่น / ชื่อผู้ใช้">
+          <input id="inp-pass-reg" type="password" class="w-full px-4 py-3 rounded-2xl bg-white/15 text-white placeholder-white/60 outline-none font-medium text-base border border-white/10" placeholder="ตั้งรหัสผ่าน">
+          <input id="inp-pin-reg" type="password" class="w-full px-4 py-3 rounded-2xl bg-white/15 text-white placeholder-white/60 outline-none font-medium text-base border border-white/10" placeholder="ตั้ง PIN ถอนเงิน 6 หลัก">
+          <input id="inp-invite-reg" type="text" class="w-full px-4 py-3 rounded-2xl bg-white/15 text-yellow-300 placeholder-yellow-300/80 outline-none border-2 border-yellow-400/60 font-bold text-base" placeholder="รหัสแนะนำ">
+          <button onclick="doRegister()" id="btn-reg" class="w-full py-3.5 bg-white text-primary font-bold rounded-2xl shadow-xl mt-3 text-base tracking-wide hover:bg-slate-50 transition">ยืนยันการสมัคร</button>
+        </div>`;
+      $('toggle-link').innerHTML = `มีบัญชีแล้ว? <a href="#" onclick="showLoginForm(); return false" class="underline font-bold text-white hover:text-slate-100">เข้าสู่ระบบ</a>`;
+    }
+
+    async function doLogin() {
+      const phone = $('inp-phone-login').value.trim(); 
+      const password = $('inp-pass-login').value.trim();
+      if (!phone || !password) return showToast('กรุณากรอกข้อมูลให้ครบถ้วน','error');
+      
+      $('btn-login').disabled = true; $('btn-login').textContent = 'กำลังตรวจสอบ...';
+
+      try {
+        // ค้นหาทั้งสองภาษา
+        let q = query(collection(db, "users"), where("phone", "==", phone));
+        let snap = await getDocs(q);
+        
+        if (snap.empty) {
+          q = query(collection(db, "ผู้ใช้"), where("phone", "==", phone));
+          snap = await getDocs(q);
+        }
+        
+        if(!snap.empty) {
+          const userDoc = snap.docs[0];
+          const userData = userDoc.data();
+          const savedPassword = getField(userData, 'password', 'รหัสผ่าน');
+          
+          if (savedPassword === password) {
+            const userId = userDoc.id;
+            localStorage.setItem('tos_logged_user_id', userId);
+            startUserSubscriptions(userId);
+            showToast('เข้าสู่ระบบสำเร็จ!');
+          } else {
+            $('btn-login').disabled = false; $('btn-login').textContent = 'ลงชื่อเข้าใช้';
+            showToast('รหัสผ่านไม่ถูกต้อง', 'error');
+          }
+        } else {
+          $('btn-login').disabled = false; $('btn-login').textContent = 'ลงชื่อเข้าใช้';
+          showToast('ไม่พบเบอร์โทรศัพท์นี้ในระบบ', 'error');
+        }
+      } catch (err) {
+        $('btn-login').disabled = false; $('btn-login').textContent = 'ลงชื่อเข้าใช้';
+        showToast('การเชื่อมต่อขัดข้อง: ' + err.message, 'error');
+      }
+    }
+
+    async function doRegister() {
+      const phone = $('inp-phone-reg').value.trim(); 
+      const username = $('inp-user-reg').value.trim();
+      const password = $('inp-pass-reg').value.trim(); 
+      const pin = $('inp-pin-reg').value.trim();
+      const invite = $('inp-invite-reg').value.trim();
+
+      if(!username || !phone || !password || !pin || !invite) return showToast('กรอกข้อมูลให้ครบถ้วน','error');
+      if(String(invite) !== getInviteCode()) return showToast('รหัสแนะนำไม่ถูกต้อง','error');
+      
+      $('btn-reg').disabled = true; $('btn-reg').textContent = 'กำลังสมัคร...';
+
+      try {
+        let q = query(collection(db, "users"), where("phone", "==", phone));
+        let snap = await getDocs(q);
+        if (snap.empty) {
+          q = query(collection(db, "ผู้ใช้"), where("phone", "==", phone));
+          snap = await getDocs(q);
+        }
+        
+        if (!snap.empty) {
+          showToast('เบอร์โทรศัพท์นี้ลงทะเบียนในระบบแล้ว', 'error');
+          $('btn-reg').disabled = false; $('btn-reg').textContent = 'ยืนยันการสมัคร';
+          return;
+        }
+
+        const uid = genId();
+        const payload = {
+          id: uid,
+          username: username,
+          phone: phone,
+          password: password, 
+          withdrawPassword: pin,
+          firstName: '',
+          lastName: '',
+          credit: 0,
+          bankName: '',
+          bankNumber: '',
+          userLevel: '1',
+          runIndex: 0,
+          creditScore: 100,
+          createdAt: new Date().toISOString()
+        };
+
+        // ตรวจสอบโครงสร้างว่าเซฟไปยังคอลเลกชันไหน
+        await setDoc(doc(db, "users", uid), payload);
+        
+        localStorage.setItem('tos_logged_user_id', uid);
+        startUserSubscriptions(uid);
+        showToast('สมัครสมาชิกและเข้าสู่ระบบสำเร็จ!');
+        currentTab = 'home';
+        renderDashboard();
+      } catch(err) {
+        showToast('การสมัครสมาชิกล้มเหลว', 'error');
+        $('btn-reg').disabled = false; $('btn-reg').textContent = 'ยืนยันการสมัคร';
+      }
+    }
+
+    async function doLogout() { 
+      stopUserSubscriptions();
+      currentUser = null; 
+      currentTab = 'home'; 
+      localStorage.removeItem('tos_logged_user_id');
+      sessionStorage.setItem('tos_current_tab', 'home'); 
+      renderLogin();
+    }
+
+    // ==========================================
+    // USER DASHBOARD
+    // ==========================================
+    function getBannerHtml() {
+      const banners = getBanners(); let html = '';
+      if (banners.length > 0) {
+        html += `
+        <div class="relative w-full aspect-[5/3] md:aspect-[20/10] rounded-[32px] overflow-hidden shadow-md mb-4 bg-slate-200 border border-slate-100">
+          ${banners.map((b, i) => `
+            <picture class="absolute inset-0 w-full h-full banner-slide transition-opacity duration-1000" style="opacity: ${i===0?1:0};">
+              <source media="(min-width: 768px)" srcset="${b.bannerPcUrl || b.bannerUrl || 'https://via.placeholder.com/1000x500'}">
+              <img src="${b.bannerUrl || 'https://via.placeholder.com/500x300'}" alt="Banner" style="width: 100%; height: 100%; object-fit: cover;">
+            </picture>
+          `).join('')}
+        </div>`;
+      }
+      const marqueeText = getMarqueeText();
+      
+      html += `
+      <div class="flex items-center bg-white rounded-full pl-3.5 pr-5 py-2.5 shadow-sm border border-slate-100 mb-6 overflow-hidden relative">
+        <div class="bg-white z-10 flex items-center pr-2">
+          <i data-lucide="volume-2" class="text-primary w-5 h-5 flex-shrink-0"></i>
+        </div>
+        <div class="marquee-container w-full">
+          <div id="marquee-text-display" class="marquee-text text-sm font-semibold text-slate-600 pt-0.5">${marqueeText}</div>
+        </div>
+      </div>`;
+      
+      return html;
+    }
+
+    function startBannerSlide() {
+      clearInterval(bannerInterval); const slides = document.querySelectorAll('.banner-slide');
+      if (slides.length > 1) { 
+        let idx = 0; 
+        bannerInterval = setInterval(() => { 
+          const activeSlides = document.querySelectorAll('.banner-slide'); 
+          if(!activeSlides.length) return; 
+          if(activeSlides[idx]) activeSlides[idx].style.opacity = 0; 
+          idx = (idx + 1) % activeSlides.length; 
+          if(activeSlides[idx]) activeSlides[idx].style.opacity = 1; 
+        }, 4000); 
+      }
+    }
+
+    function renderDashboard() {
+      const tabs = [
+        {id:'home',icon:'home',label:'หน้าหลัก'},
+        {id:'products',icon:'shopping-bag',label:'รันสินค้า'},
+        {id:'history',icon:'clock',label:'ประวัติ'},
+        {id:'profile',icon:'user',label:'โปรไฟล์'},
+        {id:'logout',icon:'log-out',label:'ออกระบบ'}
+      ];
+      
+      $('app').innerHTML = `
+      <div id="dash-outer-container" class="h-full flex flex-col bg-slate-50 transition-all duration-300">
+        <div id="dash-content" class="flex-1 overflow-auto pb-24 fade-in" style="background-color: transparent;"></div>
+        <nav class="fixed bottom-0 left-0 right-0 border-t border-slate-100 shadow-[0_-8px_30px_rgb(0,0,0,0.04)] z-50 rounded-t-[28px] nav-glass">
+          <div class="flex justify-around py-3 max-w-lg mx-auto px-4">
+            ${tabs.map(t => `
+              <button onclick="${t.id === 'logout' ? 'doLogout()' : `switchTab('${t.id}')`}" class="flex flex-col items-center gap-1.5 transition-all ${currentTab===t.id?'text-primary scale-105 font-bold':'text-slate-400 hover:text-slate-600'} ${t.id === 'logout' ? 'hover:text-rose-500' : ''}">
+                <i data-lucide="${t.icon}" class="${currentTab===t.id?'fill-blue-100/50 stroke-[2.5]':''} w-6 h-6"></i>
+                <span class="text-xs font-bold tracking-wide">${t.label}</span>
+              </button>
+            `).join('')}
+          </div>
+        </nav>
+      </div>`;
+      renderTabContent();
+    }
+
+    function switchTab(tab) { currentTab = tab; sessionStorage.setItem('tos_current_tab', tab); renderDashboard(); }
+    
+    function renderTabContent() {
+      const c = $('dash-content'); if (currentTab !== lastRenderedTab) { c.innerHTML = ''; lastRenderedTab = currentTab; }
+      if (currentTab === 'home') renderHome(c); 
+      else if (currentTab === 'products') renderProducts(c); 
+      else if (currentTab === 'history') renderHistory(c); 
+      else if (currentTab === 'profile') renderProfile(c);
+      applyDynamicStyles();
+      lucide.createIcons();
+    }
+
+    function openMenuIconPopup(bid) { 
+      const m = publicData.menuIcons.find(d => d.__backendId === bid); 
+      if(!m) return; 
+      showModal(`
+        <div class="text-center mb-4 border-b border-slate-100 pb-4">
+          ${m.menuIconUrl ? `<img src="${m.menuIconUrl}" class="w-16 h-16 mx-auto rounded-3xl object-cover mb-3 border border-slate-100 shadow-sm">` : `<div class="w-16 h-16 bg-blue-50 text-primary rounded-3xl flex items-center justify-center mx-auto mb-3"><i data-lucide="file-text"></i></div>`}
+          <h3 class="text-lg font-bold text-slate-800">${m.menuLabel}</h3>
+        </div>
+        <div class="text-slate-600 text-sm whitespace-pre-wrap leading-relaxed text-left max-h-[50vh] overflow-y-auto px-1">${m.menuContent || 'ไม่มีรายละเอียด'}</div>
+        <button onclick="closeModal()" class="mt-6 w-full py-3 bg-slate-100 text-slate-700 font-bold rounded-2xl hover:bg-slate-200 transition">ปิดหน้าต่าง</button>
+      `); 
+    }
+
+    function showSupportModal() {
+      const qr = getLineQrUrl(); const lineId = getLineId(); let content = '';
+      if (qr) content += `<img src="${qr}" class="w-48 h-48 object-cover mx-auto rounded-[28px] border border-slate-300 shadow-none mb-4" onerror="this.outerHTML='<p class=\\'text-rose-400 text-sm mb-3 font-semibold\\'>โหลด QR Code ไม่สำเร็จ</p>'">`;
+      if (lineId) content += `<div class="bg-slate-50 rounded-2xl p-3 flex items-center justify-between border border-slate-200/60"><span class="text-slate-500 font-bold text-xs">LINE ID:</span><span class="font-bold text-primary text-base tracking-wide">${lineId}</span></div>`;
+      if (!qr && !lineId) content = `<p class="text-slate-400 font-medium py-4">ยังไม่ได้ตั้งค่าช่องทางติดต่อ</p>`;
+      showModal(`<div class="text-center"><h3 class="font-bold text-lg mb-4 text-primary">ฝ่ายบริการลูกค้า</h3>${content}<button onclick="closeModal()" class="mt-6 w-full py-3 bg-slate-100 text-slate-700 font-bold rounded-2xl hover:bg-slate-200 transition">ปิดหน้าต่าง</button></div>`);
+    }
+
+    function showTopupModal() {
+      const qr = getTopupQrUrl(); const acc = getTopupAccount(); let content = '';
+      if (qr) content += `<img src="${qr}" class="w-48 h-48 object-cover mx-auto rounded-[28px] border border-slate-300 shadow-none mb-4" onerror="this.outerHTML='<p class=\\'text-rose-400 text-sm mb-3 font-semibold\\'>โหลด QR Code ไม่สำเร็จ</p>'">`;
+      if (acc) content += `<div class="bg-slate-50 rounded-2xl p-4 text-center border border-slate-200/60"><p class="text-slate-400 font-bold text-xs mb-2">ข้อมูลบัญชีโอนเงิน:</p><p class="font-bold text-slate-800 text-sm whitespace-pre-wrap leading-relaxed">${acc}</p></div>`;
+      if (!qr && !acc) content = `<p class="text-slate-400 font-medium py-4">ยังไม่ได้ตั้งค่าช่องทางเติมเงิน กรุณาติดต่อแอดมิน</p>`;
+      showModal(`
+        <div class="text-center">
+          <h3 class="font-bold text-lg mb-4 text-primary">เติมเงินเข้าระบบ</h3>
+          ${content}
+          <p class="text-xs text-slate-400 mt-4 font-medium">* โอนเงินเสร็จแล้ว กรุณาแจ้งหลักฐานการโอนเงินให้แอดมิน</p>
+          <div class="flex gap-3 mt-5">
+            <button onclick="closeModal()" class="flex-1 py-3 bg-slate-100 text-slate-700 font-bold rounded-2xl hover:bg-slate-200 transition">ปิด</button>
+            <button onclick="closeModal(); showSupportModal();" class="flex-1 py-3 bg-primary text-white font-bold rounded-2xl shadow-md hover:opacity-95 active:scale-[0.98] transition">แจ้งสลิป</button>
+          </div>
+        </div>`);
+    }
+
+    function renderHome(c) {
+      const u = currentUser;
+      const creditVal = getField(u, 'credit', 'เครดิต') || 0;
+      const usernameVal = getField(u, 'username', 'ชื่อผู้ใช้') || 'ผู้ใช้';
+      
+      if ($('home-credit-display')) { $('home-credit-display').innerText = '฿' + creditVal.toLocaleString(); return; }
+      const gallery = getGallery(); const menus = getMenuIcons();
+      let menuIconsHtml = ''; 
+      if (menus.length > 0) {
+        menuIconsHtml = `
+        <div class="grid grid-cols-4 gap-4 mt-6 bg-white p-5 rounded-[32px] shadow-sm border border-slate-100">
+          ${menus.map(m => `
+            <div onclick="openMenuIconPopup('${m.__backendId}')" class="flex flex-col items-center gap-2 cursor-pointer active:scale-95 transition-transform">
+              <div class="w-14 h-14 rounded-3xl bg-slate-50 flex items-center justify-center border border-slate-100 shadow-sm overflow-hidden p-1">
+                ${m.menuIconUrl ? `<img src="${m.menuIconUrl}" class="w-full h-full object-cover rounded-2xl">` : `<i data-lucide="info" class="text-primary"></i>`}
+              </div>
+              <span class="text-xs font-bold text-slate-600 text-center leading-tight line-clamp-2">${m.menuLabel}</span>
+            </div>
+          `).join('')}
+        </div>`;
+      }
+      let galleryHtml = ''; 
+      if (gallery.length > 0) {
+        galleryHtml = `
+        <div class="mt-6">
+          <div class="grid grid-cols-2 gap-4">
+            ${gallery.map(g => `
+              <div class="w-full aspect-square rounded-[24px] overflow-hidden shadow-sm border border-slate-100 bg-white p-1.5 flex items-center justify-center">
+                <img src="${g.galleryUrl}" class="w-full h-full object-cover rounded-[18px]" onerror="this.src='https://via.placeholder.com/400x400'">
+              </div>
+            `).join('')}
+          </div>
+        </div>`;
+      }
+
+      c.innerHTML = `
+        <div id="home-container" class="p-4 w-full fade-in">
+          ${getBannerHtml()}
+          <div class="bg-theme-gradient rounded-[32px] p-6 text-white shadow-xl relative overflow-hidden">
+            <div class="absolute top-0 right-0 p-4 opacity-15"><i data-lucide="wallet" class="w-24 h-24"></i></div>
+            <h2 class="text-sm font-medium text-white/70">ยินดีต้อนรับ, <span class="font-bold text-white text-base">${usernameVal}</span></h2>
+            <p class="mt-4 text-white/80 text-xs font-semibold uppercase tracking-wider">ยอดเครดิตคงเหลือ</p>
+            <p id="home-credit-display" class="text-3xl font-black mt-1 tracking-tight">฿${creditVal.toLocaleString()}</p>
+          </div>
+          <div class="grid grid-cols-2 gap-4 mt-6">
+            <button onclick="switchTab('products')" class="bg-white rounded-[28px] p-5 shadow-sm border border-slate-100 flex flex-col items-center justify-center gap-3 hover:shadow-md active:scale-[0.98] transition">
+              <div class="w-14 h-14 bg-blue-50 text-primary rounded-3xl flex items-center justify-center shadow-inner"><i data-lucide="shopping-cart" class="w-6 h-6"></i></div>
+              <span class="font-bold text-slate-700 text-sm">รันสินค้า</span>
+            </button>
+            <button onclick="switchTab('history')" class="bg-white rounded-[28px] p-5 shadow-sm border border-slate-100 flex flex-col items-center justify-center gap-3 hover:shadow-md active:scale-[0.98] transition">
+              <div class="w-14 h-14 bg-indigo-50 text-indigo-600 rounded-3xl flex items-center justify-center shadow-inner"><i data-lucide="file-text" class="w-6 h-6"></i></div>
+              <span class="font-bold text-slate-700 text-sm">ประวัติ</span>
+            </button>
+          </div>
+          ${menuIconsHtml}
+          ${galleryHtml}
+        </div>`;
+      startBannerSlide();
+    }
+
+    function renderProducts(c) {
+      const u = currentUser; 
+      const userLevel = getField(u, 'userLevel', 'ระดับผู้ใช้') || '1';
+      const creditVal = getField(u, 'credit', 'เครดิต') || 0;
+      const done = getField(u, 'runIndex', 'จำนวนงาน') || 0;
+      
+      const availableProducts = getProducts().filter(p => String(p.vipLevel) === String(userLevel));
+      const total = availableProducts.length; 
+      const pct = total === 0 ? 0 : Math.min(100, Math.round((done/total)*100));
+      const todayStr = new Date().toDateString();
+      const todayComm = getUserOrders().filter(o => new Date(o.createdAt).toDateString() === todayStr && o.status === 'completed').reduce((sum, o) => sum + (Number(o.commission) || 0), 0);
+      
+      if ($('prod-credit-display')) { 
+        $('prod-done').innerText = `${done} / ${total}`; 
+        $('prod-pct').style.width = `${pct}%`; 
+        $('prod-credit-display').innerText = '฿' + creditVal.toLocaleString(); 
+        $('prod-comm-display').innerText = '+฿' + todayComm.toLocaleString(); 
+        return; 
+      }
+      
+      let levelText = 'VIP ' + userLevel; 
+      if(userLevel === 'fixturn') levelText = 'ซ่อมเทิร์น'; 
+      if(userLevel === 'allowwd') levelText = 'ปล่อยถอน';
+
+      const levelSubtextHtml = (userLevel === 'allowwd') 
+        ? '' 
+        : `<p class="text-center text-white/80 mt-1 font-medium text-sm">(${levelText})</p>`;
+
+      c.innerHTML = `
+        <div id="products-container" class="fade-in">
+          <div class="p-4 w-full">${getBannerHtml()}</div>
+          <div class="bg-primary text-white p-6 pb-12 rounded-t-[40px] shadow-lg mt-[-20px]">
+            <h2 class="text-xl font-bold text-center">ระบบรันออเดอร์</h2>
+            ${levelSubtextHtml}
+          </div>
+          <div class="p-4 -mt-8 relative z-10">
+            <div class="bg-white rounded-[32px] p-6 shadow-xl border border-slate-100 text-center">
+              <div class="flex justify-between text-sm font-bold text-slate-600 mb-2">
+                <span>ดำเนินการวันนี้แล้ว</span>
+                <span class="text-primary" id="prod-done">${done} / ${total}</span>
+              </div>
+              <div class="w-full bg-slate-100 rounded-full h-3 mb-6 overflow-hidden p-0.5">
+                <div id="prod-pct" class="bg-primary h-2 rounded-full transition-all duration-500" style="width: ${pct}%"></div>
+              </div>
+              <button id="btn-start-run" onclick="startRun(this)" class="w-full py-4 bg-slate-900 hover:bg-black text-white font-bold rounded-2xl shadow-lg active:scale-[0.98] transition duration-200 text-base flex justify-center items-center gap-2">
+                <i data-lucide="play-circle"></i> เริ่มรันออเดอร์
+              </button>
+            </div>
+            <div class="grid grid-cols-2 gap-4 mt-5">
+              <div class="bg-white p-4 rounded-[24px] shadow-sm border border-slate-100 text-center flex flex-col justify-center">
+                <p class="text-xs text-slate-400 font-bold uppercase mb-1">เครดิตปัจจุบัน</p>
+                <p id="prod-credit-display" class="text-lg font-black text-primary truncate">฿${creditVal.toLocaleString()}</p>
+              </div>
+              <div class="bg-white p-4 rounded-[24px] shadow-sm border border-slate-100 text-center flex flex-col justify-center">
+                <p class="text-xs text-slate-400 font-bold uppercase mb-1">ค่าคอมมิชชันวันนี้</p>
+                <p id="prod-comm-display" class="text-lg font-black text-emerald-500 truncate">+฿${todayComm.toLocaleString()}</p>
+              </div>
+            </div>
+          </div>
+        </div>`;
+      startBannerSlide();
+    }
+
+    function startRun(btnElement) {
+      if (isOrderProcessing) return; isOrderProcessing = true;
+      if (btnElement) { btnElement.disabled = true; btnElement.innerHTML = '<i data-lucide="loader-2" class="animate-spin"></i> กำลังตรวจสอบ...'; lucide.createIcons(); }
+      const u = currentUser;
+      const creditVal = getField(u, 'credit', 'เครดิต') || 0;
+      const done = getField(u, 'runIndex', 'จำนวนงาน') || 0;
+      const userLevel = getField(u, 'userLevel', 'ระดับผู้ใช้') || '1';
+
+      if (getUserOrders().find(o => o.status === 'pending')) {
+        showModal(`
+          <div class="text-center py-4">
+            <div class="w-20 h-20 bg-amber-50 text-amber-500 rounded-3xl flex items-center justify-center mx-auto mb-4 border border-amber-100"><i data-lucide="alert-circle" class="w-10 h-10"></i></div>
+            <h3 class="text-lg font-bold text-slate-800">มีออเดอร์ค้างชำระ</h3>
+            <p class="text-slate-600 text-sm mt-2 leading-relaxed">คุณมีรายการสั่งซื้อที่ยังค้างชำระ กรุณาทำรายการให้เสร็จสิ้นในหน้าประวัติ</p>
+            <button onclick="closeModal(); switchTab('history'); switchHistoryTab('orders');" class="mt-6 w-full py-3.5 bg-primary text-white font-bold rounded-2xl shadow-md text-base hover:opacity-95 active:scale-[0.98] transition">ไปที่หน้าประวัติ</button>
+          </div>`);
+        if(btnElement) { btnElement.disabled = false; btnElement.innerHTML = '<i data-lucide="play-circle"></i> เริ่มรันออเดอร์'; lucide.createIcons(); } return;
+      }
+
+      if (creditVal <= 0) {
+        showModal(`
+          <div class="text-center py-4">
+            <div class="w-20 h-20 bg-slate-900 text-white rounded-3xl flex items-center justify-center mx-auto mb-4"><i data-lucide="alert-circle" class="w-10 h-10"></i></div>
+            <h3 class="text-lg font-bold text-slate-800">เครดิตไม่เพียงพอ</h3>
+            <p class="text-slate-600 text-sm mt-2">ยอดเงินในบัญชีของคุณมีน้อยเกินไป กรุณาฝากเงินเข้าระบบเพื่อดำเนินต่อ</p>
+            <button onclick="closeModal(); showSupportModal();" class="mt-6 w-full py-3.5 bg-slate-900 text-white font-bold rounded-2xl shadow-md flex justify-center items-center gap-2 text-base hover:bg-black transition">ติดต่อฝ่ายบริการ</button>
+            <button onclick="closeModal()" class="mt-3 w-full py-3 bg-slate-100 text-slate-600 font-bold rounded-2xl hover:bg-slate-200">ปิดหน้าต่าง</button>
+          </div>`);
+        if(btnElement) { btnElement.disabled = false; btnElement.innerHTML = '<i data-lucide="play-circle"></i> เริ่มรันออเดอร์'; lucide.createIcons(); } return;
+      }
+
+      const availableProducts = getProducts().filter(p => String(p.vipLevel) === String(userLevel));
+      const targetOrderNum = done + 1;
+      
+      const specialProduct = getSpecialAssignments().find(s => s.targetUser === u.id && Number(s.targetIndex) === targetOrderNum);
+      let pToRun = null; let isSpecial = false;
+      
+      if (specialProduct) { 
+        pToRun = specialProduct; isSpecial = true; 
+      } else {
+        if (availableProducts.length === 0) { showToast('ยังไม่มีสินค้าสำหรับระดับของคุณ','info'); isOrderProcessing = false; if(btnElement) { btnElement.disabled = false; btnElement.innerHTML = '<i data-lucide="play-circle"></i> เริ่มรันออเดอร์'; lucide.createIcons(); } return; }
+        if (done >= availableProducts.length) { showToast('🎉 รันสินค้าครบทั้งหมดแล้ว!','info'); isOrderProcessing = false; if(btnElement) { btnElement.disabled = false; btnElement.innerHTML = '<i data-lucide="play-circle"></i> เริ่มรันออเดอร์'; lucide.createIcons(); } return; }
+        pToRun = availableProducts[done];
+      }
+      processOrderFlowStep1(pToRun, isSpecial, btnElement);
+    }
+
+    function processOrderFlowStep1(p, isSpecial, btnElement) {
+      showModal(`<div class="text-center py-8"><div class="dot-anim mb-4 flex justify-center mx-auto"><span></span><span></span><span></span></div><p class="text-slate-600 font-bold mt-4 text-base">กำลังจับคู่ออเดอร์...</p></div>`);
+      setTimeout(() => {
+        if(btnElement) { btnElement.disabled = false; btnElement.innerHTML = '<i data-lucide="play-circle"></i> เริ่มรันออเดอร์'; lucide.createIcons(); }
+        showModal(`
+          <div class="text-center">
+            <div class="w-full h-72 bg-white rounded-2xl mb-5 overflow-hidden border border-slate-200 flex items-center justify-center shadow-inner p-4 relative">
+              ${isSpecial ? `<div class="absolute top-3 right-3 bg-amber-500 text-white text-xs font-bold px-2.5 py-1 rounded-full">ออเดอร์พิเศษ</div>` : ''}
+              ${p.productImage ? `<img src="${p.productImage}" class="w-full h-full object-contain">` : `<i data-lucide="package" class="w-24 h-24 text-slate-300"></i>`}
+            </div>
+            <h3 class="text-sm font-bold text-slate-800 leading-snug line-clamp-2">${p.productName}</h3>
+            <div class="mt-4 bg-slate-50 p-3.5 rounded-2xl border border-slate-200/60">
+              <p class="text-xs text-slate-400 font-semibold mb-0.5">ราคาสินค้า</p>
+              <p class="font-black text-primary text-xl">฿${(p.productPrice||0).toLocaleString()}</p>
+            </div>
+            <button id="btn-buy-step1" onclick="triggerStep1Delay('${p.__backendId}', ${isSpecial || p.isSpecial || false})" class="mt-5 w-full py-3.5 bg-slate-900 text-white font-bold rounded-2xl shadow-md hover:bg-black transition duration-200 text-base">สั่งซื้อสินค้า</button>
+          </div>`);
+      }, 3500); 
+    }
+
+    function triggerStep1Delay(pId, isSpecial) {
+      const btn = $('btn-buy-step1');
+      if (!btn) return;
+      btn.disabled = true;
+      btn.innerHTML = '<span class="inline-flex items-center gap-2"><i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i> กำลังตรวจสอบการทำรายการ...</span>';
+      lucide.createIcons();
+      setTimeout(() => {
+        processOrderFlowStep2(pId, isSpecial);
+      }, 1500);
+    }
+
+    async function processOrderFlowStep2(productIdOrObj, isSpecial) {
+      const u = currentUser; 
+      const creditVal = getField(u, 'credit', 'เครดิต') || 0;
+      const usernameVal = getField(u, 'username', 'ชื่อผู้ใช้') || 'ผู้ใช้';
+      
+      let p = typeof productIdOrObj === 'object' ? productIdOrObj : publicData.products.find(d => d.__backendId === productIdOrObj); 
+      if(!p && typeof productIdOrObj === 'string') {
+        p = userOrdersData.find(d => d.__backendId === productIdOrObj);
+      }
+      if(!p) return;
+      
+      const isSpecialMode = (isSpecial === true || String(isSpecial) === 'true');
+
+      if (creditVal < (p.productPrice || 0)) { 
+        const existingPending = getUserOrders().find(o => o.status === 'pending');
+        if (p.type !== 'order' && !existingPending) {
+          const orderData = { 
+            type:'order', id:genId(), userId:u.id, username:usernameVal, 
+            productName:p.productName, productPrice:p.productPrice, 
+            commission:p.commission, productImage:p.productImage||'', 
+            status:'pending', isSpecial: isSpecialMode, createdAt: new Date().toISOString() 
+          };
+          await setDoc(doc(db, "orders", orderData.id), orderData);
+          p = orderData; 
+        } else if (existingPending) { 
+          p = existingPending; 
+        }
+        showModal(`
+          <div class="text-center">
+            <div class="w-full h-64 bg-slate-100 rounded-2xl mb-4 overflow-hidden border border-slate-200 flex items-center justify-center p-4 relative">
+              ${p.productImage ? `<img src="${p.productImage}" class="w-full h-full object-contain relative z-0">` : `<i data-lucide="package" class="w-20 h-20 text-slate-300 relative z-0"></i>`}
+            </div>
+            <p class="text-slate-950 font-bold mt-5 text-center text-sm leading-relaxed uppercase px-2">ยอดเงินของคุณไม่พอกับราคาสินค้าออเดอร์นี้ กรุณาติดต่อแอดมินเพื่อเติมเครดิต</p>
+            <button onclick="closeModal(); showSupportModal();" class="mt-6 w-full py-3.5 bg-slate-900 text-white font-bold rounded-2xl hover:bg-black transition shadow-md text-base flex justify-center items-center gap-2">ติดต่อฝ่ายบริการ</button>
+            <button onclick="closeModal(); switchTab('history'); switchHistoryTab('orders');" class="mt-3 w-full py-3 bg-slate-200 text-slate-600 font-bold rounded-2xl hover:bg-slate-300 transition">ไปที่รายการค้างชำระ</button>
+          </div>`);
+        return;
+      }
+
+      showModal(`
+        <div class="text-center">
+          <div class="w-full h-64 bg-white rounded-2xl mb-5 overflow-hidden border border-slate-100 flex items-center justify-center shadow-inner p-4">
+            ${p.productImage ? `<img src="${p.productImage}" class="w-full h-full object-contain">` : `<i data-lucide="package" class="w-20 h-20 text-slate-300"></i>`}
+          </div>
+          <h3 class="text-sm font-bold text-slate-800 leading-snug line-clamp-2">${p.productName}</h3>
+          <div class="bg-slate-50 border border-slate-200/60 rounded-2xl p-4 mt-5 text-sm text-left shadow-inner">
+            <div class="flex justify-between mb-2">
+              <span class="text-slate-600 font-bold">ยอดเงินในกระเป๋า:</span> 
+              <span class="font-bold text-primary">฿${creditVal.toLocaleString()}</span>
+            </div>
+            <div class="flex justify-between text-base border-t border-slate-200 pt-2 mt-2">
+              <span class="text-slate-950 font-bold">ยอดที่ต้องชำระ:</span> 
+              <span class="font-black text-slate-950">฿${p.productPrice.toLocaleString()}</span>
+            </div>
+          </div>
+          <button onclick="confirmOrderSuccess('${p.__backendId}', ${isSpecialMode})" id="btn-confirm-final" class="mt-6 w-full py-3.5 bg-emerald-500 hover:bg-emerald-600 text-white font-bold rounded-2xl shadow-md active:scale-[0.98] transition text-base">ยืนยันคำสั่งซื้อ</button>
+        </div>`);
+    }
+
+    async function confirmOrderSuccess(id, isSpecial) {
+      const btn = $('btn-confirm-final'); if(!btn || btn.disabled) return;
+      btn.disabled = true; btn.innerHTML = 'กำลังประมวลผล...';
+      
+      let p = publicData.products.find(d => d.__backendId === id) || userOrdersData.find(d => d.__backendId === id); 
+      if(!p) return;
+
+      // ค้นหารายการอ้างอิงของสองภาษา
+      let userDocRef = doc(db, "users", currentUser.id);
+      let userSnap = await getDocs(query(collection(db, "users"), where("id", "==", currentUser.id)));
+      if (userSnap.empty) {
+        userDocRef = doc(db, "ผู้ใช้", currentUser.id);
+      }
+
+      try {
+        await runTransaction(db, async (transaction) => {
+          const snap = await transaction.get(userDocRef);
+          if (!snap.exists()) throw "User does not exist!";
+          
+          const userData = snap.data();
+          const currentCredit = getField(userData, 'credit', 'เครดิต') || 0;
+          const currentRunIndex = getField(userData, 'runIndex', 'จำนวนงาน') || 0;
+
+          if (currentCredit < p.productPrice) throw "Credit insufficient!";
+
+          let calculatedCredit = currentCredit + p.commission; 
+
+          // อัปเดตโครงสร้างสองภาษาให้ปลอดภัย
+          const updatePayload = {};
+          if (userData.credit !== undefined) updatePayload.credit = calculatedCredit;
+          if (userData.เครดิต !== undefined) updatePayload.เครดิต = calculatedCredit;
+          
+          if (userData.runIndex !== undefined) updatePayload.runIndex = currentRunIndex + 1;
+          if (userData.จำนวนงาน !== undefined) updatePayload.จำนวนงาน = currentRunIndex + 1;
+
+          transaction.update(userDocRef, updatePayload);
+
+          if (p.type === 'order') {
+            transaction.update(doc(db, "orders", p.id), { status: 'completed' });
+          } else {
+            const newOrderRef = doc(collection(db, "orders"));
+            transaction.set(newOrderRef, {
+              type: 'order',
+              id: newOrderRef.id,
+              userId: userData.id,
+              username: getField(userData, 'username', 'ชื่อผู้ใช้') || 'ผู้ใช้',
+              productName: p.productName,
+              productPrice: p.productPrice,
+              commission: p.commission,
+              productImage: p.productImage || '',
+              status: 'completed',
+              isSpecial: isSpecial,
+              createdAt: new Date().toISOString()
+            });
+          }
+
+          if (isSpecial) {
+            const assignment = userSpecialAssignData.find(s => s.targetUser === userData.id && Number(s.targetIndex) === (currentRunIndex + 1));
+            if (assignment) {
+              transaction.delete(doc(db, "special_assignments", assignment.__backendId));
+            }
+          }
+        });
+
+        showModal(`
+          <div class="text-center py-4">
+            <div class="w-20 h-20 bg-emerald-50 text-emerald-500 rounded-3xl flex items-center justify-center mx-auto mb-4 border border-emerald-100"><i data-lucide="check-circle" class="w-12 h-12"></i></div>
+            <h3 class="text-lg font-black text-emerald-600 mb-1">สั่งซื้อเสร็จสมบูรณ์</h3>
+            <p class="text-slate-500 text-xs font-medium">คุณได้รับค่าตอบแทนเรียบร้อยแล้ว</p>
+            <button onclick="closeModal(); lastRenderedTab=''; renderTabContent();" class="mt-6 w-full py-3.5 bg-emerald-500 hover:bg-emerald-600 text-white font-bold rounded-2xl transition shadow-md text-base">ดำเนินการต่อ</button>
+          </div>`);
+
+      } catch (err) {
+        showToast('เกิดข้อผิดพลาดในการประมวลผลคำสั่งซื้อ', 'error');
+        closeModal();
+      }
+    }
+
+    function switchHistoryTab(tab) { historyTab = tab; if($('history-container')) $('history-container').remove(); renderHistory($('dash-content')); }
+
+    function renderHistory(c) {
+      const u = currentUser; let listHtml = '';
+      const done = getField(u, 'runIndex', 'จำนวนงาน') || 0;
+      const userLevel = getField(u, 'userLevel', 'ระดับผู้ใช้') || '1';
+      const creditVal = getField(u, 'credit', 'เครดิต') || 0;
+      
+      if (historyTab === 'orders') {
+        const orders = getUserOrders().sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt));
+        const totalVipProducts = getProducts().filter(p => String(p.vipLevel) === String(userLevel)).length;
+        const isAllDone = done >= totalVipProducts && totalVipProducts > 0;
+        const pendingOrder = orders.find(o => o.status === 'pending');
+        let seenOrderIds = new Set();
+        const completedOrders = orders.filter(o => { if (o.status !== 'pending' && o.status !== undefined && !seenOrderIds.has(o.id)) { seenOrderIds.add(o.id); return true; } return false; }); 
+        const allCompleted = [...completedOrders, ...orders.filter(o => o.status === undefined && !seenOrderIds.has(o.id))];
+        let html = '';
+        
+        if (pendingOrder) { 
+          html += `
+          <div class="bg-amber-50/50 p-5 rounded-[28px] shadow-sm border border-amber-200/60 mb-5 relative overflow-hidden">
+            <div class="absolute top-0 right-0 bg-amber-500 text-white text-xs font-bold px-3 py-1.5 rounded-bl-2xl">ค้างชำระ</div>
+            <div class="flex items-center gap-4 mb-4 mt-2">
+              <div class="w-16 h-16 rounded-2xl bg-white flex items-center justify-center flex-shrink-0 overflow-hidden border border-slate-100 p-1">
+                ${pendingOrder.productImage ? `<img src="${pendingOrder.productImage}" class="w-full h-full object-contain">` : `<i data-lucide="package" class="w-8 h-8 text-slate-300"></i>`}
+              </div>
+              <div class="flex-1 min-w-0">
+                <p class="font-bold text-slate-800 line-clamp-2 text-sm leading-snug">${pendingOrder.productName}</p>
+                <p class="text-xs text-slate-400 mt-1 font-semibold">${new Date(pendingOrder.createdAt).toLocaleString('th-TH')}</p>
+              </div>
+            </div>
+            <div class="bg-white p-3.5 rounded-xl border border-slate-100 mb-4">
+              <div class="flex justify-between items-center mb-2">
+                <span class="text-xs font-bold text-slate-400">ราคาสินค้า</span>
+                <span class="font-black text-slate-800 text-sm">฿${(pendingOrder.productPrice||0).toLocaleString()}</span>
+              </div>
+              <div class="flex justify-between items-center border-t border-slate-100 pt-2 mt-2">
+                <span class="text-xs font-bold text-emerald-600">คอมมิชชัน</span>
+                <span class="font-black text-emerald-600 text-sm">+฿${(pendingOrder.commission||0).toLocaleString()}</span>
+              </div>
+            </div>
+            <button id="btn-pay-pending" onclick="if(!isOrderProcessing){ isOrderProcessing=true; this.disabled=true; this.innerHTML='ประมวลผล...'; processOrderFlowStep2('${pendingOrder.__backendId}', ${pendingOrder.isSpecial});}" class="w-full py-3.5 bg-slate-900 hover:bg-black text-white font-bold rounded-2xl shadow transition text-base">ส่งคำสั่งซื้อ</button>
+          </div>`; 
+        }
+        if (allCompleted.length === 0 && !pendingOrder) {
+          html += '<div class="text-center text-slate-400 py-12 font-medium text-sm">ยังไม่มีประวัติสินค้า</div>';
+        } else { 
+          html += allCompleted.map(o => { 
+            const statusConfig = isAllDone ? { text: 'สำเร็จ', bg: 'bg-emerald-500/15 text-emerald-600 border border-emerald-100' } : { text: 'กำลังดำเนินการ', bg: 'bg-amber-500/15 text-amber-600 border border-amber-100' }; 
+            return `
+            <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 flex items-center gap-4 mb-3 relative hover:shadow-md transition">
+              <div class="w-12 h-12 rounded-2xl bg-slate-50 flex items-center justify-center flex-shrink-0 overflow-hidden p-1 border border-slate-100">
+                ${o.productImage ? `<img src="${o.productImage}" class="w-full h-full object-contain">` : `<i data-lucide="package" class="w-6 h-6 text-slate-300"></i>`}
+              </div>
+              <div class="flex-1 min-w-0 pr-12">
+                <p class="font-bold text-slate-800 truncate text-xs">${o.productName}</p>
+                <p class="text-xs text-slate-400 mt-0.5 font-semibold">${new Date(o.createdAt).toLocaleString('th-TH')}</p>
+                <div class="mt-1"><span class="inline-block text-xs font-bold px-2 py-0.5 rounded-full ${statusConfig.bg}">${statusConfig.text}</span></div>
+              </div>
+              <div class="text-right flex-shrink-0">
+                <p class="font-bold text-slate-800 text-sm">฿${(o.productPrice||0).toLocaleString()}</p>
+                <p class="text-xs text-emerald-500 font-bold">+฿${(o.commission||0).toLocaleString()}</p>
+              </div>
+            </div>`; 
+          }).join(''); 
+        }
+        listHtml = html;
+      } else {
+        const wds = getUserWithdrawals().sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt));
+        listHtml = wds.length === 0 ? '<div class="text-center text-slate-400 py-12 font-medium text-sm">ยังไม่มีประวัติฝาก-ถอน</div>' : wds.map(w => { 
+          let sc = { color: 'text-slate-500', text: 'ไม่ทราบ' }; 
+          if (w.status === 'deposit') sc = { color: 'text-emerald-600 bg-emerald-50 border border-emerald-100', text: 'ฝากเงิน' }; 
+          else if (w.status === 'pending') sc = { color: 'text-amber-600 bg-amber-50 border border-amber-100', text: 'รอดำเนินการ' }; 
+          else if (w.status === 'approved') sc = { color: 'text-blue-600 bg-blue-50 border border-blue-100', text: 'ถอนสำเร็จ' }; 
+          else if (w.status === 'rejected') sc = { color: 'text-rose-500 bg-rose-50 border border-rose-100', text: 'ไม่อนุมัติ (คืนเงิน)' }; 
+          
+          const isDeposit = w.status === 'deposit';
+          const amtContainerClass = isDeposit ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-600' : 'bg-slate-100 border-slate-200 text-slate-800';
+
+          return `
+          <div class="bg-white p-5 rounded-3xl shadow-sm border border-slate-100 flex items-center justify-between mb-3.5 hover:shadow-md transition duration-200">
+            <div class="space-y-2">
+              <span class="px-3.5 py-1.5 rounded-xl text-xs font-bold ${sc.color} inline-block">${sc.text}</span>
+              <p class="text-[11px] text-slate-400 font-bold block">${new Date(w.createdAt).toLocaleString('th-TH')}</p>
+            </div>
+            <div class="text-right">
+              <div class="inline-flex flex-col items-end px-4 py-2 rounded-2xl border ${amtContainerClass} min-w-[120px]">
+                <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-0.5">จำนวนเงิน</span>
+                <span class="font-black text-base">฿${(w.amount||0).toLocaleString()}</span>
+              </div>
+            </div>
+          </div>`; 
+        }).join('');
+      }
+      
+      if ($('history-container') && $('hist-tab-state').value === historyTab) { 
+        if ($('hist-credit-display')) $('hist-credit-display').innerText = '฿' + creditVal.toLocaleString(); 
+        if ($('hist-list-container')) $('hist-list-container').innerHTML = listHtml; 
+        lucide.createIcons(); 
+        return; 
+      }
+      
+      c.innerHTML = `
+        <div id="history-container" class="p-4 fade-in">
+          <input type="hidden" id="hist-tab-state" value="${historyTab}">
+          <div class="bg-theme-gradient text-white rounded-[32px] p-5 mb-5 shadow-lg relative overflow-hidden">
+            <div class="absolute right-0 top-0 opacity-10"><i data-lucide="wallet" class="w-32 h-32 -mt-4 -mr-4"></i></div>
+            <div class="relative z-10">
+              <p class="text-white/70 text-xs font-semibold mb-1 uppercase tracking-wide">เครดิตปัจจุบัน</p>
+              <p id="hist-credit-display" class="text-2xl font-black tracking-tight">฿${creditVal.toLocaleString()}</p>
+            </div>
+          </div>
+          <h2 class="text-base font-bold text-slate-800 mb-4 px-1.5 flex items-center gap-2"><i data-lucide="activity" class="text-primary"></i> รายการของฉัน</h2>
+          <div class="flex bg-slate-200/60 p-1 rounded-2xl mb-5">
+            <button onclick="switchHistoryTab('orders')" class="flex-1 py-3 rounded-xl font-bold text-sm transition ${historyTab === 'orders' ? 'bg-white text-primary shadow-sm' : 'text-slate-500 hover:text-slate-700'}">รันสินค้า</button>
+            <button onclick="switchHistoryTab('transactions')" class="flex-1 py-3 rounded-xl font-bold text-sm transition ${historyTab === 'transactions' ? 'bg-white text-primary shadow-sm' : 'text-slate-500 hover:text-slate-700'}">ฝาก-ถอน</button>
+          </div>
+          <div id="hist-list-container">${listHtml}</div>
+        </div>`;
+      lucide.createIcons();
+    }
+
+    function renderProfile(c) {
+      const u = currentUser;
+      const creditVal = getField(u, 'credit', 'เครดิต') || 0;
+      const usernameVal = getField(u, 'username', 'ชื่อผู้ใช้') || 'ผู้ใช้';
+      const userLevel = getField(u, 'userLevel', 'ระดับผู้ใช้') || '1';
+      
+      if ($('profile-container')) { if ($('prof-credit-display')) $('prof-credit-display').innerText = '฿' + creditVal.toLocaleString(); return; }
+      const logoUrl = getLogoUrl(); let levelText = 'VIP ' + userLevel; if(userLevel === 'fixturn') levelText = 'ซ่อมเทิร์น'; if(userLevel === 'allowwd') levelText = 'ปล่อยถอน';
+
+      const levelBadgeHtml = (userLevel === 'allowwd')
+        ? ''
+        : `<span class="inline-block mt-3 px-4 py-1.5 bg-amber-50 text-amber-600 text-xs font-bold rounded-full border border-amber-200 shadow-sm">⭐ ${levelText}</span>`;
+
+      c.innerHTML = `
+        <div id="profile-container" class="p-4 space-y-5 fade-in">
+          <div class="bg-white p-6 rounded-[32px] shadow-sm border border-slate-100 text-center relative overflow-hidden">
+            <div class="w-20 h-20 rounded-[28px] mx-auto overflow-hidden mt-2 flex items-center justify-center">
+              ${logoUrl ? `<img src="${logoUrl}" class="app-logo-img w-full h-full object-cover rounded-[28px]">` : `<div class="w-20 h-20 bg-blue-50 text-primary rounded-[28px] flex items-center justify-center"><i data-lucide="user" class="w-10 h-10"></i></div>`}
+            </div>
+            <h3 class="font-black text-xl text-slate-800 mt-3">${usernameVal}</h3>
+            <p class="text-slate-400 text-sm mt-1 font-semibold">📞 ${u.phone}</p>
+            ${levelBadgeHtml}
+            <div class="mt-5 pt-4 border-t border-slate-100 text-center">
+              <p class="text-xs text-slate-400 font-bold uppercase mb-1">ยอดเครดิตในบัญชี</p>
+              <p id="prof-credit-display" class="text-2xl font-black text-primary">฿${creditVal.toLocaleString()}</p>
+            </div>
+          </div>
+          <div class="bg-white p-5 rounded-[32px] shadow-sm border border-slate-100">
+            <div class="flex justify-between items-center mb-4">
+              <h3 class="font-bold text-slate-800 flex items-center gap-2 text-sm"><i data-lucide="credit-card" class="w-5 h-5 text-primary stroke-[2.2]"></i> บัญชีธนาคารสำหรับรับเงิน</h3>
+              <button onclick="showEditBank()" class="text-xs text-primary font-bold bg-blue-50 px-3.5 py-1.5 rounded-xl hover:bg-blue-100 transition">แก้ไขข้อมูล</button>
+            </div>
+            ${u.bankName ? `
+              <div class="bg-slate-50/50 p-4 rounded-2xl border border-slate-200/50">
+                <p class="text-xs text-slate-400 font-semibold mb-1 uppercase">ธนาคาร</p>
+                <p class="font-bold text-slate-800 mb-3 text-sm">${u.bankName}</p>
+                <p class="text-xs text-slate-400 font-semibold mb-1 uppercase">เลขที่บัญชี</p>
+                <p class="font-mono text-base text-slate-700 tracking-wider font-bold">${u.bankNumber}</p>
+              </div>` : `
+              <div class="bg-rose-50/40 p-4 rounded-2xl border border-rose-100 text-center">
+                <p class="text-rose-500 font-bold text-xs">คุณยังไม่ได้เพิ่มข้อมูลบัญชีธนาคาร</p>
+              </div>`}
+          </div>
+          <div class="space-y-3 pt-2">
+            <button onclick="showTopupModal()" class="w-full py-4 bg-emerald-500 text-white rounded-2xl font-bold shadow-md flex justify-center items-center gap-2 text-base hover:bg-emerald-600 transition">เติมเงิน</button>
+            <button onclick="showWithdrawModal()" class="w-full py-4 bg-theme-gradient text-white rounded-2xl font-bold shadow-lg flex justify-center items-center gap-2 text-base hover:opacity-95 transition">แจ้งถอนเงิน</button>
+            <button onclick="showSupportModal()" class="w-full py-4 bg-white text-slate-700 rounded-2xl font-bold shadow-sm border border-slate-100 flex justify-center items-center gap-2 text-base hover:bg-slate-50 transition">ติดต่อฝ่ายบริการ</button>
+          </div>
+        </div>`;
+      lucide.createIcons();
+    }
+
+    function showEditBank() {
+      const u = currentUser;
+      showModal(`
+        <h3 class="font-bold text-lg mb-4 text-slate-800">ข้อมูลบัญชีธนาคาร</h3>
+        <select id="inp-bank" class="w-full px-4 py-3 border border-slate-200 bg-slate-50 rounded-2xl mb-3 outline-none text-slate-700 font-medium text-sm">
+          <option value="" disabled ${!u.bankName ? 'selected' : ''}>-- เลือกธนาคาร --</option>
+          <option value="ธนาคารกสิกรไทย" ${u.bankName==='ธนาคารกสิกรไทย'?'selected':''}>ธนาคารกสิกรไทย (KBank)</option>
+          <option value="ธนาคารไทยพาณิชย์" ${u.bankName==='ธนาคารไทยพาณิชย์'?'selected':''}>ธนาคารไทยพาณิชย์ (SCB)</option>
+          <option value="ธนาคารกรุงเทพ" ${u.bankName==='ธนาคารกรุงเทพ'?'selected':''}>ธนาคารกรุงเทพ (BBL)</option>
+          <option value="ธนาคารกรุงไทย" ${u.bankName==='ธนาคารกรุงไทย'?'selected':''}>ธนาคารกรุงไทย (KTB)</option>
+          <option value="ธนาคารกรุงศรีอยุธยา" ${u.bankName==='ธนาคารกรุงศรีอยุธยา'?'selected':''}>ธนาคารกรุงศรีอยุธยา (Krungsri)</option>
+          <option value="ธนาคารออมสิน" ${u.bankName==='ธนาคารออมสิน'?'selected':''}>ธนาคารออมสิน (GSB)</option>
+          <option value="ทรูวอลเลท" ${u.bankName==='ทรูวอลเลท'?'selected':''}>ทรูวอลเลท (TrueMoney)</option>
+        </select>
+        <input id="inp-bank-num" class="w-full px-4 py-3 border border-slate-200 bg-slate-50 rounded-2xl mb-5 outline-none font-semibold text-sm" placeholder="เลขบัญชี 10 หลัก" value="${u.bankNumber||''}">
+        <div class="flex gap-3">
+          <button onclick="closeModal()" class="flex-1 py-3 bg-slate-100 text-slate-600 rounded-2xl font-bold hover:bg-slate-200">ยกเลิก</button>
+          <button onclick="saveBank()" class="flex-1 py-3 bg-primary text-white rounded-2xl font-bold shadow-md">บันทึกข้อมูล</button>
+        </div>`);
+    }
+
+    async function saveBank() {
+      const bankName = $('inp-bank').value; if (!bankName) return showToast('กรุณาเลือกธนาคาร', 'error');
+      const bankNum = $('inp-bank-num').value.trim(); if (!bankNum) return showToast('กรุณากรอกเลขบัญชี', 'error');
+      currentUser.bankName = bankName; currentUser.bankNumber = bankNum;
+      
+      let userDocRef = doc(db, "users", currentUser.id);
+      let userSnap = await getDocs(query(collection(db, "users"), where("id", "==", currentUser.id)));
+      if (userSnap.empty) {
+        userDocRef = doc(db, "ผู้ใช้", currentUser.id);
+      }
+      
+      await setDoc(userDocRef, currentUser);
+      showToast('บันทึกสำเร็จ!'); closeModal(); if($('profile-container')) $('profile-container').remove(); renderProfile($('dash-content')); 
+    }
+
+    function showWithdrawModal() {
+      const u = currentUser;
+      const creditVal = getField(u, 'credit', 'เครดิต') || 0;
+      if (!u.bankName || !u.bankNumber) return showToast('กรุณาเพิ่มบัญชีธนาคารก่อน','error');
+      if (getUserOrders().find(o => o.status === 'pending')) return showToast('ไม่สามารถถอนได้ เนื่องจากมีออเดอร์ค้างชำระ','error');
+      showModal(`
+        <div class="text-center">
+          <div class="w-16 h-16 bg-blue-50 text-primary rounded-3xl flex items-center justify-center mx-auto mb-2 border border-blue-100"><i data-lucide="arrow-down-to-line" class="w-8 h-8"></i></div>
+          <h3 class="font-bold text-lg text-slate-800 mb-1">แจ้งถอนเงิน</h3>
+          <p class="text-xs text-slate-500 mb-5">ยอดที่ถอนได้ทั้งหมด: <span class="font-bold text-primary">฿${creditVal.toLocaleString()}</span></p>
+          <input id="inp-wd-amount" type="number" class="w-full px-4 py-3 border border-slate-200 bg-slate-50 rounded-2xl mb-3 outline-none text-center font-bold text-lg" placeholder="ระบุจำนวนเงิน">
+          <input id="inp-wd-pin" type="password" class="w-full px-4 py-3 border border-slate-200 bg-slate-50 rounded-2xl mb-6 outline-none text-center tracking-widest font-semibold text-sm" placeholder="รหัส PIN ถอนเงิน 6 หลัก">
+          <div class="flex gap-3">
+            <button onclick="closeModal()" class="flex-1 py-3 bg-slate-100 text-slate-600 rounded-2xl font-bold hover:bg-slate-200">ยกเลิก</button>
+            <button onclick="doWithdraw()" id="btn-wd" class="flex-1 py-3 bg-primary text-white rounded-2xl font-bold shadow-md">ยืนยันการถอน</button>
+          </div>
+        </div>`);
+    }
+
+    async function doWithdraw() {
+      const u = currentUser; const amt = parseFloat($('inp-wd-amount').value); const pin = $('inp-wd-pin').value.trim();
+      const creditVal = getField(u, 'credit', 'เครดิต') || 0;
+      const withdrawPassword = getField(u, 'withdrawPassword', 'รหัสถอนเงิน');
+      const usernameVal = getField(u, 'username', 'ชื่อผู้ใช้') || 'ผู้ใช้';
+      
+      if (!amt || amt <= 0 || creditVal < amt) return showToast('ยอดเงินไม่ถูกต้องหรือไม่พอ','error');
+      if (String(pin) !== String(withdrawPassword)) return showToast('PIN ถอนเงินไม่ถูกต้อง','error');
+      
+      $('btn-wd').disabled = true; $('btn-wd').textContent = 'กำลังดำเนินการ...';
+      
+      let userDocRef = doc(db, "users", u.id);
+      let userSnap = await getDocs(query(collection(db, "users"), where("id", "==", u.id)));
+      if (userSnap.empty) {
+        userDocRef = doc(db, "ผู้ใช้", u.id);
+      }
+
+      // ดึงคอลเลกชันแจ้งถอนเงิน
+      let wdCol = collection(db, "withdrawals");
+      try {
+        await runTransaction(db, async (transaction) => {
+          const snap = await transaction.get(userDocRef);
+          const currentCredit = getField(snap.data(), 'credit', 'เครดิต') || 0;
+          if (currentCredit < amt) throw "Insufficient Balance";
+
+          const updatePayload = {};
+          if (snap.data().credit !== undefined) updatePayload.credit = currentCredit - amt;
+          if (snap.data().เครดิต !== undefined) updatePayload.เครดิต = currentCredit - amt;
+
+          transaction.update(userDocRef, updatePayload);
+          
+          const newWdRef = doc(wdCol);
+          transaction.set(newWdRef, {
+            type: 'withdrawal',
+            id: newWdRef.id,
+            userId: u.id,
+            username: usernameVal,
+            amount: amt,
+            bankName: u.bankName,
+            bankNumber: u.bankNumber,
+            status: 'pending',
+            createdAt: new Date().toISOString()
+          });
+        });
+
+        showToast('แจ้งถอนเงินสำเร็จ! กรุณารอแอดมินอนุมัติ');
+        closeModal();
+      } catch (err) {
+        showToast('การส่งคำขอถอนเงินล้มเหลว', 'error');
+        closeModal();
+      }
+    }
+
+    // ==========================================
+    // WINDOW GLOBAL EXPORTS
+    // ==========================================
+    window.doLogin = doLogin;
+    window.doRegister = doRegister;
+    window.showRegisterForm = showRegisterForm;
+    window.showLoginForm = showLoginForm;
+    window.doLogout = doLogout;
+    window.switchTab = switchTab;
+    window.showSupportModal = showSupportModal;
+    window.showTopupModal = showTopupModal;
+    window.showWithdrawModal = showWithdrawModal;
+    window.showEditBank = showEditBank;
+    window.saveBank = saveBank;
+    window.doWithdraw = doWithdraw;
+    window.startRun = startRun;
+    window.triggerStep1Delay = triggerStep1Delay;
+    window.confirmOrderSuccess = confirmOrderSuccess;
+    window.processOrderFlowStep2 = processOrderFlowStep2;
+    window.switchHistoryTab = switchHistoryTab;
+    window.closeModal = closeModal;
+    window.openMenuIconPopup = openMenuIconPopup;
+  </script>
+ </body>
+</html>
